@@ -1,4 +1,4 @@
-package kakha.kudava.planora_travelandbooking_system;
+package project.planora_travelandbooking_system;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package kakha.kudava.planora_travelandbooking_system;
+package project.planora_travelandbooking_system;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
