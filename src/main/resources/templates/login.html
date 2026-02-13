@@ -2,15 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Planora • Login</title>
+    <title>Planora • Sign in</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
 </head>
 <body>
 
-<h2>Login</h2>
+<h2>Sign in to Planora</h2>
 
 <div th:if="${param.error}">
-    Invalid username or password
+    Invalid email or password
 </div>
 
 <div th:if="${param.logout}">
@@ -19,7 +19,7 @@
 
 <form th:action="@{/login}" method="post">
     <div>
-        <label>Username:</label>
+        <label>Email:</label>
         <input type="text" name="email" />
     </div>
 
@@ -29,7 +29,11 @@
     </div>
 
     <div>
-        <button type="submit">Login</button>
+        <button type="submit">Sign in</button>
+    </div>
+
+    <div>
+        ------------------ or --------------------
     </div>
 
     <div>
