@@ -17,19 +17,27 @@ public class AccommodationService {
         this.accommodationRepository = accommodationRepository;
     }
 
-    public Accommodation saveHotel(Accommodation accommodation) {
+    public Accommodation saveAccommodation(Accommodation accommodation) {
         return accommodationRepository.save(accommodation);
     }
 
-    public List<Accommodation> getAllHotels() {
+    public List<Accommodation> getAllAccommodations() {
         return accommodationRepository.findAll();
     }
 
-    public Optional<Accommodation> getHotelById(Long id) {
+    public Optional<Accommodation> getAccommodationById(Long id) {
         return accommodationRepository.findById(id);
     }
 
-    public void deleteHotel(Long id) {
+    public List<Accommodation> getAccommodationsByStatus(Accommodation.Status status) {
+        return accommodationRepository.findByStatus(status);
+    }
+
+    public List<Accommodation> getAccommodationsByCity(String city) {
+        return accommodationRepository.findByCity(city);
+    }
+
+    public void deleteAccommodation(Long id) {
         accommodationRepository.deleteById(id);
     }
 

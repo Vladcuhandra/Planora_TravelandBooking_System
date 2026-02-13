@@ -29,6 +29,10 @@ public class TripService {
         return tripRepository.findById(id);
     }
 
+    public List<Trip> getTripsByUserId(Long userId) {
+        return tripRepository.findByUserId(userId);
+    }
+
     public void deleteTrip(Long id) {
         tripRepository.deleteById(id);
     }
