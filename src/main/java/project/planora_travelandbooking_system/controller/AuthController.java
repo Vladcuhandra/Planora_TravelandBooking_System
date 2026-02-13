@@ -1,11 +1,8 @@
-package project.planora_travelandbooking_system.controller;
+package project.planora_travelandbooking_system.Controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.net.Authenticator;
 
 @Controller
 public class AuthController {
@@ -17,6 +14,5 @@ public class AuthController {
         else
             return "login";
     }
-
 
 }
