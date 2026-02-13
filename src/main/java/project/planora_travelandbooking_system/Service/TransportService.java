@@ -17,20 +17,24 @@ public class TransportService {
         this.transportRepository = transportRepository;
     }
 
-    public Transport saveFlight(Transport transport) {
+    public Transport saveTransport(Transport transport) {
         return transportRepository.save(transport);
     }
 
-    public List<Transport> getAllFlights() {
+    public List<Transport> getAllTransport() {
         return transportRepository.findAll();
     }
 
-    public Optional<Transport> getFlightById(Long id) {
+    public Optional<Transport> getTransportById(Long id) {
         return transportRepository.findById(id);
     }
 
-    public void deleteFlight(Long id) {
+    public void deleteTransport(Long id) {
         transportRepository.deleteById(id);
+    }
+
+    public List<Transport> getTransportByStatus(Transport.Status status) {
+        return transportRepository.findByStatus(status);
     }
 
 }
