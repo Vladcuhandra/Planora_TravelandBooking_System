@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Planora • Signup</title>
+    <title>Planora • Sign up</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
 </head>
 <body>
 
-<h2>Signup</h2>
+<h2>Sign up for Planora</h2>
 
 <form th:action="@{/signup}" method="post">
 
@@ -29,13 +29,17 @@
     </div>
 
     <div>
-        <button type="submit">Signup</button>
+        <button type="submit">Create account</button>
+    </div>
+
+    <div>
+        ------------------ or --------------------
+    </div>
+
+    <div>
+        Already have an account? <a href="/login">Sign in</a>
     </div>
 </form>
-
-<div>
-    <a href="/login"><button type="button">Go to Login</button></a>
-</div>
 
 </body>
 </html>
