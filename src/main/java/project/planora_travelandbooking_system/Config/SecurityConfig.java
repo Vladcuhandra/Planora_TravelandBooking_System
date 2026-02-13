@@ -20,6 +20,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
@@ -40,23 +41,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-/*    @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder.encode("admin"))
-                .roles("ADMIN")
-                .build();
-
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder.encode("user"))
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, user);
-    }*/
-
     @Bean
     CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
@@ -69,6 +53,5 @@ public class SecurityConfig {
             }
         };
     }
-
 
 }
