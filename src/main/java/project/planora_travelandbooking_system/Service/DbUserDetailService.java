@@ -9,10 +9,13 @@ import project.planora_travelandbooking_system.Repository.UserRepository;
 
 @Service
 public class DbUserDetailService implements UserDetailsService {
+
     UserRepository userRepository;
+
     public DbUserDetailService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var u = userRepository.findByEmail(email).
@@ -24,4 +27,5 @@ public class DbUserDetailService implements UserDetailsService {
                 .roles(u.getRole().name())
                 .build();
     }
+
 }
