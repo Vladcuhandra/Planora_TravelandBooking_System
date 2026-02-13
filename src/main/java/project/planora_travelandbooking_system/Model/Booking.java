@@ -32,11 +32,11 @@ public class Booking {
 
     @ManyToOne
     @JoinColumn(name = "flight_id", nullable = true)
-    private Flight flight;
+    private Transport transport;
 
     @ManyToOne
     @JoinColumn(name = "hotel_id", nullable = true)
-    private Hotel hotel;
+    private Accommodation accommodation;
 
     private LocalDateTime createdAt;
 
