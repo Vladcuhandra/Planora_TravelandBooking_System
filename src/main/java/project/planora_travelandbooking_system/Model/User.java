@@ -23,6 +23,8 @@ public class User {
 
     private String password;
 
+    private LocalDateTime birthDate;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
