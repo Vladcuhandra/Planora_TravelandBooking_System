@@ -17,7 +17,7 @@ public class TripService {
     public TripService(TripRepository tripRepository) {this.tripRepository = tripRepository;}
 
     public Trip saveTrip(Trip trip) {
-        trip.setCreatedAt(LocalDateTime.now());  // Set the creation timestamp
+        trip.setCreatedAt(LocalDateTime.now());
         return tripRepository.save(trip);
     }
 
