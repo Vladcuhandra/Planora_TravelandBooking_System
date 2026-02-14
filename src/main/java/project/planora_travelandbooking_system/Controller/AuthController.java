@@ -6,10 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
-import project.planora_travelandbooking_system.dto.SignUpDto;
+import project.planora_travelandbooking_system.DTO.SignUpDTO;
 
 @Controller
 public class AuthController {
@@ -36,7 +35,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public String signup(SignUpDto dto, Model model) {
+    public String signup(SignUpDTO dto, Model model) {
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             model.addAttribute("error", "Passwords do not match");
             return "signup";

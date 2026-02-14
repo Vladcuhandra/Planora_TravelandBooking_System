@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor //for lombok
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -22,7 +22,6 @@ public class User {
     private String email;
 
     private String password;
-
     private LocalDateTime birthDate;
 
     @Enumerated(EnumType.STRING)
