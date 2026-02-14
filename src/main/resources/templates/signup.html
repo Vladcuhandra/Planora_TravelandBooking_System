@@ -31,6 +31,9 @@
     <div>
         <button type="submit">Create account</button>
     </div>
+    <div th:if="${error}" style="color:red">
+        <p th:text="${error}"></p>
+    </div>
 
     <div>
         ------------------ or --------------------
