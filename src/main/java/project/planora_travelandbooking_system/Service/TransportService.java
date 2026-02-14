@@ -2,10 +2,14 @@ package project.planora_travelandbooking_system.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TransportService {
@@ -17,24 +21,72 @@ public class TransportService {
         this.transportRepository = transportRepository;
     }
 
-    public Transport saveTransport(Transport transport) {
-        return transportRepository.save(transport);
+    public TransportDTO saveTransport(TransportDTO transportDTO) {
+        Transport.TransportType transportType = Transport.TransportType.valueOf(transportDTO.getTransportType());
+        Transport.Status status = Transport.Status.valueOf(transportDTO.getStatus());
+
+        Transport transport = convertToEntity(transportDTO, transportType, status);
+        Transport savedTransport = transportRepository.save(transport);
+
+        return convertToDTO(savedTransport);
     }
 
-    public List<Transport> getAllTransport() {
-        return transportRepository.findAll();
+    public List<TransportDTO> getAllTransports() {
+        List<Transport> transports = transportRepository.findAll();
+        return transports.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public Optional<Transport> getTransportById(Long id) {
-        return transportRepository.findById(id);
+    public TransportDTO getTransportById(Long transportId) {
+        Optional<Transport> transportOptional = transportRepository.findById(transportId);
+        if (transportOptional.isPresent()) {
+            return convertToDTO(transportOptional.get());
+        } else {
+            throw new RuntimeException("Transport not found with ID: " + transportId);
+        }
     }
 
-    public void deleteTransport(Long id) {
-        transportRepository.deleteById(id);
+    @Transactional
+    public void deleteTransport(Long transportId) {
+        if (!transportRepository.existsById(transportId)) {
+            throw new RuntimeException("Transport not found with ID: " + transportId);
+        }
+        transportRepository.deleteById(transportId);
     }
 
     public List<Transport> getTransportByStatus(Transport.Status status) {
         return transportRepository.findByStatus(status);
+    }
+
+    private Transport convertToEntity(TransportDTO transportDTO, Transport.TransportType transportType, Transport.Status status) {
+        Transport transport = new Transport();
+        transport.setId(transportDTO.getId());
+        transport.setTransportType(transportType);
+        transport.setCompany(transportDTO.getCompany());
+        transport.setOriginAddress(transportDTO.getOriginAddress());
+        transport.setDestinationAddress(transportDTO.getDestinationAddress());
+        transport.setDepartureTime(transportDTO.getDepartureTime());
+        transport.setArrivalTime(transportDTO.getArrivalTime());
+        transport.setPrice(transportDTO.getPrice());
+        transport.setSeat(transportDTO.getSeat());
+        transport.setStatus(status);
+        transport.setCreatedAt(LocalDateTime.now());
+        return transport;
+    }
+
+    private TransportDTO convertToDTO(Transport transport) {
+        TransportDTO transportDTO = new TransportDTO();
+        transportDTO.setId(transport.getId());
+        transportDTO.setTransportType(transport.getTransportType().name());
+        transportDTO.setCompany(transport.getCompany());
+        transportDTO.setOriginAddress(transport.getOriginAddress());
+        transportDTO.setDestinationAddress(transport.getDestinationAddress());
+        transportDTO.setDepartureTime(transport.getDepartureTime());
+        transportDTO.setArrivalTime(transport.getArrivalTime());
+        transportDTO.setPrice(transport.getPrice());
+        transportDTO.setSeat(transport.getSeat());
+        transportDTO.setStatus(transport.getStatus().name());
+        transportDTO.setCreatedAt(transport.getCreatedAt());
+        return transportDTO;
     }
 
 }

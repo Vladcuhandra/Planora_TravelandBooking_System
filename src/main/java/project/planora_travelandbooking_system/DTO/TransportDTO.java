@@ -15,7 +15,7 @@ public class TransportDTO {
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
     private double price;
-    private String seat;
+    private Integer seat;
     private String status;
     private LocalDateTime createdAt;
 }
