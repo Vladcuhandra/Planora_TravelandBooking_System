@@ -3,11 +3,13 @@ package project.planora_travelandbooking_system.Controller;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
+import project.planora_travelandbooking_system.dto.SignUpDto;
 
 @Controller
 public class AuthController {
@@ -34,11 +36,22 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public String signup(@RequestParam String email,
-                         @RequestParam String password) {
+    public String signup(SignUpDto dto, Model model) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            model.addAttribute("error", "Passwords do not match");
+            return "signup";
+        }
+        if(dto.getPassword() == null || dto.getPassword().length() < 6) {
+            model.addAttribute("error", "Password must be at least 6 characters");
+            return "signup";
+        }
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            model.addAttribute("error", "Email already registered");
+            return "signup";
+        }
         User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(User.Role.USER);
         userRepository.save(user);
         return "redirect:/login";
