@@ -60,7 +60,7 @@ public class TripService {
     @Transactional
     public void deleteTrip(Long tripId) {
         if (!tripRepository.existsById(tripId)) {
-            throw new RuntimeException("Trip not found with id " + tripId);
+            throw new RuntimeException("Trip not found with ID " + tripId);
         }
         tripRepository.deleteById(tripId);
     }

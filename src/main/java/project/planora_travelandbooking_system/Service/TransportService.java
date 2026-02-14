@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
