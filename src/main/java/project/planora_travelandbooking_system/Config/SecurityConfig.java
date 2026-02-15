@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
 
+                        .requestMatchers("/h2-console/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
 
@@ -44,6 +46,12 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
