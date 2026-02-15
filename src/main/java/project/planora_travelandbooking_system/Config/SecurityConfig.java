@@ -27,7 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/logout")  // Disable CSRF protection for /logout
+                        .ignoringRequestMatchers("/logout")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico").permitAll()

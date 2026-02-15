@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Planora • Admin Dashboard</title>
@@ -7,7 +7,70 @@
 </head>
 <body>
 
-<h2>This is admin dashboard.htmll</h2>
+<h1>Welcome to the Admin Dashboard</h1>
+
+<h2>Create New User</h2>
+<form th:action="@{/api/admin/create}" th:object="${newUser}" method="post">
+    <label>Email:</label>
+    <input type="email" th:field="*{email}" required /><br/>
+    <label>Password:</label>
+    <input type="password" th:field="*{password}" required /><br/>
+    <label>Role:</label>
+    <select th:field="*{role}">
+        <option value="USER">USER</option>
+        <option value="ADMIN">ADMIN</option>
+    </select><br/>
+    <button type="submit">Create User</button>
+</form>
+
+<h2>List of Users</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Password</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}">
+        <td th:text="${user.id}"></td>
+        <td>
+            <div style="display: flex; gap: 10px;">
+
+                <form th:action="@{/api/admin/edit}" method="post">
+                    <input type="hidden" name="userId" th:value="${user.id}" />
+                    <input type="email" name="email" th:value="${user.email}" required />
+                    <td>
+                        <select name="role">
+                            <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
+                            <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="password" name="password" placeholder="New password (optional)" />
+                    </td>
+                    <td>
+                        <button type="submit">Save</button>
+                    </td>
+                </form>
+
+                <td>
+                    <form th:action="@{/api/admin/delete}" method="post" style="margin: 0;">
+                        <input type="hidden" name="userId" th:value="${user.id}" />
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
+                    </form>
+                </td>
+
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
 
 <form action="/logout" method="post">
     <button type="submit">Logout</button>

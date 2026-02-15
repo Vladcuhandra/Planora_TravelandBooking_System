@@ -24,13 +24,29 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public UserDTO saveUser(UserDTO userDTO) {
-        User.Role role = User.Role.valueOf(userDTO.getRole());
-        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
-        User user = convertToEntity(userDTO, role, encodedPassword);
-        User savedUser = userRepository.save(user);
+        User user;
+        if (userDTO.getId() != null) {
+            user = userRepository.findById(userDTO.getId())
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userDTO.getId()));
+        } else {
+            user = new User();
+        }
 
-        return convertToDTO(savedUser);
+        user.setEmail(userDTO.getEmail());
+        user.setRole(User.Role.valueOf(userDTO.getRole()));
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+            user.setPassword(encodedPassword);
+        }
+
+        user.setBirthDate(userDTO.getBirthDate());
+        user.setCreatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return convertToDTO(user);
     }
 
     public List<UserDTO> getAllUsers() {
@@ -53,10 +69,14 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            userRepository.deleteById(userId);
+            System.out.println("User with ID " + userId + " deleted.");
+        } else {
+            System.out.println("User with ID " + userId + " not found.");
             throw new RuntimeException("User not found with ID: " + userId);
         }
-        userRepository.deleteById(userId);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {
