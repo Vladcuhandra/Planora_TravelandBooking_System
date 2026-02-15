@@ -20,7 +20,12 @@ public class TransportController {
         this.transportService = transportService;
     }
 
-    @GetMapping("/api/transport/new")
+    @GetMapping("/transports")
+    public String transports(Model model) {
+        return "transports";
+    }
+
+    @GetMapping("/transports/new")
     public String newTransport(Model model) {
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
@@ -28,9 +33,10 @@ public class TransportController {
         return "transport-new";
     }
 
-    @PostMapping("/api/transport/new")
-    public String newTransport(@ModelAttribute TransportDTO transportDTO, Model model) {
-        return "redirect:/transport/new";
+    @PostMapping("/transports/save")
+    public String newTransport(@ModelAttribute TransportDTO dto, Model model) {
+        transportService.saveTransport(dto);
+        return "redirect:/transports";
     }
 
 

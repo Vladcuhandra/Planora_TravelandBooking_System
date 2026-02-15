@@ -33,10 +33,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/transport/new").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/transport/new").hasAnyRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/transports/save").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transports/new").hasAnyRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/transports").hasAnyRole("USER","ADMIN")
+
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
