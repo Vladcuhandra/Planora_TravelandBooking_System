@@ -26,6 +26,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/logout")  // Disable CSRF protection for /logout
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
@@ -41,7 +44,11 @@ public class SecurityConfig {
                         .successHandler(customAuthenticationSuccessHandler())
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll());
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .permitAll()
+                );
         return http.build();
     }
 
