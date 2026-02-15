@@ -63,6 +63,11 @@
 
         <!-- Delete button -->
         <td>
+            <!-- Edit -->
+            <a th:href="@{/transports/{id}/edit(id=${t.id})}"
+               style="margin-right:8px;">Edit</a>
+
+            <!-- Delete -->
             <form th:action="@{/transports/{id}(id=${t.id})}"
                   method="post"
                   onsubmit="return confirm('Delete this transport?');"
@@ -70,7 +75,6 @@
 
                 <input type="hidden" name="_method" value="delete"/>
 
-                <!-- CSRF (required if Spring Security is enabled) -->
                 <input type="hidden"
                        th:name="${_csrf.parameterName}"
                        th:value="${_csrf.token}"/>

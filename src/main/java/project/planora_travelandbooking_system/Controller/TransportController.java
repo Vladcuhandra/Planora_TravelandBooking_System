@@ -44,5 +44,21 @@ public class TransportController {
         return "redirect:/transports";
     }
 
+    @GetMapping("/transports/{id}/edit")
+    public String editTransport(@PathVariable Long id, Model model) {
+        model.addAttribute("transportDto", transportService.getTransportById(id));
+        model.addAttribute("transportTypes", Transport.TransportType.values());
+        model.addAttribute("statuses", Transport.Status.values());
+        return "transport-edit";
+    }
+
+    @PutMapping("/transports/{id}")
+    public String updateTransport(@PathVariable Long id,
+                                  @ModelAttribute("transportDto") TransportDTO dto) {
+        transportService.updateTransport(id, dto);
+        return "redirect:/transports";
+    }
+
+
 
 }

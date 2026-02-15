@@ -89,4 +89,31 @@ public class TransportService {
         return transportDTO;
     }
 
+    @Transactional
+    public TransportDTO updateTransport(Long transportId, TransportDTO transportDTO) {
+
+        Transport transport = transportRepository.findById(transportId)
+                .orElseThrow(() ->
+                        new RuntimeException("Transport not found with ID: " + transportId));
+
+        Transport.TransportType transportType =
+                Transport.TransportType.valueOf(transportDTO.getTransportType());
+        Transport.Status status =
+                Transport.Status.valueOf(transportDTO.getStatus());
+
+        transport.setTransportType(transportType);
+        transport.setCompany(transportDTO.getCompany());
+        transport.setOriginAddress(transportDTO.getOriginAddress());
+        transport.setDestinationAddress(transportDTO.getDestinationAddress());
+        transport.setDepartureTime(transportDTO.getDepartureTime());
+        transport.setArrivalTime(transportDTO.getArrivalTime());
+        transport.setPrice(transportDTO.getPrice());
+        transport.setSeat(transportDTO.getSeat());
+        transport.setStatus(status);
+
+        Transport updated = transportRepository.save(transport);
+
+        return convertToDTO(updated);
+    }
+
 }
