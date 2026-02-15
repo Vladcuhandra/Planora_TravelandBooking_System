@@ -10,6 +10,8 @@ import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.DTO.SignUpDTO;
 
+import java.util.Optional;
+
 @Controller
 public class AuthController {
 
@@ -23,10 +25,20 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login(Authentication authentication) {
-        if(authentication != null && authentication.isAuthenticated())
-            return "redirect:/api/bookings";
-        else
-            return "login";
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            Optional<User> userOptional = userRepository.findByEmail(username);
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                if (user.getRole() == User.Role.ADMIN) {
+                    return "redirect:/api/admin";  // Redirect admin users
+                } else {
+                    return "redirect:/api/bookings";  // Redirect normal users
+                }
+            }
+        }
+        return "login";
     }
 
     @GetMapping("/signup")

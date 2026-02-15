@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Planora</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
 </head>
 <body>
-This is booking.html
+
+<h2>This is booking.html</h2>
+
+<form action="/logout" method="post">
+    <button type="submit">Logout</button>
+</form>
+
 </body>
 </html>
