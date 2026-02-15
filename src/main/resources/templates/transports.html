@@ -1,10 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Transports</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+    </style>
 </head>
 <body>
+
+<h2>Available Transports</h2>
+
+<table th:if="${transports != null and !transports.isEmpty()}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Company</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Departure</th>
+        <th>Arrival</th>
+        <th>Seats</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="t : ${transports}">
+        <td th:text="${t.id}"></td>
+        <td th:text="${t.transportType}"></td>
+        <td th:text="${t.company}"></td>
+        <td th:text="${t.originAddress}"></td>
+        <td th:text="${t.destinationAddress}"></td>
+        <td th:text="${#temporals.format(t.departureTime, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${#temporals.format(t.arrivalTime, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${t.seat}"></td>
+        <td th:text="${t.price}"></td>
+        <td th:text="${t.status}"></td>
+
+        <!-- Delete button -->
+        <td>
+            <form th:action="@{/transports/{id}(id=${t.id})}"
+                  method="post"
+                  onsubmit="return confirm('Delete this transport?');"
+                  style="display:inline;">
+
+                <input type="hidden" name="_method" value="delete"/>
+
+                <!-- CSRF (required if Spring Security is enabled) -->
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<p th:if="${transports == null or transports.isEmpty()}">
+    No transports found.
+</p>
+
+<br>
+
+<a th:href="@{/transports/new}">➕ Add new transport</a>
 
 </body>
 </html>

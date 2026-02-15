@@ -3,9 +3,7 @@ package project.planora_travelandbooking_system.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
@@ -22,6 +20,7 @@ public class TransportController {
 
     @GetMapping("/transports")
     public String transports(Model model) {
+        model.addAttribute("transports", transportService.getAllTransports());
         return "transports";
     }
 
@@ -36,6 +35,12 @@ public class TransportController {
     @PostMapping("/transports/save")
     public String newTransport(@ModelAttribute TransportDTO dto, Model model) {
         transportService.saveTransport(dto);
+        return "redirect:/transports";
+    }
+
+    @DeleteMapping("/transports/{id}")
+    public String deleteTransport(@PathVariable Long id) {
+        transportService.deleteTransport(id);
         return "redirect:/transports";
     }
 

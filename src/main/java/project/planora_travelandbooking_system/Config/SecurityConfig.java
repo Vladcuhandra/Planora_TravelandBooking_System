@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/transports/save").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/transports/new").hasAnyRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/transports").hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transports").hasAnyRole("ADMIN")
 
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
