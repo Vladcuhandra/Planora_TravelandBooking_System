@@ -23,7 +23,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 @EnableWebSecurity
 public class SecurityConfig {
 
-    //Testing merge-pull
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,10 +33,25 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
+
+                        .requestMatchers("/h2-console/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/transports/save").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transports/new").hasAnyRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/transports").hasAnyRole("ADMIN")
+
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
