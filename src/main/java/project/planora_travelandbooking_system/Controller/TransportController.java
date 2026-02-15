@@ -2,6 +2,12 @@ package project.planora_travelandbooking_system.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import project.planora_travelandbooking_system.DTO.TransportDTO;
+import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
 
 @Controller
@@ -13,5 +19,19 @@ public class TransportController {
     public TransportController(TransportService transportService) {
         this.transportService = transportService;
     }
+
+    @GetMapping("/api/transport/new")
+    public String newTransport(Model model) {
+        model.addAttribute("transportDto", new TransportDTO());
+        model.addAttribute("transportTypes", Transport.TransportType.values());
+        model.addAttribute("statuses", Transport.Status.values());
+        return "transport-new";
+    }
+
+    @PostMapping("/api/transport/new")
+    public String newTransport(@ModelAttribute TransportDTO transportDTO, Model model) {
+        return "redirect:/transport/new";
+    }
+
 
 }
