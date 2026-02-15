@@ -1,6 +1,11 @@
 package project.planora_travelandbooking_system.Config;
 
+import org.apache.catalina.Context;
+import org.apache.catalina.connector.Connector;
+import org.apache.tomcat.util.descriptor.web.SecurityCollection;
+import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -53,6 +58,32 @@ public class SecurityConfig {
                 userRepository.save(admin);
             }
         };
+    }
+
+    //redirect from HTTP to HTTPS
+    @Bean
+    public TomcatServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+            @Override
+            protected void postProcessContext(Context context) {
+                SecurityConstraint constraint = new SecurityConstraint();
+                constraint.setUserConstraint("CONFIDENTIAL");
+
+                SecurityCollection collection = new SecurityCollection();
+                collection.addPattern("/*");
+
+                constraint.addCollection(collection);
+                context.addConstraint(constraint);
+            }
+        };
+
+        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        connector.setScheme("http");
+        connector.setPort(8080);
+        connector.setSecure(false);
+        connector.setRedirectPort(8443);
+        tomcat.addAdditionalConnectors(connector);
+        return tomcat;
     }
 
 }
