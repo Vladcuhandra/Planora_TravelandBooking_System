@@ -9,12 +9,8 @@ import java.time.LocalDateTime;
 @Setter
 public class TripDTO {
     private Long id;
-
     private String title;
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
-    private Long transportId;
-    private Long accommodationId;
 }

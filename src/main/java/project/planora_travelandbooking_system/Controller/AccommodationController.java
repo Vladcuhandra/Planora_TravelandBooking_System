@@ -47,12 +47,39 @@ public class AccommodationController {
         return "redirect:/accommodations";
     }
 
-    @GetMapping("/accommodations/{id}/edit")
-    public String editAccommodation(@PathVariable Long id, Model model) {
-        model.addAttribute("accommodationDto", accommodationService.getAccommodationById(id));
-        model.addAttribute("accommodationTypes", Accommodation.AccommodationType.values());
-        model.addAttribute("statuses", Accommodation.Status.values());
-        return "accommodation-edit";
+    @PostMapping("/accommodations/edit")
+    public String editAccommodation(@RequestParam Long accommodationId,
+                                    @RequestParam String accommodationType,
+                                    @RequestParam String name,
+                                    @RequestParam String city,
+                                    @RequestParam String address,
+                                    @RequestParam double rating,
+                                    @RequestParam int room,
+                                    @RequestParam double pricePerNight,
+                                    @RequestParam String status,
+                                    Model model) {
+
+        System.out.println("Received request to update accommodation with ID: " + accommodationId);
+
+        AccommodationDTO accommodationDTO = new AccommodationDTO();
+        accommodationDTO.setId(accommodationId);
+        accommodationDTO.setAccommodationType(accommodationType);
+        accommodationDTO.setName(name);
+        accommodationDTO.setCity(city);
+        accommodationDTO.setAddress(address);
+        accommodationDTO.setRating(rating);
+        accommodationDTO.setRoom(room);
+        accommodationDTO.setPricePerNight(pricePerNight);
+        accommodationDTO.setStatus(status);
+
+        try {
+            accommodationService.saveAccommodation(accommodationDTO);
+            System.out.println("Accommodation updated successfully!");
+            return "redirect:/accommodations";
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+            return "redirect:/accommodations?error=" + e.getMessage();
+        }
     }
 
     @PutMapping("/accommodations/{id}")
