@@ -48,7 +48,7 @@ public class TripService {
         return trip;
     }
 
-    @Transactional
+    /*@Transactional
     public void createTrip(TripDTO dto, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
@@ -108,5 +108,5 @@ public class TripService {
         dto.setTransportId(trip.getTransport().getId());
         dto.setAccommodationId(trip.getAccommodation().getId());
         return dto;
-    }
+    }*/
 }

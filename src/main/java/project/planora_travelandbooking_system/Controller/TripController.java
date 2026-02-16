@@ -46,7 +46,7 @@ public class TripController {
         return "trip-new";
     }
 
-    @PostMapping("/trips/save")
+    /*@PostMapping("/trips/save")
     public String saveTrip(@ModelAttribute("tripDto") TripDTO dto, Authentication auth) {
         tripService.createTrip(dto, auth.getName());
         return "redirect:/trips";
@@ -83,5 +83,5 @@ public class TripController {
 
         tripService.deleteTrip(id, email, isAdmin);
         return "redirect:/trips";
-    }
+    }*/
 }
