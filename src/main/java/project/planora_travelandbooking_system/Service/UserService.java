@@ -1,6 +1,11 @@
 package project.planora_travelandbooking_system.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +54,9 @@ public class UserService {
         return convertToDTO(user);
     }
 
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
+    public Page<UserDTO> getAllUsers(int page, int pageSize) {
+        Page<User> usersPage = userRepository.findAll(PageRequest.of(page, pageSize));
+        return usersPage.map(this::convertToDTO);
     }
 
     public UserDTO getUserById(Long userId) {
