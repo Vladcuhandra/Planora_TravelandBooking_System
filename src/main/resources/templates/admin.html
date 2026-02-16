@@ -10,6 +10,8 @@
 <h1>Welcome to the Admin Dashboard</h1>
 
 <a href="/transports" class="button">Go to Transport</a>
+<br><br>
+<a th:href="@{/accommodations}">Go to Accommodations</a>
 
 <h2>Create New User</h2>
 <form th:action="@{/api/admin/create}" th:object="${newUser}" method="post">

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Planora • Accommodations</title>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+</head>
+<body>
+
+<h2>Available Accommodations</h2>
+
+<table th:if="${accommodations != null and !accommodations.isEmpty()}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Name</th>
+        <th>City</th>
+        <th>Address</th>
+        <th>Rating</th>
+        <th>Rooms</th>
+        <th>Price / Night</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="a : ${accommodations}">
+        <td th:text="${a.id}"></td>
+        <td th:text="${a.accommodationType}"></td>
+        <td th:text="${a.name}"></td>
+        <td th:text="${a.city}"></td>
+        <td th:text="${a.address}"></td>
+        <td th:text="${a.rating}"></td>
+        <td th:text="${a.room}"></td>
+        <td th:text="${a.pricePerNight}"></td>
+        <td th:text="${a.status}"></td>
+
+        <td>
+            <a th:href="@{/accommodations/{id}/edit(id=${a.id})}"
+               style="margin-right:8px;">Edit</a>
+
+            <form th:action="@{/accommodations/{id}(id=${a.id})}"
+                  method="post"
+                  onsubmit="return confirm('Delete this accommodation?');"
+                  style="display:inline;">
+
+                <input type="hidden" name="_method" value="delete"/>
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<p th:if="${accommodations == null or accommodations.isEmpty()}">
+    No accommodations found.
+</p>
+
+<br>
+
+<a th:href="@{/accommodations/new}">➕ Add new accommodation</a>
+
+</body>
+</html>

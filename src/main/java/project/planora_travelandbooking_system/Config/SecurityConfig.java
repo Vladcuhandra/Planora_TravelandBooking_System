@@ -14,41 +14,85 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/logout")
+                        .ignoringRequestMatchers("/h2-console/**")
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/favicon.ico").permitAll()
+
+                        // Public pages
                         .requestMatchers("/login", "/signup").permitAll()
-
-                        .requestMatchers("/h2-console/**").permitAll()
-
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/transports/save").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/transports/new").hasAnyRole("ADMIN")
+                        // Admin dashboard
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/transports").hasAnyRole("ADMIN")
+                        // Bookings page (after login)
+                        .requestMatchers("/api/bookings").hasAnyRole("USER", "ADMIN")
 
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
+                        // =============================
+                        // TRANSPORTS SECURITY
+                        // =============================
+
+                        // USER can see transports
+                        .requestMatchers(HttpMethod.GET, "/transports")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // ADMIN can create/edit/delete transports
+                        .requestMatchers(HttpMethod.GET, "/transports/new")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/transports/save")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/transports/*/edit")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/transports/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/transports/*")
+                        .hasRole("ADMIN")
+
+                        // =============================
+                        // ACCOMMODATIONS SECURITY
+                        // =============================
+
+                        // USER can see accommodations
+                        .requestMatchers(HttpMethod.GET, "/accommodations")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // ADMIN can create/edit/delete accommodations
+                        .requestMatchers(HttpMethod.GET, "/accommodations/new")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/accommodations/save")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/accommodations/*/edit")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/accommodations/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/accommodations/*")
+                        .hasRole("ADMIN")
+
+                        // Everything else requires login
                         .anyRequest().authenticated()
-                )
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")
                 )
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin())
@@ -65,6 +109,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login")
                         .permitAll()
                 );
+
         return http.build();
     }
 
@@ -74,7 +119,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    CommandLineRunner createAdmin(UserRepository userRepository,
+                                  PasswordEncoder passwordEncoder) {
         return args -> {
             if (userRepository.findByEmail("admin").isEmpty()) {
                 User admin = new User();
@@ -86,41 +132,15 @@ public class SecurityConfig {
         };
     }
 
-    //redirect from HTTP to HTTPS
-    @Bean
-    public TomcatServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
-            @Override
-            protected void postProcessContext(Context context) {
-                SecurityConstraint constraint = new SecurityConstraint();
-                constraint.setUserConstraint("CONFIDENTIAL");
-
-                SecurityCollection collection = new SecurityCollection();
-                collection.addPattern("/*");
-
-                constraint.addCollection(collection);
-                context.addConstraint(constraint);
-            }
-        };
-
-        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-        connector.setScheme("http");
-        connector.setPort(8080);
-        connector.setSecure(false);
-        connector.setRedirectPort(8443);
-        tomcat.addAdditionalConnectors(connector);
-        return tomcat;
-    }
-
     @Bean
     public AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
         return (request, response, authentication) -> {
             String role = authentication.getAuthorities().stream()
-                    .map(grantedAuthority -> grantedAuthority.getAuthority())
+                    .map(a -> a.getAuthority())
                     .findFirst()
                     .orElse("");
 
-            if (role.equals("ROLE_ADMIN")) {
+            if ("ROLE_ADMIN".equals(role)) {
                 response.sendRedirect("/api/admin");
             } else {
                 response.sendRedirect("/api/bookings");
@@ -128,4 +148,33 @@ public class SecurityConfig {
         };
     }
 
+    // HTTP → HTTPS redirect
+    @Bean
+    public TomcatServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat =
+                new TomcatServletWebServerFactory() {
+                    @Override
+                    protected void postProcessContext(Context context) {
+                        SecurityConstraint constraint = new SecurityConstraint();
+                        constraint.setUserConstraint("CONFIDENTIAL");
+
+                        SecurityCollection collection = new SecurityCollection();
+                        collection.addPattern("/*");
+
+                        constraint.addCollection(collection);
+                        context.addConstraint(constraint);
+                    }
+                };
+
+        Connector connector =
+                new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        connector.setScheme("http");
+        connector.setPort(8080);
+        connector.setSecure(false);
+        connector.setRedirectPort(8443);
+
+        tomcat.addAdditionalConnectors(connector);
+
+        return tomcat;
+    }
 }
