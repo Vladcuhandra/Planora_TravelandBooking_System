@@ -21,6 +21,9 @@ public class AccommodationController {
     @GetMapping("/accommodations")
     public String accommodations(Model model) {
         model.addAttribute("accommodations", accommodationService.getAllAccommodations());
+        model.addAttribute("accommodationDto", new AccommodationDTO());
+        model.addAttribute("accommodationTypes", Accommodation.AccommodationType.values());
+        model.addAttribute("statuses", Accommodation.Status.values());
         return "accommodations";
     }
 
