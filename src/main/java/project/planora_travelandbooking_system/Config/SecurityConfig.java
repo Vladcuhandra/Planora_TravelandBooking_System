@@ -24,79 +24,49 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/logout")
                         .ignoringRequestMatchers("/h2-console/**")
                 )
                 .authorizeHttpRequests(auth -> auth
-
-                        // Public pages
+                        .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/favicon.ico").permitAll()
 
-                        // Admin dashboard
+                        // after login
+                        .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Bookings page (after login)
-                        .requestMatchers("/api/bookings").hasAnyRole("USER", "ADMIN")
+                        // Transports UI: USER read, ADMIN manage
+                        .requestMatchers(HttpMethod.GET, "/transports").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/transports/new").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/transports/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/transports/*/edit").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/transports/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/transports/*").hasRole("ADMIN")
 
-                        // =============================
-                        // TRANSPORTS SECURITY
-                        // =============================
+                        // Accommodations UI: USER read, ADMIN manage
+                        .requestMatchers(HttpMethod.GET, "/accommodations").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accommodations/new").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/accommodations/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accommodations/*/edit").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/accommodations/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/accommodations/*").hasRole("ADMIN")
 
-                        // USER can see transports
-                        .requestMatchers(HttpMethod.GET, "/transports")
-                        .hasAnyRole("USER", "ADMIN")
+                        // Trips UI: USER + ADMIN (service restricts to own trips for USER)
+                        .requestMatchers(HttpMethod.GET, "/trips").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/trips/new").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/trips/save").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/trips/*/edit").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/trips/*").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
-                        // ADMIN can create/edit/delete transports
-                        .requestMatchers(HttpMethod.GET, "/transports/new")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/transports/save")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/transports/*/edit")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.PUT, "/transports/*")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.DELETE, "/transports/*")
-                        .hasRole("ADMIN")
-
-                        // =============================
-                        // ACCOMMODATIONS SECURITY
-                        // =============================
-
-                        // USER can see accommodations
-                        .requestMatchers(HttpMethod.GET, "/accommodations")
-                        .hasAnyRole("USER", "ADMIN")
-
-                        // ADMIN can create/edit/delete accommodations
-                        .requestMatchers(HttpMethod.GET, "/accommodations/new")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/accommodations/save")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/accommodations/*/edit")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.PUT, "/accommodations/*")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.DELETE, "/accommodations/*")
-                        .hasRole("ADMIN")
-
-                        // Everything else requires login
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin())
-                )
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -119,8 +89,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    CommandLineRunner createAdmin(UserRepository userRepository,
-                                  PasswordEncoder passwordEncoder) {
+    CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             if (userRepository.findByEmail("admin").isEmpty()) {
                 User admin = new User();
@@ -130,6 +99,33 @@ public class SecurityConfig {
                 userRepository.save(admin);
             }
         };
+    }
+
+    // redirect HTTP -> HTTPS
+    @Bean
+    public TomcatServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+            @Override
+            protected void postProcessContext(Context context) {
+                SecurityConstraint constraint = new SecurityConstraint();
+                constraint.setUserConstraint("CONFIDENTIAL");
+
+                SecurityCollection collection = new SecurityCollection();
+                collection.addPattern("/*");
+
+                constraint.addCollection(collection);
+                context.addConstraint(constraint);
+            }
+        };
+
+        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        connector.setScheme("http");
+        connector.setPort(8080);
+        connector.setSecure(false);
+        connector.setRedirectPort(8443);
+        tomcat.addAdditionalConnectors(connector);
+
+        return tomcat;
     }
 
     @Bean
@@ -146,35 +142,5 @@ public class SecurityConfig {
                 response.sendRedirect("/api/bookings");
             }
         };
-    }
-
-    // HTTP → HTTPS redirect
-    @Bean
-    public TomcatServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory tomcat =
-                new TomcatServletWebServerFactory() {
-                    @Override
-                    protected void postProcessContext(Context context) {
-                        SecurityConstraint constraint = new SecurityConstraint();
-                        constraint.setUserConstraint("CONFIDENTIAL");
-
-                        SecurityCollection collection = new SecurityCollection();
-                        collection.addPattern("/*");
-
-                        constraint.addCollection(collection);
-                        context.addConstraint(constraint);
-                    }
-                };
-
-        Connector connector =
-                new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-        connector.setScheme("http");
-        connector.setPort(8080);
-        connector.setSecure(false);
-        connector.setRedirectPort(8443);
-
-        tomcat.addAdditionalConnectors(connector);
-
-        return tomcat;
     }
 }
