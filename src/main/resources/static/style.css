@@ -1,0 +1,36 @@
+/* Main container for the form */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Row to display form groups in horizontal layout */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* This allows fields to wrap if they exceed the container width */
+    gap: 15px;
+}
+
+/* Each form group takes equal space in the row */
+.form-group {
+    flex: 1;
+    min-width: 150px; /* Ensures form fields don’t become too small */
+}
+
+/* Ensure labels and inputs align properly */
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Make inputs and selects full width within their group */
+input, select {
+    width: 100%;
+}
+
+/* Button styles */
+button {
+    align-self: flex-start;
+    margin-top: 20px;
+}

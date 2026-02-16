@@ -21,15 +21,11 @@ public class TransportController {
     @GetMapping("/transports")
     public String transports(Model model) {
         model.addAttribute("transports", transportService.getAllTransports());
-        return "transports";
-    }
-
-    @GetMapping("/transports/new")
-    public String newTransport(Model model) {
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
         model.addAttribute("statuses", Transport.Status.values());
-        return "transport-new";
+
+        return "transports";
     }
 
     @PostMapping("/transports/save")

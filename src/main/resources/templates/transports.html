@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <title>Planora • Transport</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 
 <h2>Available Transports</h2>
+
+<a th:href="@{/api/admin}" class="btn btn-secondary" style="margin-top: 20px;">Go Back to Admin</a>
 
 <table th:if="${transports != null and !transports.isEmpty()}">
     <thead>
@@ -38,13 +41,10 @@
         <td th:text="${t.price}"></td>
         <td th:text="${t.status}"></td>
 
-        <!-- Delete button -->
         <td>
-            <!-- Edit -->
             <a th:href="@{/transports/{id}/edit(id=${t.id})}"
                style="margin-right:8px;">Edit</a>
 
-            <!-- Delete -->
             <form th:action="@{/transports/{id}(id=${t.id})}"
                   method="post"
                   onsubmit="return confirm('Delete this transport?');"
@@ -69,7 +69,63 @@
 
 <br>
 
-<a th:href="@{/transports/new}">➕ Add new transport</a>
+<hr>
+
+<h2>Create Transport</h2>
+
+<form th:action="@{/transports/save}" th:object="${transportDto}" method="post" class="form-container">
+    <!-- First Row: Transport Type, Company, Origin Address, Destination Address -->
+    <div class="form-row">
+        <div class="form-group">
+            <label>Transport Type</label>
+            <select th:field="*{transportType}" required>
+                <option value="">-- Select --</option>
+                <option th:each="t : ${transportTypes}" th:value="${t}" th:text="${t}"></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Company</label>
+            <input type="text" th:field="*{company}" required />
+        </div>
+        <div class="form-group">
+            <label>Origin Address</label>
+            <input type="text" th:field="*{originAddress}" required />
+        </div>
+        <div class="form-group">
+            <label>Destination Address</label>
+            <input type="text" th:field="*{destinationAddress}" required />
+        </div>
+    </div>
+
+    <!-- Second Row: Departure Time, Arrival Time, Seats, Price, Status -->
+    <div class="form-row">
+        <div class="form-group">
+            <label>Departure Time</label>
+            <input type="datetime-local" th:field="*{departureTime}" required />
+        </div>
+        <div class="form-group">
+            <label>Arrival Time</label>
+            <input type="datetime-local" th:field="*{arrivalTime}" required />
+        </div>
+        <div class="form-group">
+            <label>Seats</label>
+            <input type="number" th:field="*{seat}" min="1" required />
+        </div>
+        <div class="form-group">
+            <label>Price</label>
+            <input type="number" th:field="*{price}" step="0.01" min="0" required />
+        </div>
+        <div class="form-group">
+            <label>Status</label>
+            <select th:field="*{status}" required>
+                <option value="">-- Select --</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit">Save</button>
+</form>
 
 </body>
 </html>
