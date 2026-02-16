@@ -46,6 +46,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
+
                 )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/h2-console/**")
