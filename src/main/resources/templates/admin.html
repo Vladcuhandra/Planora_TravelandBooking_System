@@ -11,9 +11,9 @@
 
 <a href="/transports" class="button">Go to Transport</a>
 <br><br>
-<a th:href="@{/accommodations}">Go to Accommodations</a>
+<a href="/accommodations" class="button">Go to Accommodations</a>
 <br><br>
-<a th:href="@{/trips}">Go to Trips</a>
+<a href="/trips" class="button">Go to Trips</a>
 
 <h2>Create New User</h2>
 <form th:action="@{/api/admin/create}" th:object="${newUser}" method="post">

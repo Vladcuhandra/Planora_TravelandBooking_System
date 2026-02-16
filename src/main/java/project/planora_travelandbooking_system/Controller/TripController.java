@@ -1,87 +1,52 @@
 package project.planora_travelandbooking_system.Controller;
 
-import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TripDTO;
-import project.planora_travelandbooking_system.Model.Trip;
-import project.planora_travelandbooking_system.Service.AccommodationService;
-import project.planora_travelandbooking_system.Service.TransportService;
+import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Service.TripService;
-
-import java.util.List;
+import project.planora_travelandbooking_system.Service.UserService;
 
 @Controller
 public class TripController {
 
     private final TripService tripService;
-    private final TransportService transportService;
-    private final AccommodationService accommodationService;
+    private final UserService userService;
 
-    public TripController(TripService tripService,
-                          TransportService transportService,
-                          AccommodationService accommodationService) {
+    @Autowired
+    public TripController(TripService tripService, UserService userService) {
         this.tripService = tripService;
-        this.transportService = transportService;
-        this.accommodationService = accommodationService;
+        this.userService = userService;
     }
 
     @GetMapping("/trips")
-    public String trips(Model model, Authentication auth) {
-        String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        List<Trip> trips = tripService.getTripsForUser(email, isAdmin);
-        model.addAttribute("trips", trips);
-        model.addAttribute("isAdmin", isAdmin);
+    public String trips(Model model) {
+        model.addAttribute("trips", tripService.getAllTrips());
+        model.addAttribute("tripDto", new TripDTO());
+        model.addAttribute("users", userService.getAllUsers());
         return "trips";
     }
 
-    @GetMapping("/trips/new")
-    public String newTrip(Model model) {
-        model.addAttribute("tripDto", new TripDTO());
-        model.addAttribute("transports", transportService.getAllTransports());
-        model.addAttribute("accommodations", accommodationService.getAllAccommodations());
-        return "trip-new";
-    }
-
-    /*@PostMapping("/trips/save")
-    public String saveTrip(@ModelAttribute("tripDto") TripDTO dto, Authentication auth) {
-        tripService.createTrip(dto, auth.getName());
+    @PostMapping("/trips/save")
+    public String saveTrip(@ModelAttribute TripDTO dto) {
+        User user = userService.getUserId(dto.getUserId());
+        tripService.saveTrip(dto);
         return "redirect:/trips";
     }
 
-    @GetMapping("/trips/{id}/edit")
-    public String editTrip(@PathVariable Long id, Model model, Authentication auth) {
-        String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        Trip trip = tripService.getTripForUser(id, email, isAdmin);
-
-        model.addAttribute("tripDto", tripService.toDTO(trip));
-        model.addAttribute("transports", transportService.getAllTransports());
-        model.addAttribute("accommodations", accommodationService.getAllAccommodations());
-        return "trip-edit";
-    }
-
-    @PutMapping("/trips/{id}")
-    public String updateTrip(@PathVariable Long id,
-                             @ModelAttribute("tripDto") TripDTO dto,
-                             Authentication auth) {
-        String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        tripService.updateTrip(id, dto, email, isAdmin);
+    @PostMapping("/trips/edit/{id}")
+    public String updateTrip(@PathVariable Long id, @ModelAttribute TripDTO tripDTO) {
+        User user = userService.getUserId(tripDTO.getUserId());
+        TripDTO updatedTrip = tripService.updateTrip(id, tripDTO, user);
         return "redirect:/trips";
     }
 
-    @DeleteMapping("/trips/{id}")
-    public String deleteTrip(@PathVariable Long id, Authentication auth) {
-        String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        tripService.deleteTrip(id, email, isAdmin);
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+    public String deleteTrip(@PathVariable Long id) {
+        tripService.deleteTrip(id);
         return "redirect:/trips";
-    }*/
+    }
+
 }

@@ -30,7 +30,12 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/h2-console/**")
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/favicon.ico").permitAll()
+                        .requestMatchers(
+                                "/css/**",
+                                "/js/**",
+                                "/img/**",
+                                "/favicon.ico"
+                        ).permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
