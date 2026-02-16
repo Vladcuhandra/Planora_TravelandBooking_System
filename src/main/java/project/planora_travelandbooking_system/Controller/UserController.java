@@ -1,6 +1,9 @@
 package project.planora_travelandbooking_system.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +32,17 @@ public class UserController {
     }
 
     @GetMapping("/admin")
-    public String adminDashboard(Model model) {
-        List<UserDTO> users = userService.getAllUsers();
-        model.addAttribute("users", users);
+    public String adminDashboard(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 10;
+        Page<UserDTO> usersPage = userService.getAllUsers(page, pageSize);
+
+        System.out.println("Current Page: " + page);
+
+        model.addAttribute("users", usersPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", usersPage.getTotalPages());
         model.addAttribute("newUser", new UserDTO());
+
         return "admin";
     }
 
