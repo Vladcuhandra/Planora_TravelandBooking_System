@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
                         .anyRequest().authenticated()
+
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .formLogin(form -> form

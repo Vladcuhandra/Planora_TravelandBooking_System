@@ -8,6 +8,8 @@ import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
 
+import java.time.LocalDateTime;
+
 @Controller
 public class TransportController {
 
@@ -21,15 +23,11 @@ public class TransportController {
     @GetMapping("/transports")
     public String transports(Model model) {
         model.addAttribute("transports", transportService.getAllTransports());
-        return "transports";
-    }
-
-    @GetMapping("/transports/new")
-    public String newTransport(Model model) {
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
         model.addAttribute("statuses", Transport.Status.values());
-        return "transport-new";
+
+        return "transports";
     }
 
     @PostMapping("/transports/save")
@@ -44,12 +42,41 @@ public class TransportController {
         return "redirect:/transports";
     }
 
-    @GetMapping("/transports/{id}/edit")
-    public String editTransport(@PathVariable Long id, Model model) {
-        model.addAttribute("transportDto", transportService.getTransportById(id));
-        model.addAttribute("transportTypes", Transport.TransportType.values());
-        model.addAttribute("statuses", Transport.Status.values());
-        return "transport-edit";
+    @PostMapping("/transports/edit")
+    public String editTransport(@RequestParam Long transportId,
+                                @RequestParam String transportType,
+                                @RequestParam String company,
+                                @RequestParam String originAddress,
+                                @RequestParam String destinationAddress,
+                                @RequestParam String departureTime,
+                                @RequestParam String arrivalTime,
+                                @RequestParam int seat,
+                                @RequestParam double price,
+                                @RequestParam String status,
+                                Model model) {
+
+        System.out.println("Received request to update transport with ID: " + transportId);
+
+        TransportDTO transportDTO = new TransportDTO();
+        transportDTO.setId(transportId);
+        transportDTO.setTransportType(transportType);
+        transportDTO.setCompany(company);
+        transportDTO.setOriginAddress(originAddress);
+        transportDTO.setDestinationAddress(destinationAddress);
+        transportDTO.setDepartureTime(LocalDateTime.parse(departureTime));
+        transportDTO.setArrivalTime(LocalDateTime.parse(arrivalTime));
+        transportDTO.setSeat(seat);
+        transportDTO.setPrice(price);
+        transportDTO.setStatus(status);
+
+        try {
+            transportService.saveTransport(transportDTO);
+            System.out.println("Transport updated successfully!");
+            return "redirect:/transports";
+        } catch (RuntimeException e) {
+            System.out.println("Error: " + e.getMessage());
+            return "redirect:/transports?error=" + e.getMessage();
+        }
     }
 
     @PutMapping("/transports/{id}")
@@ -58,7 +85,5 @@ public class TransportController {
         transportService.updateTransport(id, dto);
         return "redirect:/transports";
     }
-
-
 
 }
