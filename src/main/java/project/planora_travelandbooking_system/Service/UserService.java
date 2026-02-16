@@ -1,5 +1,6 @@
 package project.planora_travelandbooking_system.Service;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -59,10 +60,24 @@ public class UserService {
         return usersPage.map(this::convertToDTO);
     }
 
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     public UserDTO getUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
             return convertToDTO(userOptional.get());
+        } else {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+    }
+
+    public User getUserId(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            return userOptional.get();
         } else {
             throw new RuntimeException("User not found with ID: " + userId);
         }
@@ -105,5 +120,4 @@ public class UserService {
         userDTO.setCreatedAt(user.getCreatedAt());
         return userDTO;
     }
-
 }

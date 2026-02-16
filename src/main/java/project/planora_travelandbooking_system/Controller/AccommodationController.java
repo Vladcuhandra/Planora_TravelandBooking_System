@@ -27,14 +27,6 @@ public class AccommodationController {
         return "accommodations";
     }
 
-    @GetMapping("/accommodations/new")
-    public String newAccommodation(Model model) {
-        model.addAttribute("accommodationDto", new AccommodationDTO());
-        model.addAttribute("accommodationTypes", Accommodation.AccommodationType.values());
-        model.addAttribute("statuses", Accommodation.Status.values());
-        return "accommodation-new";
-    }
-
     @PostMapping("/accommodations/save")
     public String saveAccommodation(@ModelAttribute AccommodationDTO dto) {
         accommodationService.saveAccommodation(dto);

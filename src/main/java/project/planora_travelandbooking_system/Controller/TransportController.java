@@ -31,7 +31,7 @@ public class TransportController {
     }
 
     @PostMapping("/transports/save")
-    public String newTransport(@ModelAttribute TransportDTO dto, Model model) {
+    public String saveTransport(@ModelAttribute TransportDTO dto, Model model) {
         transportService.saveTransport(dto);
         return "redirect:/transports";
     }
