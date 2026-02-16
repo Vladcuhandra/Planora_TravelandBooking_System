@@ -1,87 +1,249 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Planora • Admin Dashboard</title>
-    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 </head>
-<body>
 
-<h1>Welcome to the Admin Dashboard</h1>
+<body class="planora-dark">
+<!-- Topbar -->
+<nav class="navbar p-topbar sticky-top">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center gap-2">
+            <!-- Burger for mobile -->
+            <button class="btn btn-soft d-lg-none" type="button"
+                    data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
+                ☰
+            </button>
 
-<a href="/transports" class="button">Go to Transport</a>
-<br><br>
-<a href="/accommodations" class="button">Go to Accommodations</a>
-<br><br>
-<a href="/trips" class="button">Go to Trips</a>
+            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/api/admin}">
+                <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
+                <div class="d-none d-sm-block">
+                    <div class="p-title fw-semibold">Planora</div>
+                    <div class="p-hint" style="margin-top:-2px;">Admin Panel</div>
+                </div>
+            </a>
+        </div>
 
-<h2>Create New User</h2>
-<form th:action="@{/api/admin/create}" th:object="${newUser}" method="post">
-    <label>Email:</label>
-    <input type="email" th:field="*{email}" required /><br/>
-    <label>Password:</label>
-    <input type="password" th:field="*{password}" required /><br/>
-    <label>Role:</label>
-    <select th:field="*{role}">
-        <option value="USER">USER</option>
-        <option value="ADMIN">ADMIN</option>
-    </select><br/>
-    <button type="submit">Create User</button>
-</form>
+        <div class="d-flex align-items-center gap-2">
 
-<h2>List of Users</h2>
 
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Password</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td>
-            <div style="display: flex; gap: 10px;">
-                <form th:action="@{/api/admin/edit}" method="post">
-                    <input type="hidden" name="userId" th:value="${user.id}" />
-                    <input type="email" name="email" th:value="${user.email}" required />
-                    <td>
-                        <select name="role">
-                            <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
-                            <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="password" name="password" placeholder="New password (optional)" />
-                    </td>
-                    <td>
-                        <button type="submit" th:if="${user.id != 1}">Save</button>
-                    </td>
-                </form>
-                <td>
-                    <form th:action="@{/api/admin/delete}" method="post" th:if="${user.id != 1}" style="margin: 0;">
-                        <input type="hidden" name="userId" th:value="${user.id}" />
-                        <button type="submit" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
-                    </form>
-                </td>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button class="btn btn-danger-soft" type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row g-3 g-lg-4 py-3">
+
+        <!-- Sidebar (desktop) -->
+        <aside class="col-lg-3 d-none d-lg-block">
+            <div class="p-card p-3">
+                <div class="p-subtitle fw-semibold mb-2">Navigation</div>
+                <div class="d-grid gap-1">
+                    <a class="p-nav-link active" th:href="@{/api/admin}">Users</a>
+                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
+                </div>
+
+                <hr class="p-divider my-3">
+
             </div>
-        </td>
-    </tr>
-    </tbody>
-</table>
+        </aside>
 
-<div class="pagination" th:if="${totalPages > 0}">
-    <a th:if="${currentPage > 0}" th:href="@{/api/admin(page=${currentPage - 1})}">Previous</a>
-    <span>Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span></span>
-    <a th:if="${currentPage + 1 < totalPages}" th:href="@{/api/admin(page=${currentPage + 1})}">Next</a>
+        <!-- Offcanvas sidebar (mobile) -->
+        <div class="offcanvas offcanvas-start planora-dark" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Menu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="p-card p-3">
+                    <div class="d-grid gap-1">
+                        <a class="p-nav-link active" th:href="@{/api/admin}">Users</a>
+                        <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <main class="col-12 col-lg-9">
+            <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+                <div>
+                    <div class="p-title h4 mb-1">Users</div>
+                    <div class="p-hint">Create, update roles, set new password, delete users</div>
+                </div>
+            </div>
+
+            <!-- Create user -->
+            <section class="p-card p-3 p-md-4 mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="p-subtitle fw-semibold">Create new user</div>
+                </div>
+
+                <form th:action="@{/api/admin/create}" th:object="${newUser}" method="post" class="row g-2 g-md-3">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="col-12 col-md-5">
+                        <label class="form-label p-hint mb-1">Email</label>
+                        <input class="form-control" type="email" th:field="*{email}" placeholder="user@example.com" required>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label class="form-label p-hint mb-1">Password</label>
+                        <input class="form-control" type="password" th:field="*{password}" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label p-hint mb-1">Role</label>
+                        <select class="form-select" th:field="*{role}">
+                            <option value="USER">USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end">
+                        <button class="btn btn-planora px-4" type="submit">Create</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Users table -->
+            <section class="p-card p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="p-subtitle fw-semibold">List of users</div>
+                    <!-- <span class="p-hint">Edit inline</span> -->
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table planora-table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th style="width: 90px;">ID</th>
+                            <th>Email</th>
+                            <th style="width: 160px;">Role</th>
+                            <th style="width: 260px;">New password</th>
+                            <th style="width: 220px;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}"></td>
+
+                            <!-- Email (linekd to edit-form) -->
+                            <td>
+                                <input class="form-control"
+                                       type="email"
+                                       name="email"
+                                       th:value="${user.email}"
+                                       th:attr="form=${'edit-' + user.id}"
+                                       required>
+                            </td>
+
+                            <!-- Role (linked to edit-form) -->
+                            <td>
+                                <select class="form-select"
+                                        name="role"
+                                        th:attr="form=${'edit-' + user.id}">
+                                    <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
+                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
+                                </select>
+                            </td>
+
+                            <!-- Password (linked to edit-form) -->
+                            <td>
+                                <input class="form-control"
+                                       type="password"
+                                       name="password"
+                                       placeholder="Optional"
+                                       th:attr="form=${'edit-' + user.id}">
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="align-middle">
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <!-- EDIT FORM -->
+                                    <form th:id="${'edit-' + user.id}"
+                                          th:action="@{/api/admin/edit}"
+                                          method="post"
+                                          class="m-0">
+                                        <input type="hidden"
+                                               th:if="${_csrf != null}"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}" />
+                                        <input type="hidden" name="userId" th:value="${user.id}" />
+
+                                        <button class="btn btn-soft btn-sm"
+                                                type="submit"
+                                                th:disabled="${user.id == 1}">
+                                            Save
+                                        </button>
+                                    </form>
+
+                                    <!-- DELETE FORM -->
+                                    <form th:action="@{/api/admin/delete}"
+                                          method="post"
+                                          class="m-0"
+                                          th:if="${user.id != 1}">
+                                        <input type="hidden"
+                                               th:if="${_csrf != null}"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}" />
+                                        <input type="hidden" name="userId" th:value="${user.id}" />
+
+                                        <button class="btn btn-danger-soft btn-sm"
+                                                type="submit"
+                                                onclick="return confirm('Are you sure you want to delete this user?');">
+                                            Delete
+                                        </button>
+                                    </form>
+
+                                    <span class="p-hint mb-0" th:if="${user.id == 1}">Protected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex align-items-center justify-content-between mt-3" th:if="${totalPages > 0}">
+                    <a class="btn btn-soft"
+                       th:if="${currentPage > 0}"
+                       th:href="@{/api/admin(page=${currentPage - 1})}">
+                        ← Previous
+                    </a>
+
+                    <div class="p-hint text-center flex-grow-1">
+                        Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span>
+                    </div>
+
+                    <a class="btn btn-soft"
+                       th:if="${currentPage + 1 < totalPages}"
+                       th:href="@{/api/admin(page=${currentPage + 1})}">
+                        Next →
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
 </div>
 
-<form action="/logout" method="post">
-    <button type="submit">Logout</button>
-</form>
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script defer th:src="@{/js/ui.js}"></script>
 
 </body>
 </html>

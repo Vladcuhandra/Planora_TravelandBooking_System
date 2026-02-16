@@ -1,0 +1,509 @@
+:root {
+--p-blue: #3B8CFF;        /* main, soft */
+--p-blue-light: #7BB4FF;  /* hover / focus */
+--p-blue-dark: #1E6FE6;   /* pressed / active */
+
+  --p-sky: #F2F6FF;
+  --p-steel: #C7D7F2;
+
+  --p-bg-paper: #FBFCFF;
+  --p-surface: #FFFFFF;
+  --p-border: #E5E7EB;      /* systemGray5 */
+
+  --p-text: #1C1C1E;        /* systemLabel */
+  --p-text-2: #3A3A3C;      /* secondaryLabel */
+  --p-muted: #8E8E93;       /* tertiaryLabel */
+
+  --p-success: #34C759;     /* systemGreen */
+  --p-warning: #FF9F0A;     /* systemOrange */
+  --p-error: #FF453A;       /* systemRed */
+
+  --d-bg: #0F1115;          /* almost black but warm */
+  --d-surface: #16181D;     /* cards */
+  --d-surface-2: #1C1F26;   /* inputs */
+  --d-border: rgba(255,255,255,0.08);
+
+  --d-text: #F5F5F7;        /* system label dark */
+  --d-text-2: #C7C7CC;
+  --d-muted: #8E8E93;
+
+  --radius: 14px;
+  --shadow: 0 8px 30px rgba(0,0,0,.28);
+}
+
+
+
+/* Logo */
+/* default logo (header/admin) */
+.p-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--d-border);
+}
+/* auth pages (login / signup) */
+.p-auth-card .p-logo {
+  width: 80px;
+  height: auto;
+  border-radius: 18px;
+  background: transparent;
+  border: none;
+  display: block;
+  margin: 0 auto;
+}
+/* mobile */
+@media (max-width: 480px) {
+  .p-auth-card .p-logo {
+    width: 100px;
+  }
+}
+/* Auth header layout */
+.auth-header {
+  width: 100%;
+}
+/* 1/3 — logo */
+.auth-logo-wrap {
+  flex: 0 0 33.333%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* 2/3 — text */
+.auth-text-wrap {
+  flex: 0 0 66.666%;
+}
+/* logo size for auth */
+.p-auth-card .p-logo {
+  width: 100px;
+  height: auto;
+}
+/* for mobile */
+@media (max-width: 480px) {
+  .auth-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .auth-logo-wrap,
+  .auth-text-wrap {
+    flex: none;
+    width: 100%;
+  }
+
+  .auth-logo-wrap {
+    margin-bottom: 12px;
+  }
+}
+
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body.planora-dark {
+  min-height: 100vh;
+  background-color: var(--d-bg);
+  background-image:
+linear-gradient(
+      135deg,
+      rgba(59, 140, 255, 0.06),
+      rgba(123, 180, 255, 0.03) 40%,
+      rgba(59, 140, 255, 0.02) 70%,
+      transparent
+    );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--d-text);
+}
+
+a { color: var(--p-blue-light); text-decoration: none; }
+a:hover { color: var(--p-blue); }
+
+.p-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  background-color: var(--d-surface);
+  border: 1px solid var(--d-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.p-surface-2 {
+  background-color: var(--d-surface-2);
+  border: 1px solid var(--d-border);
+  border-radius: var(--radius);
+}
+
+.p-title { color: var(--d-text); letter-spacing: .2px; }
+.p-subtitle { color: var(--d-text-2); }
+
+.p-badge {
+  border: 1px solid var(--d-border);
+  border-radius: 999px;
+  padding: .3rem .6rem;
+  font-size: .85rem;
+  color: var(--d-text-2);
+  background: rgba(255,255,255,0.02);
+}
+
+.p-divider { border-color: var(--d-border) !important; }
+
+.form-control, .form-select {
+  background-color: rgba(255,255,255,0.04);
+  border: 1px solid var(--d-border);
+  color: var(--d-text);
+  border-radius: 12px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: rgba(47,111,219,0.65);
+  box-shadow: 0 0 0 .25rem rgba(47,111,219,0.18);
+  background-color: rgba(255,255,255,0.05);
+  color: var(--d-text);
+}
+
+::placeholder { color: rgba(143,161,189,0.9) !important; }
+
+.btn-planora {
+  background: linear-gradient(180deg, var(--p-blue), var(--p-blue-dark));
+  border: 1px solid rgba(91,141,238,0.35);
+  color: white;
+  border-radius: 12px;
+}
+.btn-planora:hover {
+  background: linear-gradient(180deg, var(--p-blue-light), var(--p-blue));
+  color: white;
+}
+
+.btn-soft {
+  background: rgba(234,242,255,0.08);
+  border: 1px solid rgba(159,183,232,0.30);
+  color: var(--d-text);
+  border-radius: 12px;
+}
+.btn-soft:hover {
+  background: rgba(234,242,255,0.12);
+  color: var(--d-text);
+}
+
+.btn-danger-soft {
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.25);
+  color: #FFD7D7;
+  border-radius: 12px;
+}
+.btn-danger-soft:hover { background: rgba(239,68,68,0.14); }
+
+.table.planora-table {
+  color: var(--d-text);
+  border-color: var(--d-border);
+}
+.table.planora-table thead th {
+  color: var(--d-text-2);
+  border-color: var(--d-border);
+  font-weight: 600;
+}
+.table.planora-table td, .table.planora-table th {
+  border-color: var(--d-border);
+  vertical-align: middle;
+}
+
+.p-nav-link {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem .75rem;
+  border-radius: 12px;
+  color: var(--d-text-2);
+}
+.p-nav-link:hover {
+  background: rgba(234,242,255,0.07);
+  color: var(--d-text);
+}
+.p-nav-link.active {
+  background: rgba(47,111,219,0.18);
+  border: 1px solid rgba(47,111,219,0.35);
+  color: var(--d-text);
+}
+
+.p-topbar {
+  background: rgba(15,26,48,0.75);
+  border-bottom: 1px solid var(--d-border);
+  backdrop-filter: blur(10px);
+}
+
+.p-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--d-border);
+}
+
+.p-auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 14px;
+}
+
+.p-auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 22px;
+}
+
+.p-hint {
+  color: var(--d-muted);
+  font-size: .92rem;
+}
+
+.p-alert {
+  border-radius: 14px;
+  border: 1px solid var(--d-border);
+  background: rgba(255,255,255,0.03);
+  padding: .8rem .9rem;
+  color: var(--d-text-2);
+}
+.p-alert.error { border-color: rgba(239,68,68,0.25); color: #FFD7D7; }
+.p-alert.ok { border-color: rgba(34,197,94,0.25); color: #CFF7DD; }
+
+
+
+/* ===== Planora dark table ===== */
+.table.planora-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--d-text);
+  --bs-table-border-color: var(--d-border);
+  --bs-table-striped-bg: rgba(255,255,255,0.03);
+  --bs-table-hover-bg: rgba(234,242,255,0.06);
+  --bs-table-hover-color: var(--d-text);
+
+  color: var(--d-text);
+  border-color: var(--d-border);
+}
+
+.table.planora-table thead th {
+  background: rgba(15,26,48,0.65);
+  color: var(--d-text-2);
+  border-color: var(--d-border);
+  font-weight: 600;
+}
+
+.table.planora-table tbody tr {
+  background: rgba(255,255,255,0.02);
+}
+
+.table.planora-table tbody tr:hover {
+  background: rgba(234,242,255,0.06);
+}
+
+.table.planora-table td,
+.table.planora-table th {
+  border-color: var(--d-border) !important;
+}
+
+/*  "table-responsive" */
+.table-responsive {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--d-border);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+/* Dark  field inside of table */
+.planora-table .form-control,
+.planora-table .form-select {
+  background-color: rgba(255,255,255,0.05) !important;
+  border: 1px solid var(--d-border) !important;
+  color: var(--d-text) !important;
+}
+
+.planora-table .form-control::placeholder {
+  color: rgba(143,161,189,0.9) !important;
+}
+
+.planora-table .form-select option {
+  background: #0F1A30;
+  color: var(--d-text);
+}
+
+
+/* Unified input / select height */
+.form-control,
+.form-select {
+  height: 44px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+/* ================================
+   Planora Dark Dropdown (Choices)
+   ================================ */
+
+/* container */
+.choices {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+/* field (closed select) */
+.choices__inner {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid var(--d-border) !important;
+  border-radius: 12px !important;
+  color: var(--d-text) !important;
+  min-height: 44px;
+  padding: 8px 12px !important;
+  transition: all .15s ease;
+}
+
+/* focus / open - like input */
+.choices.is-focused .choices__inner,
+.choices.is-open .choices__inner {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(47,111,219,0.7) !important;
+  box-shadow: 0 0 0 .25rem rgba(47,111,219,0.18);
+}
+
+/* remove  double border between field  and list */
+.choices.is-open .choices__inner {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+/* dropdown list */
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
+  background: rgba(15,26,48,0.98) !important; /* dark background*/
+  border: 1px solid rgba(47,111,219,0.35) !important;
+  border-top: none !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* list */
+.choices__list--dropdown .choices__list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* list elements */
+.choices__item--choice {
+  color: var(--d-text) !important;
+  padding: 10px 12px !important;
+  background: transparent !important;
+  border-top: 1px solid rgba(227,232,240,0.08);
+}
+
+/* hover */
+.choices__item--choice.is-highlighted {
+  background: rgba(47,111,219,0.22) !important;
+}
+
+/* choosen */
+.choices__item--choice.is-selected {
+  background: rgba(47,111,219,0.16) !important;
+  color: var(--d-text) !important;
+}
+
+/* placeholder */
+.choices__placeholder {
+  color: var(--d-muted) !important;
+  opacity: 1;
+}
+
+/* arrow */
+.choices[data-type*="select-one"]::after {
+  border-color: rgba(185,198,221,0.9) transparent transparent transparent !important;
+}
+.choices[data-type*="select-one"].is-open::after {
+  border-color: transparent transparent rgba(185,198,221,0.9) transparent !important;
+}
+
+/* iside  of tables */
+.planora-table .choices__inner {
+  background: rgba(255,255,255,0.05) !important;
+}
+/* to dropdown dont cropped by page's container */
+.table-responsive {
+  overflow: visible; /* for dropdown */
+}
+/* but horizontal scroll will be as it is */
+/*@media (max-width: 992px) {
+  .table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+}*/
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+/* Fix overflow on medium screens: keep horizontal scroll, but don't clip dropdown */
+.table-responsive-unclip {
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+.table-responsive-unclip > table {
+  width: 100%;
+  max-width: 100%;
+}
+
+
+
+
+
+/* Compact mode for dense tables Transports */
+.planora-table--compact td,
+.planora-table--compact th {
+  padding-top: .45rem !important;
+  padding-bottom: .45rem !important;
+}
+
+/* compact fields inside table */
+.planora-table--compact .form-control,
+.planora-table--compact .form-select,
+.planora-table--compact .choices__inner {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-top: .35rem !important;
+  padding-bottom: .35rem !important;
+  padding-left: .6rem !important;
+  padding-right: .6rem !important;
+  font-size: .9rem;
+}
+
+/* Seats + Price: narrow */
+.planora-table--compact input[name="seat"] {
+  width: 84px;
+  min-width: 84px;
+}
+
+.planora-table--compact input[name="price"] {
+  width: 110px;
+  min-width: 110px;
+}
+
+/* readable */
+.planora-table--compact input[type="number"] {
+  text-align: center;
+}
+
+/* compact actions */
+.planora-table--compact .btn.btn-sm {
+  padding: .32rem .6rem;
+  font-size: .86rem;
+  border-radius: 10px;
+}
+
+
+
