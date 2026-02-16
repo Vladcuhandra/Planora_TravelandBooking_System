@@ -1,91 +1,112 @@
 package project.planora_travelandbooking_system.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.TripDTO;
+import project.planora_travelandbooking_system.Model.Accommodation;
+import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Model.Trip;
 import project.planora_travelandbooking_system.Model.User;
+import project.planora_travelandbooking_system.Repository.AccommodationRepository;
+import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
 import project.planora_travelandbooking_system.Repository.UserRepository;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TripService {
 
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final TransportRepository transportRepository;
+    private final AccommodationRepository accommodationRepository;
 
-    @Autowired
-    public TripService(TripRepository tripRepository, UserRepository userRepository) {
+    public TripService(TripRepository tripRepository,
+                       UserRepository userRepository,
+                       TransportRepository transportRepository,
+                       AccommodationRepository accommodationRepository) {
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
+        this.transportRepository = transportRepository;
+        this.accommodationRepository = accommodationRepository;
     }
 
-    public TripDTO saveTrip(TripDTO tripDTO) {
-        Optional<User> userOptional = userRepository.findById(tripDTO.getUserId());
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("User not found with ID: " + tripDTO.getUserId());
+    public List<Trip> getTripsForUser(String email, boolean isAdmin) {
+        if (isAdmin) return tripRepository.findAll();
+        return tripRepository.findByUserEmail(email);
+    }
+
+    public Trip getTripForUser(Long id, String email, boolean isAdmin) {
+        Trip trip = tripRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found: " + id));
+
+        if (!isAdmin && !trip.getUser().getEmail().equals(email)) {
+            throw new RuntimeException("Access denied");
         }
-
-        User user = userOptional.get();
-        Trip trip = convertToEntity(tripDTO, user);
-
-        Trip savedTrip = tripRepository.save(trip);
-        return convertToDTO(savedTrip);
-    }
-
-    public List<TripDTO> getAllTrips() {
-        List<Trip> trips = tripRepository.findAll();
-        return trips.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    public TripDTO getTripById(Long tripId) {
-        Optional<Trip> trip = tripRepository.findById(tripId);
-        if (trip.isPresent()) {
-            return convertToDTO(trip.get());
-        } else {
-            throw new RuntimeException("Trip not found with ID: " + tripId);
-        }
-    }
-
-    public List<TripDTO> getTripsByUserId(Long userId) {
-        List<Trip> trips = tripRepository.findByUserId(userId);
-        return trips.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void deleteTrip(Long tripId) {
-        if (!tripRepository.existsById(tripId)) {
-            throw new RuntimeException("Trip not found with ID " + tripId);
-        }
-        tripRepository.deleteById(tripId);
-    }
-
-    private Trip convertToEntity(TripDTO tripDTO, User user) {
-        Trip trip = new Trip();
-        trip.setTitle(tripDTO.getTitle());
-        trip.setDescription(tripDTO.getDescription());
-        trip.setStartDate(tripDTO.getStartDate());
-        trip.setEndDate(tripDTO.getEndDate());
-        trip.setUser(user);
-        trip.setCreatedAt(LocalDateTime.now());
         return trip;
     }
 
-    private TripDTO convertToDTO(Trip trip) {
-        TripDTO tripDTO = new TripDTO();
-        tripDTO.setId(trip.getId());
-        tripDTO.setUserId(trip.getUser().getId());
-        tripDTO.setTitle(trip.getTitle());
-        tripDTO.setDescription(trip.getDescription());
-        tripDTO.setStartDate(trip.getStartDate());
-        tripDTO.setEndDate(trip.getEndDate());
-        tripDTO.setCreatedAt(trip.getCreatedAt());
-        return tripDTO;
+    @Transactional
+    public void createTrip(TripDTO dto, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+
+        Transport transport = transportRepository.findById(dto.getTransportId())
+                .orElseThrow(() -> new RuntimeException("Transport not found: " + dto.getTransportId()));
+
+        Accommodation accommodation = accommodationRepository.findById(dto.getAccommodationId())
+                .orElseThrow(() -> new RuntimeException("Accommodation not found: " + dto.getAccommodationId()));
+
+        Trip trip = new Trip();
+        trip.setTitle(dto.getTitle());
+        trip.setDescription(dto.getDescription());
+        trip.setStartDate(dto.getStartDate());
+        trip.setEndDate(dto.getEndDate());
+        trip.setTransport(transport);
+        trip.setAccommodation(accommodation);
+        trip.setUser(user);
+        trip.setCreatedAt(LocalDateTime.now());
+
+        tripRepository.save(trip);
     }
 
+    @Transactional
+    public void updateTrip(Long id, TripDTO dto, String email, boolean isAdmin) {
+        Trip trip = getTripForUser(id, email, isAdmin);
+
+        Transport transport = transportRepository.findById(dto.getTransportId())
+                .orElseThrow(() -> new RuntimeException("Transport not found: " + dto.getTransportId()));
+
+        Accommodation accommodation = accommodationRepository.findById(dto.getAccommodationId())
+                .orElseThrow(() -> new RuntimeException("Accommodation not found: " + dto.getAccommodationId()));
+
+        trip.setTitle(dto.getTitle());
+        trip.setDescription(dto.getDescription());
+        trip.setStartDate(dto.getStartDate());
+        trip.setEndDate(dto.getEndDate());
+        trip.setTransport(transport);
+        trip.setAccommodation(accommodation);
+
+        tripRepository.save(trip);
+    }
+
+    @Transactional
+    public void deleteTrip(Long id, String email, boolean isAdmin) {
+        Trip trip = getTripForUser(id, email, isAdmin);
+        tripRepository.delete(trip);
+    }
+
+    public TripDTO toDTO(Trip trip) {
+        TripDTO dto = new TripDTO();
+        dto.setId(trip.getId());
+        dto.setTitle(trip.getTitle());
+        dto.setDescription(trip.getDescription());
+        dto.setStartDate(trip.getStartDate());
+        dto.setEndDate(trip.getEndDate());
+        dto.setTransportId(trip.getTransport().getId());
+        dto.setAccommodationId(trip.getAccommodation().getId());
+        return dto;
+    }
 }

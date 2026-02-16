@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Trip</title>
+</head>
+<body>
+
+<h2>Create Trip</h2>
+
+<form th:action="@{/trips/save}" th:object="${tripDto}" method="post">
+
+    <label>Title</label>
+    <input type="text" th:field="*{title}" required />
+    <br><br>
+
+    <label>Description</label>
+    <input type="text" th:field="*{description}" />
+    <br><br>
+
+    <label>Start Date</label>
+    <input type="datetime-local" th:field="*{startDate}" />
+    <br><br>
+
+    <label>End Date</label>
+    <input type="datetime-local" th:field="*{endDate}" />
+    <br><br>
+
+    <label>Transport</label>
+    <select th:field="*{transportId}" required>
+        <option value="">-- Select --</option>
+        <option th:each="t : ${transports}"
+                th:value="${t.id}"
+                th:text="${t.company + ' (' + t.originAddress + ' → ' + t.destinationAddress + ')'}">
+        </option>
+    </select>
+    <br><br>
+
+    <label>Accommodation</label>
+    <select th:field="*{accommodationId}" required>
+        <option value="">-- Select --</option>
+        <option th:each="a : ${accommodations}"
+                th:value="${a.id}"
+                th:text="${a.name + ' (' + a.city + ')'}">
+        </option>
+    </select>
+    <br><br>
+
+    <button type="submit">Save</button>
+</form>
+
+</body>
+</html>
