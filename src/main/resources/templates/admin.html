@@ -128,7 +128,6 @@
             <section class="p-card p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">List of users</div>
-                    <!-- <span class="p-hint">Edit inline</span> -->
                 </div>
 
                 <div class="table-responsive">
@@ -144,78 +143,56 @@
                         </thead>
                         <tbody>
                         <tr th:each="user : ${users}">
+                            <!-- ID -->
                             <td th:text="${user.id}"></td>
 
-                            <!-- Email (linekd to edit-form) -->
+                            <!-- Email (click-to-edit) -->
                             <td>
-                                <input class="form-control"
-                                       type="email"
-                                       name="email"
-                                       th:value="${user.email}"
-                                       th:attr="form=${'edit-' + user.id}"
-                                       required>
+                                <span class="text" th:text="${user.email}" th:if="${user.superAdmin == true}"></span>
+                                <span class="editable-text" th:text="${user.email}" th:if="${user.superAdmin != true}"></span>
+                                <input class="form-control editable-input d-none" type="email" name="email"
+                                       th:value="${user.email}" th:attr="form=${'edit-' + user.id}" required>
                             </td>
 
-                            <!-- Role (linked to edit-form) -->
+                            <!-- Role (click-to-edit select) -->
                             <td>
-                                <select class="form-select"
-                                        name="role"
-                                        th:attr="form=${'edit-' + user.id}">
-                                    <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
-                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
-                                </select>
-                            </td>
+                                 <span class="text" th:text="${user.role}" th:if="${user.superAdmin == true}"></span>
+                                 <select class="form-select editable-input d-none"
+                                         name="role"
+                                         th:attr="form=${'edit-' + user.id}" th:if="${user.superAdmin != true}">
+                                     <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
+                                     <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
+                                 </select>
+                             </td>
 
-                            <!-- Password (linked to edit-form) -->
+                             <!-- Password (click-to-edit) -->
                             <td>
-                                <input class="form-control"
-                                       type="password"
-                                       name="password"
-                                       placeholder="Optional"
-                                       th:attr="form=${'edit-' + user.id}">
+                                <span class="text" th:if="${user.superAdmin == true}">••••••••</span>
+                                <span class="editable-text" th:if="${user.superAdmin != true}">••••••••</span>
+                                <input class="form-control editable-input d-none" type="password" name="password"
+                                       placeholder="Optional" th:attr="form=${'edit-' + user.id}">
                             </td>
 
                             <!-- Actions -->
                             <td class="align-middle">
                                 <div class="d-flex align-items-center gap-2">
-
                                     <!-- EDIT FORM -->
-                                    <form th:id="${'edit-' + user.id}"
-                                          th:action="@{/api/admin/edit}"
-                                          method="post"
-                                          class="m-0">
-                                        <input type="hidden"
-                                               th:if="${_csrf != null}"
-                                               th:name="${_csrf.parameterName}"
-                                               th:value="${_csrf.token}" />
+                                    <form th:id="${'edit-' + user.id}" th:action="@{/api/admin/edit}" method="post" class="m-0">
+                                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
-
-                                        <button class="btn btn-soft btn-sm"
-                                                type="submit"
-                                                th:if="${user.superAdmin != true}">
-                                            Save
-                                        </button>
+                                        <button class="btn btn-soft btn-sm" type="submit" th:if="${user.superAdmin != true}">Save</button>
                                     </form>
 
                                     <!-- DELETE FORM -->
-                                    <form th:action="@{/api/admin/delete}"
-                                          method="post"
-                                          class="m-0"
-                                          th:if="${user.superAdmin != true}">
-                                        <input type="hidden"
-                                               th:if="${_csrf != null}"
-                                               th:name="${_csrf.parameterName}"
-                                               th:value="${_csrf.token}" />
+                                    <form th:action="@{/api/admin/delete}" method="post" class="m-0" th:if="${user.superAdmin != true}">
+                                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
-
-                                        <button class="btn btn-danger-soft btn-sm"
-                                                type="submit"
+                                        <button class="btn btn-danger-soft btn-sm" type="submit"
                                                 onclick="return confirm('Are you sure you want to delete this user?');">
                                             Delete
                                         </button>
                                     </form>
 
-                                    <span class="p-hint mb-0" th:if="${user.id == 1}">Protected</span>
                                 </div>
                             </td>
                         </tr>

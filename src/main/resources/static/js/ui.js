@@ -42,6 +42,40 @@
 
   function initAll() {
     document.querySelectorAll("select.form-select").forEach(initChoicesForSelect);
+    document.querySelectorAll('.editable-text').forEach(span => {
+      span.onclick = () => editField(span);
+    });
+    document.querySelectorAll('.editable-input').forEach(input => {
+      input.onblur = () => saveField(input);
+    });
+  }
+
+  function editField(span) {
+    const input = span.nextElementSibling;
+    span.classList.add('d-none');
+    input.classList.remove('d-none');
+
+    if (input.tagName === "SELECT" && input._choicesInstance) {
+      const instance = input._choicesInstance;
+      instance.input.focus();
+    } else {
+      input.focus();
+    }
+  }
+
+  function saveField(input) {
+    const span = input.previousElementSibling;
+
+    if (input.type === 'password') {
+      span.textContent = '••••••••';
+    } else if (input.tagName === 'SELECT' && input._choicesInstance) {
+      span.textContent = input.options[input.selectedIndex].text;
+    } else {
+      span.textContent = input.value;
+    }
+
+    input.classList.add('d-none');
+    span.classList.remove('d-none');
   }
 
   // DOM ready
