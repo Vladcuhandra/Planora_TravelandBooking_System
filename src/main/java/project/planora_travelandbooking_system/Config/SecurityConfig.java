@@ -42,6 +42,9 @@ public class SecurityConfig {
 
                         // after login
                         .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/bookings/save").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/bookings/edit/*").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/delete/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
