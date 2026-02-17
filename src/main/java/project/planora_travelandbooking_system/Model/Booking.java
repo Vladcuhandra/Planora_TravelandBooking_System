@@ -41,7 +41,7 @@ public class Booking {
     private LocalDateTime createdAt;
 
     public enum BookingType {
-        FLIGHT, HOTEL
+        TRANSPORT, ACCOMMODATION
     }
 
     public enum BookingStatus {

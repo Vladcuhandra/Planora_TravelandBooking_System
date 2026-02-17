@@ -48,9 +48,9 @@ public class BookingService {
     }
 
     @Transactional
-    public void saveBooking(BookingDTO dto, String email, boolean isAdmin) {
-        Trip trip = tripRepository.findById(dto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + dto.getTripId()));
+    public void saveBooking(BookingDTO bookingDTO, String email, boolean isAdmin) {
+        Trip trip = tripRepository.findById(bookingDTO.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
 
         if (!isAdmin) {
             if (trip.getUser() == null || trip.getUser().getEmail() == null) {
@@ -64,22 +64,22 @@ public class BookingService {
         Booking booking = new Booking();
         booking.setTrip(trip);
 
-        Booking.BookingType bookingType = Booking.BookingType.valueOf(dto.getBookingType());
-        Booking.BookingStatus status = Booking.BookingStatus.valueOf(dto.getStatus());
+        Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
+        Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
         booking.setStatus(status);
-        booking.setStartDate(dto.getStartDate());
-        booking.setEndDate(dto.getEndDate());
+        booking.setStartDate(bookingDTO.getStartDate());
+        booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, dto, bookingType);
+        applyTypeAndPrice(booking, bookingDTO, bookingType);
 
         booking.setCreatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
     }
 
     @Transactional
-    public void updateBooking(Long id, BookingDTO dto, String email, boolean isAdmin) {
+    public void updateBooking(Long id, BookingDTO bookingDTO, String email, boolean isAdmin) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 
@@ -92,8 +92,8 @@ public class BookingService {
             }
         }
 
-        Trip trip = tripRepository.findById(dto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + dto.getTripId()));
+        Trip trip = tripRepository.findById(bookingDTO.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
 
         if (!isAdmin) {
             if (trip.getUser() == null || !email.equals(trip.getUser().getEmail())) {
@@ -103,15 +103,15 @@ public class BookingService {
 
         booking.setTrip(trip);
 
-        Booking.BookingType bookingType = Booking.BookingType.valueOf(dto.getBookingType());
-        Booking.BookingStatus status = Booking.BookingStatus.valueOf(dto.getStatus());
+        Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
+        Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
         booking.setStatus(status);
-        booking.setStartDate(dto.getStartDate());
-        booking.setEndDate(dto.getEndDate());
+        booking.setStartDate(bookingDTO.getStartDate());
+        booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, dto, bookingType);
+        applyTypeAndPrice(booking, bookingDTO, bookingType);
 
         bookingRepository.save(booking);
     }
@@ -133,33 +133,33 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    private void applyTypeAndPrice(Booking booking, BookingDTO dto, Booking.BookingType bookingType) {
-        if (bookingType == Booking.BookingType.FLIGHT) {
+    private void applyTypeAndPrice(Booking booking, BookingDTO bookingDTO, Booking.BookingType bookingType) {
+        if (bookingType == Booking.BookingType.TRANSPORT) {
 
-            if (dto.getTransportId() == null) {
-                throw new RuntimeException("Transport must be selected for FLIGHT booking");
+            if (bookingDTO.getTransportId() == null) {
+                throw new RuntimeException("Transport must be selected for booking");
             }
 
-            Transport transport = transportRepository.findById(dto.getTransportId())
-                    .orElseThrow(() -> new RuntimeException("Transport not found: " + dto.getTransportId()));
+            Transport transport = transportRepository.findById(bookingDTO.getTransportId())
+                    .orElseThrow(() -> new RuntimeException("Transport not found: " + bookingDTO.getTransportId()));
 
             booking.setTransport(transport);
             booking.setAccommodation(null);
             booking.setTotalPrice(transport.getPrice());
 
-        } else { // HOTEL
+        } else { 
 
-            if (dto.getAccommodationId() == null) {
-                throw new RuntimeException("Accommodation must be selected for HOTEL booking");
+            if (bookingDTO.getAccommodationId() == null) {
+                throw new RuntimeException("Accommodation must be selected for booking");
             }
 
-            Accommodation accommodation = accommodationRepository.findById(dto.getAccommodationId())
-                    .orElseThrow(() -> new RuntimeException("Accommodation not found: " + dto.getAccommodationId()));
+            Accommodation accommodation = accommodationRepository.findById(bookingDTO.getAccommodationId())
+                    .orElseThrow(() -> new RuntimeException("Accommodation not found: " + bookingDTO.getAccommodationId()));
 
             booking.setAccommodation(accommodation);
             booking.setTransport(null);
 
-            long nights = calcNights(dto.getStartDate(), dto.getEndDate());
+            long nights = calcNights(bookingDTO.getStartDate(), bookingDTO.getEndDate());
             booking.setTotalPrice(accommodation.getPricePerNight() * nights);
         }
     }
@@ -173,19 +173,19 @@ public class BookingService {
     }
 
     private BookingDTO toDTO(Booking booking) {
-        BookingDTO dto = new BookingDTO();
-        dto.setId(booking.getId());
-        dto.setTripId(booking.getTrip() != null ? booking.getTrip().getId() : null);
-        dto.setBookingType(booking.getBookingType() != null ? booking.getBookingType().name() : null);
-        dto.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
-        dto.setStartDate(booking.getStartDate());
-        dto.setEndDate(booking.getEndDate());
-        dto.setCreatedAt(booking.getCreatedAt());
-        dto.setTotalPrice(booking.getTotalPrice());
+        BookingDTO bookingDTO = new BookingDTO();
+        bookingDTO.setId(booking.getId());
+        bookingDTO.setTripId(booking.getTrip() != null ? booking.getTrip().getId() : null);
+        bookingDTO.setBookingType(booking.getBookingType() != null ? booking.getBookingType().name() : null);
+        bookingDTO.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
+        bookingDTO.setStartDate(booking.getStartDate());
+        bookingDTO.setEndDate(booking.getEndDate());
+        bookingDTO.setCreatedAt(booking.getCreatedAt());
+        bookingDTO.setTotalPrice(booking.getTotalPrice());
 
-        if (booking.getTransport() != null) dto.setTransportId(booking.getTransport().getId());
-        if (booking.getAccommodation() != null) dto.setAccommodationId(booking.getAccommodation().getId());
+        if (booking.getTransport() != null) bookingDTO.setTransportId(booking.getTransport().getId());
+        if (booking.getAccommodation() != null) bookingDTO.setAccommodationId(booking.getAccommodation().getId());
 
-        return dto;
+        return bookingDTO;
     }
 }
