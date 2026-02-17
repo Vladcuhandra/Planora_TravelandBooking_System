@@ -105,6 +105,7 @@ public class SecurityConfig {
                 admin.setEmail("admin");
                 admin.setPassword(passwordEncoder.encode("admin"));
                 admin.setRole(User.Role.ADMIN);
+                admin.setSuperAdmin(true);
                 userRepository.save(admin);
             }
         };
