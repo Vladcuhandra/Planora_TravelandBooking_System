@@ -72,6 +72,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/trips/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
+                        .requestMatchers(HttpMethod.GET, "/api/user").hasAnyRole("USER", "ADMIN")
+
                         .anyRequest().authenticated()
 
                 )
@@ -149,7 +151,7 @@ public class SecurityConfig {
             if ("ROLE_ADMIN".equals(role)) {
                 response.sendRedirect("/api/admin");
             } else {
-                response.sendRedirect("/api/bookings");
+                response.sendRedirect("/api/user");
             }
         };
     }
