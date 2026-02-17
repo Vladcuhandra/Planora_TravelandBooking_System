@@ -48,12 +48,11 @@ public class UserController {
 
     @PostMapping("/admin/create")
     public String createUser(@ModelAttribute UserDTO userDTO) {
+        userDTO.setSuperAdmin(false);
         try {
             userService.saveUser(userDTO);
             return "redirect:/api/admin";
         } catch (Exception e) {
-            System.out.println("Error creating user: " + e.getMessage());
-            e.printStackTrace();
             return "redirect:/api/admin?error=creatingUser";
         }
     }
@@ -63,21 +62,22 @@ public class UserController {
                            @RequestParam String email,
                            @RequestParam String role,
                            @RequestParam(required = false) String password) {
-        System.out.println("Received request to update user with ID: " + userId);
-
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(userId);
-        userDTO.setEmail(email);
-        userDTO.setRole(role);
-        userDTO.setPassword(password);
-
         try {
-            userService.saveUser(userDTO);
-            System.out.println("User updated successfully!");
+            UserDTO existingUserDTO = userService.getUserById(userId);
+            UserDTO updatedDTO = new UserDTO();
+            updatedDTO.setId(userId);
+            updatedDTO.setEmail(email);
+            updatedDTO.setRole(role);
+            updatedDTO.setPassword(password);
+            updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
+            userService.saveUser(updatedDTO);
             return "redirect:/api/admin";
-        } catch (RuntimeException e) {
-            System.out.println("Error: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("Forbidden action: " + e.getMessage());
             return "redirect:/api/admin?error=" + e.getMessage();
+        } catch (RuntimeException e) {
+            System.out.println("Error updating user: " + e.getMessage());
+            return "redirect:/api/admin?error=updateUser";
         }
     }
 
@@ -85,9 +85,14 @@ public class UserController {
     public String deleteUser(@RequestParam Long userId) {
         try {
             userService.deleteUser(userId);
+        } catch (IllegalStateException e) {
+            System.out.println("Forbidden action: " + e.getMessage());
+            return "redirect:/api/admin?error=" + e.getMessage();
         } catch (RuntimeException e) {
             System.out.println("Error deleting user: " + e.getMessage());
+            return "redirect:/api/admin?error=deleteUser";
         }
+
         return "redirect:/api/admin";
     }
 

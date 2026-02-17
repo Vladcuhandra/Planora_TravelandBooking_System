@@ -1,5 +1,6 @@
 package project.planora_travelandbooking_system.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,25 +34,28 @@ public class UserService {
     @Transactional
     public UserDTO saveUser(UserDTO userDTO) {
         User user;
+
         if (userDTO.getId() != null) {
             user = userRepository.findById(userDTO.getId())
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userDTO.getId()));
+
+            if (user.isSuperAdmin()) {
+                throw new IllegalStateException("Super admin cannot be modified.");
+            }
         } else {
             user = new User();
+            user.setSuperAdmin(false);
+            user.setCreatedAt(LocalDateTime.now());
         }
 
         user.setEmail(userDTO.getEmail());
         user.setRole(User.Role.valueOf(userDTO.getRole()));
+        user.setBirthDate(userDTO.getBirthDate());
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
-            user.setPassword(encodedPassword);
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
-
-        user.setBirthDate(userDTO.getBirthDate());
-        user.setCreatedAt(LocalDateTime.now());
         userRepository.save(user);
-
         return convertToDTO(user);
     }
 
@@ -89,14 +93,13 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long userId) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isPresent()) {
-            userRepository.deleteById(userId);
-            System.out.println("User with ID " + userId + " deleted.");
-        } else {
-            System.out.println("User with ID " + userId + " not found.");
-            throw new RuntimeException("User not found with ID: " + userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User not found with ID: " + userId));
+        if (user.isSuperAdmin()) {
+            throw new IllegalStateException("Super admin cannot be deleted.");
         }
+        userRepository.delete(user);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {
@@ -107,6 +110,7 @@ public class UserService {
         user.setBirthDate(userDTO.getBirthDate());
         user.setRole(role);
         user.setCreatedAt(LocalDateTime.now());
+        user.setSuperAdmin(userDTO.isSuperAdmin());
         return user;
     }
 
@@ -118,6 +122,7 @@ public class UserService {
         userDTO.setBirthDate(user.getBirthDate());
         userDTO.setRole(user.getRole().name());
         userDTO.setCreatedAt(user.getCreatedAt());
+        userDTO.setSuperAdmin(user.isSuperAdmin());
         return userDTO;
     }
 }

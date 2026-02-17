@@ -192,7 +192,7 @@
 
                                         <button class="btn btn-soft btn-sm"
                                                 type="submit"
-                                                th:disabled="${user.id == 1}">
+                                                th:if="${user.superAdmin != true}">
                                             Save
                                         </button>
                                     </form>
@@ -201,7 +201,7 @@
                                     <form th:action="@{/api/admin/delete}"
                                           method="post"
                                           class="m-0"
-                                          th:if="${user.id != 1}">
+                                          th:if="${user.superAdmin != true}">
                                         <input type="hidden"
                                                th:if="${_csrf != null}"
                                                th:name="${_csrf.parameterName}"

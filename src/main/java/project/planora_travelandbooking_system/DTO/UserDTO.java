@@ -12,6 +12,7 @@ public class UserDTO {
     private String email;
     private String password;
     private String role;
+    private boolean superAdmin;
     private LocalDateTime createdAt;
     private LocalDateTime birthDate;
 }
