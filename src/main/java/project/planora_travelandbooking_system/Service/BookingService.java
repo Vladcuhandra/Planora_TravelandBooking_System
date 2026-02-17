@@ -1,6 +1,5 @@
 package project.planora_travelandbooking_system.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.BookingDTO;
@@ -12,10 +11,10 @@ import project.planora_travelandbooking_system.Repository.AccommodationRepositor
 import project.planora_travelandbooking_system.Repository.BookingRepository;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -25,7 +24,6 @@ public class BookingService {
     private final TransportRepository transportRepository;
     private final AccommodationRepository accommodationRepository;
 
-    @Autowired
     public BookingService(BookingRepository bookingRepository,
                           TripRepository tripRepository,
                           TransportRepository transportRepository,
@@ -36,84 +34,158 @@ public class BookingService {
         this.accommodationRepository = accommodationRepository;
     }
 
-    public BookingDTO saveBooking(BookingDTO bookingDTO) {
-        Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
-        Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
+    public List<BookingDTO> getBookings(String email, boolean isAdmin) {
+        List<Booking> bookings = isAdmin
+                ? bookingRepository.findAll()
+                : bookingRepository.findByTripUserEmail(email);
 
-        Booking booking = convertToEntity(bookingDTO, bookingType, status);
-        Booking savedBooking = bookingRepository.save(booking);
-
-        return convertToDTO(savedBooking);
+        return bookings.stream().map(this::toDTO).toList();
     }
 
-    public List<BookingDTO> getAllBookings() {
-        List<Booking> bookings = bookingRepository.findAll();
-        return bookings.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    public BookingDTO getBookingById(Long bookingId) {
-        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
-        if (bookingOptional.isPresent()) {
-            return convertToDTO(bookingOptional.get());
-        } else {
-            throw new RuntimeException("Booking not found with ID: " + bookingId);
-        }
+    public Booking getBookingEntity(Long id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
     }
 
     @Transactional
-    public void deleteBooking(Long bookingId) {
-        if (!bookingRepository.existsById(bookingId)) {
-            throw new RuntimeException("Booking not found with ID: " + bookingId);
-        }
-        bookingRepository.deleteById(bookingId);
-    }
+    public void saveBooking(BookingDTO dto, String email, boolean isAdmin) {
+        Trip trip = tripRepository.findById(dto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + dto.getTripId()));
 
-    private Booking convertToEntity(BookingDTO bookingDTO, Booking.BookingType bookingType, Booking.BookingStatus status) {
+        if (!isAdmin) {
+            if (trip.getUser() == null || trip.getUser().getEmail() == null) {
+                throw new RuntimeException("Access denied");
+            }
+            if (!trip.getUser().getEmail().equals(email)) {
+                throw new RuntimeException("Access denied");
+            }
+        }
+
         Booking booking = new Booking();
-        booking.setId(bookingDTO.getId());
+        booking.setTrip(trip);
+
+        Booking.BookingType bookingType = Booking.BookingType.valueOf(dto.getBookingType());
+        Booking.BookingStatus status = Booking.BookingStatus.valueOf(dto.getStatus());
+
         booking.setBookingType(bookingType);
         booking.setStatus(status);
-        booking.setStartDate(bookingDTO.getStartDate());
-        booking.setEndDate(bookingDTO.getEndDate());
-        booking.setTotalPrice(bookingDTO.getTotalPrice());
+        booking.setStartDate(dto.getStartDate());
+        booking.setEndDate(dto.getEndDate());
 
-        Optional<Trip> trip = tripRepository.findById(bookingDTO.getTripId());
-        trip.ifPresent(booking::setTrip);
-
-        if (bookingDTO.getTransportId() != null) {
-            Optional<Transport> transport = transportRepository.findById(bookingDTO.getTransportId());
-            transport.ifPresent(booking::setTransport);
-        }
-
-        if (bookingDTO.getAccommodationId() != null) {
-            Optional<Accommodation> accommodation =
-                    accommodationRepository.findById(bookingDTO.getAccommodationId());
-            accommodation.ifPresent(booking::setAccommodation);
-        }
+        applyTypeAndPrice(booking, dto, bookingType);
 
         booking.setCreatedAt(LocalDateTime.now());
-        return booking;
+        bookingRepository.save(booking);
     }
 
-    private BookingDTO convertToDTO(Booking booking) {
-        BookingDTO bookingDTO = new BookingDTO();
-        bookingDTO.setId(booking.getId());
-        bookingDTO.setBookingType(booking.getBookingType().name());
-        bookingDTO.setStatus(booking.getStatus().name());
-        bookingDTO.setStartDate(booking.getStartDate());
-        bookingDTO.setEndDate(booking.getEndDate());
-        bookingDTO.setTotalPrice(booking.getTotalPrice());
-        bookingDTO.setCreatedAt(booking.getCreatedAt());
-        bookingDTO.setTripId(booking.getTrip().getId());
+    @Transactional
+    public void updateBooking(Long id, BookingDTO dto, String email, boolean isAdmin) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 
-        if (booking.getTransport() != null) {
-            bookingDTO.setTransportId(booking.getTransport().getId());
-        }
-        if (booking.getAccommodation() != null) {
-            bookingDTO.setAccommodationId(booking.getAccommodation().getId());
+        if (!isAdmin) {
+            if (booking.getTrip() == null || booking.getTrip().getUser() == null) {
+                throw new RuntimeException("Access denied");
+            }
+            if (!email.equals(booking.getTrip().getUser().getEmail())) {
+                throw new RuntimeException("Access denied");
+            }
         }
 
-        return bookingDTO;
+        Trip trip = tripRepository.findById(dto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + dto.getTripId()));
+
+        if (!isAdmin) {
+            if (trip.getUser() == null || !email.equals(trip.getUser().getEmail())) {
+                throw new RuntimeException("Access denied");
+            }
+        }
+
+        booking.setTrip(trip);
+
+        Booking.BookingType bookingType = Booking.BookingType.valueOf(dto.getBookingType());
+        Booking.BookingStatus status = Booking.BookingStatus.valueOf(dto.getStatus());
+
+        booking.setBookingType(bookingType);
+        booking.setStatus(status);
+        booking.setStartDate(dto.getStartDate());
+        booking.setEndDate(dto.getEndDate());
+
+        applyTypeAndPrice(booking, dto, bookingType);
+
+        bookingRepository.save(booking);
     }
 
+    @Transactional
+    public void deleteBooking(Long id, String email, boolean isAdmin) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
+
+        if (!isAdmin) {
+            if (booking.getTrip() == null || booking.getTrip().getUser() == null) {
+                throw new RuntimeException("Access denied");
+            }
+            if (!email.equals(booking.getTrip().getUser().getEmail())) {
+                throw new RuntimeException("Access denied");
+            }
+        }
+
+        bookingRepository.deleteById(id);
+    }
+
+    private void applyTypeAndPrice(Booking booking, BookingDTO dto, Booking.BookingType bookingType) {
+        if (bookingType == Booking.BookingType.FLIGHT) {
+
+            if (dto.getTransportId() == null) {
+                throw new RuntimeException("Transport must be selected for FLIGHT booking");
+            }
+
+            Transport transport = transportRepository.findById(dto.getTransportId())
+                    .orElseThrow(() -> new RuntimeException("Transport not found: " + dto.getTransportId()));
+
+            booking.setTransport(transport);
+            booking.setAccommodation(null);
+            booking.setTotalPrice(transport.getPrice());
+
+        } else { // HOTEL
+
+            if (dto.getAccommodationId() == null) {
+                throw new RuntimeException("Accommodation must be selected for HOTEL booking");
+            }
+
+            Accommodation accommodation = accommodationRepository.findById(dto.getAccommodationId())
+                    .orElseThrow(() -> new RuntimeException("Accommodation not found: " + dto.getAccommodationId()));
+
+            booking.setAccommodation(accommodation);
+            booking.setTransport(null);
+
+            long nights = calcNights(dto.getStartDate(), dto.getEndDate());
+            booking.setTotalPrice(accommodation.getPricePerNight() * nights);
+        }
+    }
+
+    private long calcNights(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) return 1;
+        long hours = Duration.between(start, end).toHours();
+        long nights = hours / 24;
+        if (nights <= 0) nights = 1;
+        return nights;
+    }
+
+    private BookingDTO toDTO(Booking booking) {
+        BookingDTO dto = new BookingDTO();
+        dto.setId(booking.getId());
+        dto.setTripId(booking.getTrip() != null ? booking.getTrip().getId() : null);
+        dto.setBookingType(booking.getBookingType() != null ? booking.getBookingType().name() : null);
+        dto.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
+        dto.setStartDate(booking.getStartDate());
+        dto.setEndDate(booking.getEndDate());
+        dto.setCreatedAt(booking.getCreatedAt());
+        dto.setTotalPrice(booking.getTotalPrice());
+
+        if (booking.getTransport() != null) dto.setTransportId(booking.getTransport().getId());
+        if (booking.getAccommodation() != null) dto.setAccommodationId(booking.getAccommodation().getId());
+
+        return dto;
+    }
 }
