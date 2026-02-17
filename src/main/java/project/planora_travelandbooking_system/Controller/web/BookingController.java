@@ -36,6 +36,9 @@ public class BookingController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
+        // REQUIRED for hiding admin-only UI in Thymeleaf
+        model.addAttribute("isAdmin", isAdmin);
+
         model.addAttribute("bookings", bookingService.getBookings(email, isAdmin));
         model.addAttribute("bookingDto", new BookingDTO());
 
