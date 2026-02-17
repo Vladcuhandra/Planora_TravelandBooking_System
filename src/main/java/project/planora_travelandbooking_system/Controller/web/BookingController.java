@@ -1,4 +1,4 @@
-package project.planora_travelandbooking_system.Controller;
+package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
