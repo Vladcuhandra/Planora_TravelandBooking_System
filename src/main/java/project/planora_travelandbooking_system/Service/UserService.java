@@ -161,6 +161,8 @@ public class UserService {
         user.setRole(role);
         user.setCreatedAt(LocalDateTime.now());
         user.setSuperAdmin(userDTO.isSuperAdmin());
+        user.setDeleted(userDTO.isDeleted());
+        user.setDeletionDate(userDTO.getDeletionDate());
         return user;
     }
 

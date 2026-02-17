@@ -18,13 +18,20 @@ public class DbUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var u = userRepository.findByEmailAndDeletedFalse(email).
-                orElseThrow(() -> new UsernameNotFoundException(email));
+        var u = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(u.getEmail())
+        boolean accountNonLocked = !u.isDeleted();
+        boolean enabled = !u.isDeleted();
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(u.getEmail())
                 .password(u.getPassword())
                 .roles(u.getRole().name())
+                .accountLocked(!accountNonLocked)
+                .disabled(!enabled)
+                .accountExpired(false)
+                .credentialsExpired(false)
                 .build();
     }
 
