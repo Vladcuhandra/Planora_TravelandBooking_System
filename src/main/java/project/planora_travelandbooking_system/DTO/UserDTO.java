@@ -15,4 +15,6 @@ public class UserDTO {
     private boolean superAdmin;
     private LocalDateTime createdAt;
     private LocalDateTime birthDate;
+    private boolean deleted;
+    private LocalDateTime deletionDate;
 }

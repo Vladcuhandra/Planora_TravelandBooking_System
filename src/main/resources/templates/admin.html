@@ -138,6 +138,7 @@
                             <th>Email</th>
                             <th style="width: 160px;">Role</th>
                             <th style="width: 260px;">New password</th>
+                            <th style="width: 260px;">Account Status</th>
                             <th style="width: 220px;">Actions</th>
                         </tr>
                         </thead>
@@ -171,6 +172,13 @@
                                 <span class="editable-text" th:if="${user.superAdmin != true}">••••••••</span>
                                 <input class="form-control editable-input d-none" type="password" name="password"
                                        placeholder="Optional" th:attr="form=${'edit-' + user.id}">
+                            </td>
+
+                            <td>
+                                <span class="text" th:if="${!user.deleted}" th:text="'ACTIVE'"></span>
+                                <span class="text text-danger" th:if="${user.deleted}"
+                                      th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'">
+    </span>
                             </td>
 
                             <!-- Actions -->

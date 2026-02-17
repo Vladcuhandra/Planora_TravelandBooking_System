@@ -18,7 +18,7 @@ public class DbUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var u = userRepository.findByEmail(email).
+        var u = userRepository.findByEmailAndDeletedFalse(email).
                 orElseThrow(() -> new UsernameNotFoundException(email));
 
         return org.springframework.security.core.userdetails.User
