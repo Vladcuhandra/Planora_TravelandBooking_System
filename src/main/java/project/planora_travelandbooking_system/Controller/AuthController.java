@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.DTO.SignUpDTO;
-
+import project.planora_travelandbooking_system.Service.UserService;
 import java.util.Optional;
 
 @Controller
@@ -17,10 +17,13 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder, UserService userService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
     @GetMapping("/login")
@@ -34,7 +37,7 @@ public class AuthController {
                 if (user.getRole() == User.Role.ADMIN) {
                     return "redirect:/api/admin";  // Redirect admin users
                 } else {
-                    return "redirect:/api/bookings";  // Redirect normal users
+                    return "redirect:/api/user";  // Redirect normal users
                 }
             }
         }

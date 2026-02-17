@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +32,18 @@ public class UserService {
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public User getCurrentAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("No authenticated user found");
+        }
+
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Transactional
@@ -93,13 +108,16 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "User not found with ID: " + userId));
-        if (user.isSuperAdmin()) {
-            throw new IllegalStateException("Super admin cannot be deleted.");
+        User currentUser = getCurrentAuthenticatedUser();
+
+        User userToDelete = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        if (!currentUser.isSuperAdmin() && !currentUser.getId().equals(userId)) {
+            throw new IllegalStateException("You can only delete your own account");
         }
-        userRepository.delete(user);
+
+        userRepository.delete(userToDelete);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {

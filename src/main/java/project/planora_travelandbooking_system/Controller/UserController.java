@@ -12,6 +12,8 @@ import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
 import org.springframework.ui.Model;
+
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,14 +23,11 @@ public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService,
-                          PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/admin")
@@ -44,6 +43,14 @@ public class UserController {
         model.addAttribute("newUser", new UserDTO());
 
         return "admin";
+    }
+
+    @GetMapping("/user")
+    public String getUserProfile(Model model) {
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        model.addAttribute("user", currentUser);
+
+        return "user-profile";
     }
 
     @PostMapping("/admin/create")
@@ -94,6 +101,18 @@ public class UserController {
         }
 
         return "redirect:/api/admin";
+    }
+
+    @PostMapping("/user/delete")
+    public String deleteOwnAccount() {
+        try {
+            User currentUser = userService.getCurrentAuthenticatedUser();
+            userService.deleteUser(currentUser.getId());
+        } catch (IllegalStateException e) {
+            return "redirect:/api/profile?error=" + e.getMessage();
+        }
+
+        return "redirect:/login";
     }
 
 }
