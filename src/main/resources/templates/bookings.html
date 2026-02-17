@@ -12,7 +12,6 @@
 
 <h2>All Bookings</h2>
 
-<!-- Visible ONLY for ADMIN -->
 <div class="mb-3" sec:authorize="hasRole('ADMIN')">
     <a th:href="@{/api/admin}" style="text-decoration:none;">
         <button type="button">← Go back to admin</button>
@@ -38,7 +37,6 @@
         <th>Transport</th>
         <th>Accommodation</th>
         <th>Total Price</th>
-        <th>Actions</th>
     </tr>
     </thead>
 
@@ -116,7 +114,7 @@
     <input type="datetime-local" th:field="*{endDate}" />
     <br><br>
 
-    <label>Transport (for FLIGHT)</label>
+    <label>Transport</label>
     <select th:field="*{transportId}">
         <option value="">-- None --</option>
         <option th:each="tr : ${transports}"
@@ -126,7 +124,7 @@
     </select>
     <br><br>
 
-    <label>Accommodation (for HOTEL)</label>
+    <label>Accommodation</label>
     <select th:field="*{accommodationId}">
         <option value="">-- None --</option>
         <option th:each="a : ${accommodations}"
