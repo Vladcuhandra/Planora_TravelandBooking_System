@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/logout")
                         .ignoringRequestMatchers("/h2-console/**")
                 )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // allow Postman for API
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/css/**",
@@ -45,8 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/bookings/save").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/bookings/edit/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/bookings/delete/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // Transports UI: USER read, ADMIN manage
                         .requestMatchers(HttpMethod.GET, "/transports").hasAnyRole("USER", "ADMIN")
@@ -72,7 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/trips/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/user").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user").hasAnyRole("USER", "ADMIN")
 
                         .anyRequest().authenticated()
 
@@ -149,9 +150,9 @@ public class SecurityConfig {
                     .orElse("");
 
             if ("ROLE_ADMIN".equals(role)) {
-                response.sendRedirect("/api/admin");
+                response.sendRedirect("/admin");
             } else {
-                response.sendRedirect("/api/user");
+                response.sendRedirect("user");
             }
         };
     }

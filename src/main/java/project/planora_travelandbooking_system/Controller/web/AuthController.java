@@ -1,4 +1,4 @@
-package project.planora_travelandbooking_system.Controller;
+package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,9 +35,9 @@ public class AuthController {
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 if (user.getRole() == User.Role.ADMIN) {
-                    return "redirect:/api/admin";  // Redirect admin users
+                    return "redirect:/admin";  // Redirect admin users
                 } else {
-                    return "redirect:/api/user";  // Redirect normal users
+                    return "redirect:/user";  // Redirect normal users
                 }
             }
         }

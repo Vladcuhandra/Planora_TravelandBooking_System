@@ -1,4 +1,4 @@
-package project.planora_travelandbooking_system.Controller;
+package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

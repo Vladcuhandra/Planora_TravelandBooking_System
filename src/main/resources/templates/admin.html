@@ -22,7 +22,7 @@
                 ☰
             </button>
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/api/admin}">
+            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{admin}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
@@ -50,7 +50,7 @@
             <div class="p-card p-3">
                 <div class="p-subtitle fw-semibold mb-2">Navigation</div>
                 <div class="d-grid gap-1">
-                    <a class="p-nav-link active" th:href="@{/api/admin}">Users</a>
+                    <a class="p-nav-link active" th:href="@{/admin}">Users</a>
                     <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
@@ -72,7 +72,7 @@
             <div class="offcanvas-body">
                 <div class="p-card p-3">
                     <div class="d-grid gap-1">
-                        <a class="p-nav-link active" th:href="@{/api/admin}">Users</a>
+                        <a class="p-nav-link active" th:href="@{/admin}">Users</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                         <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                         <a class="p-nav-link" th:href="@{/api/bookings}">Bookings</a>
@@ -97,7 +97,7 @@
                     <div class="p-subtitle fw-semibold">Create new user</div>
                 </div>
 
-                <form th:action="@{/api/admin/create}" th:object="${newUser}" method="post" class="row g-2 g-md-3">
+                <form th:action="@{/admin/create}" th:object="${newUser}" method="post" class="row g-2 g-md-3">
                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                     <div class="col-12 col-md-5">
@@ -185,14 +185,14 @@
                             <td class="align-middle">
                                 <div class="d-flex align-items-center gap-2">
                                     <!-- EDIT FORM -->
-                                    <form th:id="${'edit-' + user.id}" th:action="@{/api/admin/edit}" method="post" class="m-0">
+                                    <form th:id="${'edit-' + user.id}" th:action="@{/admin/edit}" method="post" class="m-0">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
                                         <button class="btn btn-soft btn-sm" type="submit" th:if="${user.superAdmin != true}">Save</button>
                                     </form>
 
                                     <!-- DELETE FORM -->
-                                    <form th:action="@{/api/admin/delete}" method="post" class="m-0" th:if="${user.superAdmin != true}">
+                                    <form th:action="@{/admin/delete}" method="post" class="m-0" th:if="${user.superAdmin != true}">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
                                         <button class="btn btn-danger-soft btn-sm" type="submit"
@@ -212,7 +212,7 @@
                 <div class="d-flex align-items-center justify-content-between mt-3" th:if="${totalPages > 0}">
                     <a class="btn btn-soft"
                        th:if="${currentPage > 0}"
-                       th:href="@{/api/admin(page=${currentPage - 1})}">
+                       th:href="@{/admin(page=${currentPage - 1})}">
                         ← Previous
                     </a>
 
@@ -222,7 +222,7 @@
 
                     <a class="btn btn-soft"
                        th:if="${currentPage + 1 < totalPages}"
-                       th:href="@{/api/admin(page=${currentPage + 1})}">
+                       th:href="@{/admin(page=${currentPage + 1})}">
                         Next →
                     </a>
                 </div>

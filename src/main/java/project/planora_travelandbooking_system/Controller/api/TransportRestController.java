@@ -1,10 +1,9 @@
-package project.planora_travelandbooking_system.Controller;
+package project.planora_travelandbooking_system.Controller.api;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
-import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
 
 import java.util.List;

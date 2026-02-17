@@ -1,27 +1,19 @@
-package project.planora_travelandbooking_system.Controller;
+package project.planora_travelandbooking_system.Controller.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.Model.User;
-import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
 import org.springframework.ui.Model;
 
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-
 @Controller
-@RequestMapping("/api")
 public class UserController {
 
     private final UserService userService;
@@ -61,9 +53,9 @@ public class UserController {
         userDTO.setSuperAdmin(false);
         try {
             userService.saveUser(userDTO);
-            return "redirect:/api/admin";
+            return "redirect:/admin";
         } catch (Exception e) {
-            return "redirect:/api/admin?error=creatingUser";
+            return "redirect:/admin?error=creatingUser";
         }
     }
 
@@ -81,13 +73,13 @@ public class UserController {
             updatedDTO.setPassword(password);
             updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
             userService.saveUser(updatedDTO);
-            return "redirect:/api/admin";
+            return "redirect:/admin";
         } catch (IllegalStateException e) {
             System.out.println("Forbidden action: " + e.getMessage());
-            return "redirect:/api/admin?error=" + e.getMessage();
+            return "redirect:/admin?error=" + e.getMessage();
         } catch (RuntimeException e) {
             System.out.println("Error updating user: " + e.getMessage());
-            return "redirect:/api/admin?error=updateUser";
+            return "redirect:/admin?error=updateUser";
         }
     }
 
@@ -97,13 +89,13 @@ public class UserController {
             userService.deleteUser(userId);
         } catch (IllegalStateException e) {
             System.out.println("Forbidden action: " + e.getMessage());
-            return "redirect:/api/admin?error=" + e.getMessage();
+            return "redirect:/admin?error=" + e.getMessage();
         } catch (RuntimeException e) {
             System.out.println("Error deleting user: " + e.getMessage());
-            return "redirect:/api/admin?error=deleteUser";
+            return "redirect:/admin?error=deleteUser";
         }
 
-        return "redirect:/api/admin";
+        return "redirect:/admin";
     }
 
     @PostMapping("/user/delete")
@@ -117,7 +109,7 @@ public class UserController {
             request.getSession().invalidate();
 
         } catch (IllegalStateException e) {
-            return "redirect:/api/profile?error=" + e.getMessage();
+            return "redirect:/profile?error=" + e.getMessage();
         }
 
         return "redirect:/login?deleted";
