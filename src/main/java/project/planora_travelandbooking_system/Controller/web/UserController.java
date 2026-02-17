@@ -7,22 +7,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.Model.User;
+import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
 import org.springframework.ui.Model;
+
+import java.util.Optional;
 
 @Controller
 public class UserController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService,
+                          PasswordEncoder passwordEncoder, UserRepository userRepository) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/admin")
@@ -38,14 +46,6 @@ public class UserController {
         model.addAttribute("newUser", new UserDTO());
 
         return "admin";
-    }
-
-    @GetMapping("/user")
-    public String getUserProfile(Model model) {
-        User currentUser = userService.getCurrentAuthenticatedUser();
-        model.addAttribute("user", currentUser);
-
-        return "user-profile";
     }
 
     @PostMapping("/admin/create")
@@ -98,9 +98,18 @@ public class UserController {
         return "redirect:/admin";
     }
 
+    @GetMapping("/user")
+    public String getUserProfile(Model model) {
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        model.addAttribute("user", currentUser);
+
+        return "user-profile";
+    }
+
     @PostMapping("/user/delete")
     public String deleteOwnAccount(HttpServletRequest request,
-                                   HttpServletResponse response) {
+                                   HttpServletResponse response,
+                                   RedirectAttributes redirectAttributes) {
 
         try {
             User currentUser = userService.getCurrentAuthenticatedUser();
@@ -112,7 +121,45 @@ public class UserController {
             return "redirect:/profile?error=" + e.getMessage();
         }
 
+        redirectAttributes.addFlashAttribute("deactivated", true);
+
         return "redirect:/login?deleted";
     }
+
+    @PostMapping("/user/restore")
+    @Transactional
+    public String restoreAccount(@RequestParam String email,
+                                 @RequestParam String password,
+                                 RedirectAttributes redirectAttributes) {
+
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "User not found.");
+            return "redirect:/login";
+        }
+
+        User user = userOptional.get();
+
+        if (!user.isDeleted()) {
+            redirectAttributes.addFlashAttribute("error", "Account is not scheduled for deletion.");
+            return "redirect:/login";
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            redirectAttributes.addFlashAttribute("error", "Incorrect password.");
+            return "redirect:/login?restore=true&email=" + email;
+        }
+
+        user.setDeleted(false);
+        user.setDeletionDate(null);
+        userRepository.save(user);
+
+        redirectAttributes.addFlashAttribute("restored", true);
+
+        return "redirect:/login";
+    }
+
+
 
 }

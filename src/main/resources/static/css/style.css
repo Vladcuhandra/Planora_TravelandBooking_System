@@ -507,3 +507,31 @@ a:hover { color: var(--p-blue); }
 
 
 
+/* === Auto-width number inputs in tables accommodation (fit content) === */
+.planora-table td .form-control[type="number"]{
+  width: max-content;
+  min-width: 6ch;
+  max-width: 14ch;
+  padding-left: .7rem;
+  padding-right: .7rem;
+  text-align: center;
+}
+
+.planora-table td input[name="pricePerNight"]{
+  min-width: 8ch;
+  max-width: 16ch;
+}
+
+.planora-table td input[name="rating"]{
+  min-width: 5ch;
+  max-width: 8ch;
+}
+
+.planora-table td input[name="room"]{
+  min-width: 5ch;
+  max-width: 8ch;
+}
+
+
+
+

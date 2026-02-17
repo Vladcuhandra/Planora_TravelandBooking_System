@@ -22,7 +22,7 @@
                 ☰
             </button>
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{admin}">
+            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/admin}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
@@ -75,6 +75,7 @@
                         <a class="p-nav-link active" th:href="@{/admin}">Users</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                         <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
+                        <a class="p-nav-link" th:href="@{/trips}">Trips</a>
                         <a class="p-nav-link" th:href="@{/api/bookings}">Bookings</a>
                     </div>
 
@@ -137,7 +138,7 @@
                             <th style="width: 90px;">ID</th>
                             <th>Email</th>
                             <th style="width: 160px;">Role</th>
-                            <th style="width: 260px;">New password</th>
+                            <th style="width: 260px;">Password</th>
                             <th style="width: 260px;">Account Status</th>
                             <th style="width: 220px;">Actions</th>
                         </tr>
@@ -177,8 +178,7 @@
                             <td>
                                 <span class="text" th:if="${!user.deleted}" th:text="'ACTIVE'"></span>
                                 <span class="text text-danger" th:if="${user.deleted}"
-                                      th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'">
-    </span>
+                                      th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'"></span>
                             </td>
 
                             <!-- Actions -->
