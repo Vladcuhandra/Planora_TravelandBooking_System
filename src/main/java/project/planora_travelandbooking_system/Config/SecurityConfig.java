@@ -29,13 +29,18 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/logout")
                         .ignoringRequestMatchers("/h2-console/**")
                 )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // ✅ allow Postman for API
+/*                .requestMatchers("/login", "/css/**", "/js/**", "/h2-console/**").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().authenticated()*/
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
                                 "/favicon.ico"
-                        ).permitAll()
+                        )
+                        .permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
