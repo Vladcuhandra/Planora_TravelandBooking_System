@@ -10,12 +10,18 @@ import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import project.planora_travelandbooking_system.Controller.web.CustomAuthenticationFailureHandler;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
@@ -28,8 +34,33 @@ public class SecurityConfig {
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @org.springframework.core.annotation.Order(1)
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/api/**")
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                )
+                .formLogin(form -> form.disable())   // ⭐ important
+                .logout(logout -> logout.disable()); // optional (API usually no logout)
+
+        return http.build();
+    }
+
+    @Bean
+    @org.springframework.core.annotation.Order(2)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        RequestMatcher notApi = request -> !request.getRequestURI().startsWith("/api/");
+
+        http
+                .securityMatcher(notApi) // ignore /api
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/logout")
                         .ignoringRequestMatchers("/h2-console/**")
@@ -44,7 +75,10 @@ public class SecurityConfig {
                                 "/favicon.ico"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+                        //for JWT auth
+                        //.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+
+                        //.requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
@@ -102,6 +136,13 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
