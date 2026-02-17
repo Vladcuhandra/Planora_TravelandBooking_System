@@ -13,9 +13,14 @@
     <p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
     <p><strong>Birth Date:</strong> <span th:text="${user.birthDate}"></span></p>
 
-    <form th:action="@{/api/user/delete}" method="post"
+    <form th:action="@{/user/delete}" method="post"
           onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')">
         <button type="submit" class="btn btn-danger">Delete My Account</button>
+    </form>
+
+    <form th:action="@{/logout}" method="post" class="m-0">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button class="btn btn-danger-soft" type="submit">Logout</button>
     </form>
 </div>
 

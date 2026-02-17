@@ -1,5 +1,6 @@
 package project.planora_travelandbooking_system.Config;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
@@ -15,12 +16,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import project.planora_travelandbooking_system.Controller.web.CustomAuthenticationFailureHandler;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,11 +37,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // allow Postman for API
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/user/restore",
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
                                 "/favicon.ico"
                         ).permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
@@ -84,11 +92,12 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .usernameParameter("email")
                         .successHandler(customAuthenticationSuccessHandler())
+                        .failureHandler(customAuthenticationFailureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
+                        .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 );
 
