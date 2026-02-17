@@ -42,7 +42,7 @@ public class UserService {
         }
 
         String email = auth.getName();
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
@@ -109,15 +109,47 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId) {
         User currentUser = getCurrentAuthenticatedUser();
+        User userToDelete = getUserOrThrow(userId);
 
-        User userToDelete = userRepository.findById(userId)
+        validateDeletionPermission(currentUser, userToDelete);
+
+        if (isHardDeleteAllowed(currentUser)) {
+            hardDeleteUser(userToDelete);
+        } else {
+            softDeleteUser(userToDelete);
+        }
+    }
+
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+    }
 
-        if (!currentUser.isSuperAdmin() && !currentUser.getId().equals(userId)) {
+    private void validateDeletionPermission(User currentUser, User userToDelete) {
+
+        if (!currentUser.isSuperAdmin() &&
+                !currentUser.getId().equals(userToDelete.getId())) {
             throw new IllegalStateException("You can only delete your own account");
         }
 
-        userRepository.delete(userToDelete);
+        if (userToDelete.isSuperAdmin() &&
+                !currentUser.isSuperAdmin()) {
+            throw new IllegalStateException("SuperAdmin accounts cannot be deleted");
+        }
+    }
+
+    private boolean isHardDeleteAllowed(User currentUser) {
+        return currentUser.isSuperAdmin();
+    }
+
+    private void hardDeleteUser(User user) {
+        userRepository.delete(user);
+    }
+
+    private void softDeleteUser(User user) {
+        user.setDeleted(true);
+        user.setDeletionDate(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {
@@ -141,6 +173,8 @@ public class UserService {
         userDTO.setRole(user.getRole().name());
         userDTO.setCreatedAt(user.getCreatedAt());
         userDTO.setSuperAdmin(user.isSuperAdmin());
+        userDTO.setDeleted(user.isDeleted());
+        userDTO.setDeletionDate(user.getDeletionDate());
         return userDTO;
     }
 }

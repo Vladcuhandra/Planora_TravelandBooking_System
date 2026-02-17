@@ -29,8 +29,8 @@ public class AuthController {
     @GetMapping("/login")
     public String login(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            Optional<User> userOptional = userRepository.findByEmail(username);
+            String email = authentication.getName();
+            Optional<User> userOptional = userRepository.findByEmailAndDeletedFalse(email);
 
             if (userOptional.isPresent()) {
                 User user = userOptional.get();

@@ -32,7 +32,13 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted = false;
+
+    private LocalDateTime deletionDate;
+
     public enum Role {
         USER, ADMIN
     }
+
 }
