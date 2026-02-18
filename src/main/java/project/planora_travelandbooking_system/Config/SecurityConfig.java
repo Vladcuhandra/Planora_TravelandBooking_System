@@ -15,16 +15,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import project.planora_travelandbooking_system.Controller.web.CustomAuthenticationFailureHandler;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
+import project.planora_travelandbooking_system.Security.JwtFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -35,11 +37,45 @@ public class SecurityConfig {
 
     @Bean
     @org.springframework.core.annotation.Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
+                                                      JwtFilter jwtFilter) throws Exception {
         http
                 .securityMatcher("/api/**")
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        //ACCOMMODATIONS
+                        .requestMatchers(HttpMethod.GET, "/api/accommodation/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+
+                        //TRIPS
+                        .requestMatchers(HttpMethod.GET, "/api/trip/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+
+                        //TRANSPORTS
+                        .requestMatchers(HttpMethod.GET, "/api/transports/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/transports/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/transports/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
+                        .hasRole("ADMIN")
+                        
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
                         .anyRequest().authenticated()
@@ -47,7 +83,7 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
-                .formLogin(form -> form.disable())   // ⭐ important
+                .formLogin(form -> form.disable())   // important
                 .logout(logout -> logout.disable()); // optional (API usually no logout)
 
         return http.build();
