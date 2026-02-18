@@ -98,13 +98,25 @@
   window.PlanoraUI = { refresh: initAll };
 
    // Topbar: visible only at the very top of the page
-     (function initTopbarOnlyAtTop() {
+     (function initTopbarOnlyOnMobile() {
        const topbar = document.querySelector(".p-topbar");
        if (!topbar) return;
 
-       const SHOW_AT_TOP_PX = 25; // tolerance for "top"
+       const MOBILE_MAX = 767; // <= 767px - mobile
+       const SHOW_AT_TOP_PX = 25;
+
+       function isMobile() {
+         return window.innerWidth <= MOBILE_MAX;
+       }
 
        function update() {
+         if (!isMobile()) {
+           // desktop and tablet - always visible
+           topbar.classList.remove("is-hidden");
+           return;
+         }
+
+         // mobile - auto-hide
          if (window.scrollY <= SHOW_AT_TOP_PX) {
            topbar.classList.remove("is-hidden");
          } else {
@@ -112,7 +124,6 @@
          }
        }
 
-       // Initial state
        update();
 
        window.addEventListener("scroll", update, { passive: true });

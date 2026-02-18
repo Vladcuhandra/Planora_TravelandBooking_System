@@ -105,6 +105,7 @@ html, body { height: 100%; }
 
 body.planora-dark {
   min-height: 100vh;
+  padding-top: var(--topbar-height);
   background-color: var(--d-bg);
   background-image:
     linear-gradient(
@@ -234,10 +235,14 @@ a:hover { color: var(--p-blue); }
   align-items: center;
   background: rgba(15,26,48,0.75);
   border-bottom: 1px solid var(--d-border);
-  /*backdrop-filter: blur(10px);*/
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transform: translateZ(0);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
 }
 
 .p-logo {
@@ -566,8 +571,8 @@ a:hover { color: var(--p-blue); }
 }
 /* Hidden state */
 .p-topbar.is-hidden {
-  transform: translateY(-100%);
-  opacity: 0.98;
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /*@media (min-width: 992px) {
@@ -591,8 +596,6 @@ a:hover { color: var(--p-blue); }
   height: 44px;
   object-fit: contain;
   border-radius: 10px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--d-border);
 }
 .topbar-title {
   font-weight: 700;
@@ -609,6 +612,18 @@ a:hover { color: var(--p-blue); }
 @media (max-width: 768px) {
   .p-topbar {
     backdrop-filter: none;
+  }
+}
+
+/* =====================================================
+   Topbar visibility rules
+   ===================================================== */
+
+/* MD and up — topbar always visible */
+@media (min-width: 768px) {
+  .p-topbar {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
   }
 }
 
