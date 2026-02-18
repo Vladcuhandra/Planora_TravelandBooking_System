@@ -43,17 +43,20 @@ public class BookingController {
         boolean admin = isAdmin(auth);
 
         String selectedType = (type == null) ? "" : type.trim().toUpperCase();
+        if (!"TRANSPORT".equals(selectedType) && !"ACCOMMODATION".equals(selectedType)) {
+            selectedType = "";
+        }
 
         model.addAttribute("isAdmin", admin);
-        model.addAttribute("selectedType", selectedType);
-
         model.addAttribute("bookings", bookingService.getBookings(email, admin));
 
-        BookingDTO dto = new BookingDTO();
-        if (!selectedType.isBlank()) {
-            dto.setBookingType(selectedType);
+        BookingDTO createDto = new BookingDTO();
+        if (!selectedType.isEmpty()) {
+            createDto.setBookingType(selectedType);
         }
-        model.addAttribute("bookingDto", dto);
+        model.addAttribute("bookingDto", createDto);
+
+        model.addAttribute("selectedType", selectedType);
 
         model.addAttribute("bookingTypes", Booking.BookingType.values());
         model.addAttribute("bookingStatuses", Booking.BookingStatus.values());
