@@ -185,11 +185,13 @@
                                     <form th:id="${'edit-' + user.id}" th:action="@{/admin/edit}" method="post" class="m-0">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
-                                        <button class="btn btn-soft btn-sm" type="submit" th:if="${user.superAdmin != true}">Save</button>
+                                        <button class="btn btn-soft btn-sm" type="submit"
+                                                th:if="${user.id != currentUser.id and user.superAdmin != true}">Save</button>
                                     </form>
 
                                     <!-- DELETE FORM -->
-                                    <form th:action="@{/admin/delete}" method="post" class="m-0" th:if="${user.superAdmin != true}">
+                                    <form th:action="@{/admin/delete}" method="post" class="m-0"
+                                          th:if="${user.id != currentUser.id and user.superAdmin != true}">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
                                         <button class="btn btn-danger-soft btn-sm" type="submit"
