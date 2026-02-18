@@ -1,4 +1,4 @@
-package project.planora_travelandbooking_system.Config;
+package project.planora_travelandbooking_system.Security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
