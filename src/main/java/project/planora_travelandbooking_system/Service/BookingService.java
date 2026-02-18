@@ -53,12 +53,8 @@ public class BookingService {
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
 
         if (!isAdmin) {
-            if (trip.getUser() == null || trip.getUser().getEmail() == null) {
-                throw new RuntimeException("Access denied");
-            }
-            if (!trip.getUser().getEmail().equals(email)) {
-                throw new RuntimeException("Access denied");
-            }
+            if (trip.getUser() == null || trip.getUser().getEmail() == null) throw new RuntimeException("Access denied");
+            if (!trip.getUser().getEmail().equals(email)) throw new RuntimeException("Access denied");
         }
 
         Booking booking = new Booking();
@@ -72,7 +68,7 @@ public class BookingService {
         booking.setStartDate(bookingDTO.getStartDate());
         booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, bookingDTO, bookingType);
+        applyTypeAndPrice(booking, bookingDTO, bookingType, null);
 
         booking.setCreatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
@@ -84,21 +80,15 @@ public class BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 
         if (!isAdmin) {
-            if (booking.getTrip() == null || booking.getTrip().getUser() == null) {
-                throw new RuntimeException("Access denied");
-            }
-            if (!email.equals(booking.getTrip().getUser().getEmail())) {
-                throw new RuntimeException("Access denied");
-            }
+            if (booking.getTrip() == null || booking.getTrip().getUser() == null) throw new RuntimeException("Access denied");
+            if (!email.equals(booking.getTrip().getUser().getEmail())) throw new RuntimeException("Access denied");
         }
 
         Trip trip = tripRepository.findById(bookingDTO.getTripId())
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
 
         if (!isAdmin) {
-            if (trip.getUser() == null || !email.equals(trip.getUser().getEmail())) {
-                throw new RuntimeException("Access denied");
-            }
+            if (trip.getUser() == null || !email.equals(trip.getUser().getEmail())) throw new RuntimeException("Access denied");
         }
 
         booking.setTrip(trip);
@@ -111,7 +101,7 @@ public class BookingService {
         booking.setStartDate(bookingDTO.getStartDate());
         booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, bookingDTO, bookingType);
+        applyTypeAndPrice(booking, bookingDTO, bookingType, booking.getId());
 
         bookingRepository.save(booking);
     }
@@ -122,39 +112,65 @@ public class BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 
         if (!isAdmin) {
-            if (booking.getTrip() == null || booking.getTrip().getUser() == null) {
-                throw new RuntimeException("Access denied");
-            }
-            if (!email.equals(booking.getTrip().getUser().getEmail())) {
-                throw new RuntimeException("Access denied");
-            }
+            if (booking.getTrip() == null || booking.getTrip().getUser() == null) throw new RuntimeException("Access denied");
+            if (!email.equals(booking.getTrip().getUser().getEmail())) throw new RuntimeException("Access denied");
         }
 
         bookingRepository.deleteById(id);
     }
 
-    private void applyTypeAndPrice(Booking booking, BookingDTO bookingDTO, Booking.BookingType bookingType) {
+    /**
+     * Enforces: one Transport/Accommodation can be used by only ONE ACTIVE booking (status != CANCELLED).
+     * That prevents multiple trips from using the same booking resource.
+     */
+    private void applyTypeAndPrice(Booking booking,
+                                   BookingDTO bookingDTO,
+                                   Booking.BookingType bookingType,
+                                   Long currentBookingIdOrNull) {
+
+        Booking.BookingStatus cancelled = Booking.BookingStatus.CANCELLED;
+
         if (bookingType == Booking.BookingType.TRANSPORT) {
 
             if (bookingDTO.getTransportId() == null) {
                 throw new RuntimeException("Transport must be selected for booking");
             }
 
-            Transport transport = transportRepository.findById(bookingDTO.getTransportId())
-                    .orElseThrow(() -> new RuntimeException("Transport not found: " + bookingDTO.getTransportId()));
+            Long transportId = bookingDTO.getTransportId();
+
+            boolean alreadyBooked = (currentBookingIdOrNull == null)
+                    ? bookingRepository.existsByTransportIdAndStatusNot(transportId, cancelled)
+                    : bookingRepository.existsByTransportIdAndStatusNotAndIdNot(transportId, cancelled, currentBookingIdOrNull);
+
+            if (alreadyBooked) {
+                throw new RuntimeException("This transport is already booked in another active booking");
+            }
+
+            Transport transport = transportRepository.findById(transportId)
+                    .orElseThrow(() -> new RuntimeException("Transport not found: " + transportId));
 
             booking.setTransport(transport);
             booking.setAccommodation(null);
             booking.setTotalPrice(transport.getPrice());
 
-        } else { 
+        } else { // ACCOMMODATION
 
             if (bookingDTO.getAccommodationId() == null) {
                 throw new RuntimeException("Accommodation must be selected for booking");
             }
 
-            Accommodation accommodation = accommodationRepository.findById(bookingDTO.getAccommodationId())
-                    .orElseThrow(() -> new RuntimeException("Accommodation not found: " + bookingDTO.getAccommodationId()));
+            Long accommodationId = bookingDTO.getAccommodationId();
+
+            boolean alreadyBooked = (currentBookingIdOrNull == null)
+                    ? bookingRepository.existsByAccommodationIdAndStatusNot(accommodationId, cancelled)
+                    : bookingRepository.existsByAccommodationIdAndStatusNotAndIdNot(accommodationId, cancelled, currentBookingIdOrNull);
+
+            if (alreadyBooked) {
+                throw new RuntimeException("This accommodation is already booked in another active booking");
+            }
+
+            Accommodation accommodation = accommodationRepository.findById(accommodationId)
+                    .orElseThrow(() -> new RuntimeException("Accommodation not found: " + accommodationId));
 
             booking.setAccommodation(accommodation);
             booking.setTransport(null);
