@@ -34,7 +34,7 @@ public class BookingController {
                 .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
-    @GetMapping("/api/bookings")
+    @GetMapping("/bookings")
     public String bookings(Model model, Authentication auth) {
 
         String email = auth.getName();
@@ -57,26 +57,26 @@ public class BookingController {
         return "bookings";
     }
 
-    @PostMapping("/api/bookings/save")
+    @PostMapping("/bookings/save")
     public String saveBooking(@ModelAttribute BookingDTO dto, Authentication auth) {
         String email = auth.getName();
         bookingService.saveBooking(dto, email, isAdmin(auth));
-        return "redirect:/api/bookings";
+        return "redirect:/bookings";
     }
 
-    @PostMapping("/api/bookings/edit/{id}")
+    @PostMapping("/bookings/edit/{id}")
     public String updateBooking(@PathVariable Long id,
                                 @ModelAttribute BookingDTO dto,
                                 Authentication auth) {
         String email = auth.getName();
         bookingService.updateBooking(id, dto, email, isAdmin(auth));
-        return "redirect:/api/bookings";
+        return "redirect:/bookings";
     }
 
-    @RequestMapping(value = "/api/bookings/delete/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/bookings/delete/{id}", method = RequestMethod.DELETE)
     public String deleteBooking(@PathVariable Long id, Authentication auth) {
         String email = auth.getName();
         bookingService.deleteBooking(id, email, isAdmin(auth));
-        return "redirect:/api/bookings";
+        return "redirect:/bookings";
     }
 }

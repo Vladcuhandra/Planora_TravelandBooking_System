@@ -25,7 +25,7 @@
             </button>
 
             <a class="d-flex align-items-center gap-2 text-decoration-none"
-               th:href="${isAdmin} ? @{/api/admin} : @{/api/bookings}">
+               th:href="${isAdmin} ? @{/admin} : @{/bookings}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
@@ -54,19 +54,17 @@
 
                 <!-- Admin nav -->
                 <div class="d-grid gap-1" th:if="${isAdmin}">
-                    <a class="p-nav-link" th:href="@{/api/admin}">Users</a>
+                    <a class="p-nav-link" th:href="@{/admin}">Users</a>
                     <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link active" th:href="@{/api/bookings}">Bookings</a>
+                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                 </div>
 
                 <!-- User nav -->
                 <div class="d-grid gap-1" th:if="${!isAdmin}">
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
-                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link active" th:href="@{/api/bookings}">Bookings</a>
+                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                 </div>
 
                 <hr class="p-divider my-3">
@@ -85,18 +83,16 @@
                 <div class="p-card p-3">
 
                     <div class="d-grid gap-1" th:if="${isAdmin}">
-                        <a class="p-nav-link" th:href="@{/api/admin}">Users</a>
+                        <a class="p-nav-link" th:href="@{/admin}">Users</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                         <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                         <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link active" th:href="@{/api/bookings}">Bookings</a>
+                        <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                     </div>
 
                     <div class="d-grid gap-1" th:if="${!isAdmin}">
                         <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link" th:href="@{/transports}">Transport</a>
-                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                        <a class="p-nav-link active" th:href="@{/api/bookings}">Bookings</a>
+                        <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                     </div>
 
                 </div>
@@ -110,9 +106,6 @@
                     <div class="p-title h4 mb-1">Bookings</div>
                     <div class="p-hint">Create and manage bookings</div>
                 </div>
-
-                <!-- Admin-only back button -->
-                <a th:if="${isAdmin}" th:href="@{/api/admin}" class="btn btn-soft">← Back to Admin</a>
             </div>
 
             <!-- Create booking -->
@@ -121,7 +114,7 @@
                     <div class="p-subtitle fw-semibold">Create booking</div>
                 </div>
 
-                <form th:action="@{/api/bookings/save}" th:object="${bookingDto}" method="post" class="row g-2 g-md-3">
+                <form th:action="@{/bookings/save}" th:object="${bookingDto}" method="post" class="row g-2 g-md-3">
                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                     <div class="col-12 col-md-6">
@@ -227,7 +220,7 @@
                             <td th:text="${b.totalPrice}"></td>
 
                             <td>
-                                <form th:action="@{/api/bookings/delete/{id}(id=${b.id})}"
+                                <form th:action="@{/bookings/delete/{id}(id=${b.id})}"
                                       method="post"
                                       class="m-0"
                                       onsubmit="return confirm('Delete this booking?');">
@@ -273,8 +266,8 @@
 
             // Supports both enum styles:
             // TRANSPORT/ACCOMMODATION  OR  FLIGHT/HOTEL
-            const isTransport = (v === 'TRANSPORT' || v === 'FLIGHT');
-            const isAccommodation = (v === 'ACCOMMODATION' || v === 'HOTEL');
+            const isTransport = (v === 'TRANSPORT');
+            const isAccommodation = (v === 'ACCOMMODATION');
 
             if (isTransport) {
                 setBlockVisible(transportBlock, true);
