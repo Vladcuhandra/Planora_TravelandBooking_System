@@ -271,7 +271,7 @@ a:hover { color: var(--p-blue); }
 
 
 
-/* ===== Planora dark table ===== */
+/* ===== dark table ===== */
 .table.planora-table {
   --bs-table-bg: transparent;
   --bs-table-color: var(--d-text);

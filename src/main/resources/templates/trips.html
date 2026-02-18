@@ -54,18 +54,19 @@
                 <!-- Admin nav -->
                 <div class="d-grid gap-1" th:if="${isAdmin}">
                     <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                    <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
+                    <a class="p-nav-link active" th:href="@{/trips}">Trips</a>
+                    <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
                 </div>
 
                 <!-- User nav -->
                 <div class="d-grid gap-1" th:if="${!isAdmin}">
-                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                    <a class="p-nav-link" th:href="@{/admin}">Users</a>
+                    <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
+                    <a class="p-nav-link active" th:href="@{/trips}">Trips</a>
+                    <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
                 </div>
         </aside>
 
