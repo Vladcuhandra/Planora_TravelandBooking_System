@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -33,8 +34,15 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
     @GetMapping("/admin")
     public String adminDashboard(@RequestParam(defaultValue = "0") int page, Model model) {
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        model.addAttribute("user", currentUser);
         int pageSize = 10;
         Page<UserDTO> usersPage = userService.getAllUsers(page, pageSize);
 
@@ -98,8 +106,11 @@ public class UserController {
         return "redirect:/admin";
     }
 
+
     @GetMapping("/user")
-    public String getUserProfile(Model model) {
+    public String getUserProfile(Model model, Authentication auth) {
+        String email = auth.getName();
+        boolean admin = isAdmin(auth);
         User currentUser = userService.getCurrentAuthenticatedUser();
         model.addAttribute("user", currentUser);
 

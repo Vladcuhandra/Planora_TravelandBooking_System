@@ -199,11 +199,7 @@ public class SecurityConfig {
                     .findFirst()
                     .orElse("");
 
-            if ("ROLE_ADMIN".equals(role)) {
-                response.sendRedirect("/admin");
-            } else {
-                response.sendRedirect("user");
-            }
+            response.sendRedirect("user");
         };
     }
 }

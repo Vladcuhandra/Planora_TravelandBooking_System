@@ -22,12 +22,11 @@
                 ☰
             </button>
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none"
-               th:href="${isAdmin} ? @{/admin} : @{/accommodations}">
+            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/user}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
-                    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Area'"></div>
+                    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Panel'"></div>
                 </div>
             </a>
 
@@ -50,21 +49,17 @@
         <aside class="col-lg-3 d-none d-lg-block">
             <div class="p-card p-3">
                 <div class="p-subtitle fw-semibold mb-2">Navigation</div>
-
-                <!-- Admin nav -->
-                <div class="d-grid gap-1" th:if="${isAdmin}">
-                    <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                    <a class="p-nav-link" th:href="@{/transports}">Transports</a>
-                    <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
+                <div class="d-grid gap-1">
+                    <a class="p-nav-link" th:href="@{/user}">Profile</a>
                 </div>
 
-                <!-- User nav -->
-                <div class="d-grid gap-1" th:if="${!isAdmin}">
+                <div class="d-grid gap-1" th:if="${isAdmin}">
                     <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                    <a class="p-nav-link" th:href="@{/transports}">Transports</a>
-                    <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
+                </div>
+
+                <div class="d-grid gap-1">
+                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                    <a class="p-nav-link  active" th:href="@{/accommodations}">Accommodations</a>
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
                     <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
                 </div>
@@ -81,17 +76,16 @@
             </div>
             <div class="offcanvas-body">
                 <div class="p-card p-3">
-                    <div class="d-grid gap-1" th:if="${isAdmin}">
-                        <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                        <a class="p-nav-link" th:href="@{/transports}">Transports</a>
-                        <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
-                        <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
+                    <div class="d-grid gap-1">
+                        <a class="p-nav-link" th:href="@{/user}">Profile</a>
                     </div>
 
-                    <div class="d-grid gap-1" th:if="${!isAdmin}">
+                    <div class="d-grid gap-1" th:if="${isAdmin}">
                         <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                        <a class="p-nav-link" th:href="@{/transports}">Transports</a>
+                    </div>
+
+                    <div class="d-grid gap-1">
+                        <a class="p-nav-link" th:href="@{/transports}">Transport</a>
                         <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
                         <a class="p-nav-link" th:href="@{/trips}">Trips</a>
                         <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
@@ -106,12 +100,12 @@
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Accommodations</div>
-                    <div class="p-hint">Create, edit, and delete accommodations</div>
+                    <div class="p-hint" th:if="${isAdmin}">Create, edit, and delete accommodations</div>
                 </div>
             </div>
 
             <!-- Create Accommodation -->
-            <section class="p-card p-3 p-md-4 mb-3">
+            <section class="p-card p-3 p-md-4 mb-3" th:if="${isAdmin}">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create accommodation</div>
                 </div>
@@ -195,7 +189,7 @@
                             <th style="width: 110px;">Rooms</th>
                             <th style="width: 140px;">Price / Night</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;">Actions</th>
+                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
                         </tr>
                         </thead>
 
@@ -257,7 +251,7 @@
                             </td>
 
                             <td class="align-middle">
-                                <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center gap-2" th:if="${isAdmin}">
 
                                     <!-- Edit form -->
                                     <form th:id="${'edit-acc-' + a.id}"
