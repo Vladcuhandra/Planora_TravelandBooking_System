@@ -35,14 +35,25 @@ public class BookingController {
     }
 
     @GetMapping("/bookings")
-    public String bookings(Model model, Authentication auth) {
+    public String bookings(Model model,
+                           Authentication auth,
+                           @RequestParam(value = "type", required = false) String type) {
 
         String email = auth.getName();
         boolean admin = isAdmin(auth);
 
+        String selectedType = (type == null) ? "" : type.trim().toUpperCase();
+
         model.addAttribute("isAdmin", admin);
+        model.addAttribute("selectedType", selectedType);
+
         model.addAttribute("bookings", bookingService.getBookings(email, admin));
-        model.addAttribute("bookingDto", new BookingDTO());
+
+        BookingDTO dto = new BookingDTO();
+        if (!selectedType.isBlank()) {
+            dto.setBookingType(selectedType);
+        }
+        model.addAttribute("bookingDto", dto);
 
         model.addAttribute("bookingTypes", Booking.BookingType.values());
         model.addAttribute("bookingStatuses", Booking.BookingStatus.values());
