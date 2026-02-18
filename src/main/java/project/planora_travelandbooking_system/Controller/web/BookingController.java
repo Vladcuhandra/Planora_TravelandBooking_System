@@ -29,23 +29,25 @@ public class BookingController {
         this.accommodationRepository = accommodationRepository;
     }
 
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
     @GetMapping("/api/bookings")
     public String bookings(Model model, Authentication auth) {
 
         String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean admin = isAdmin(auth);
 
-        // REQUIRED for hiding admin-only UI in Thymeleaf
-        model.addAttribute("isAdmin", isAdmin);
-
-        model.addAttribute("bookings", bookingService.getBookings(email, isAdmin));
+        model.addAttribute("isAdmin", admin);
+        model.addAttribute("bookings", bookingService.getBookings(email, admin));
         model.addAttribute("bookingDto", new BookingDTO());
 
         model.addAttribute("bookingTypes", Booking.BookingType.values());
         model.addAttribute("bookingStatuses", Booking.BookingStatus.values());
 
-        model.addAttribute("trips", isAdmin
+        model.addAttribute("trips", admin
                 ? tripRepository.findAll()
                 : tripRepository.findByUserEmail(email));
 
@@ -57,12 +59,8 @@ public class BookingController {
 
     @PostMapping("/api/bookings/save")
     public String saveBooking(@ModelAttribute BookingDTO dto, Authentication auth) {
-
         String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        bookingService.saveBooking(dto, email, isAdmin);
+        bookingService.saveBooking(dto, email, isAdmin(auth));
         return "redirect:/api/bookings";
     }
 
@@ -70,23 +68,15 @@ public class BookingController {
     public String updateBooking(@PathVariable Long id,
                                 @ModelAttribute BookingDTO dto,
                                 Authentication auth) {
-
         String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        bookingService.updateBooking(id, dto, email, isAdmin);
+        bookingService.updateBooking(id, dto, email, isAdmin(auth));
         return "redirect:/api/bookings";
     }
 
     @RequestMapping(value = "/api/bookings/delete/{id}", method = RequestMethod.DELETE)
     public String deleteBooking(@PathVariable Long id, Authentication auth) {
-
         String email = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        bookingService.deleteBooking(id, email, isAdmin);
+        bookingService.deleteBooking(id, email, isAdmin(auth));
         return "redirect:/api/bookings";
     }
 }
