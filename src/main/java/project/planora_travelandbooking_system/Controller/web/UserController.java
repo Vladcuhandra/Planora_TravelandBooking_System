@@ -70,8 +70,19 @@ public class UserController {
     public String editUser(@RequestParam Long userId,
                            @RequestParam String email,
                            @RequestParam String role,
-                           @RequestParam(required = false) String password) {
+                           @RequestParam(required = false) String password,
+                           @RequestParam(required = false, defaultValue = "KEEP") String restoreOption) {
         try {
+            if ("RESTORE".equals(restoreOption)) {
+                Optional<User> optionalUser = userRepository.findById(userId);
+                optionalUser.ifPresent(user -> {
+                    user.setDeleted(false);
+                    user.setDeletionDate(null);
+                    userRepository.save(user);
+                });
+            }
+
+            // Existing edit logic
             UserDTO existingUserDTO = userService.getUserById(userId);
             UserDTO updatedDTO = new UserDTO();
             updatedDTO.setId(userId);
@@ -80,6 +91,7 @@ public class UserController {
             updatedDTO.setPassword(password);
             updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
             userService.saveUser(updatedDTO);
+
             return "redirect:/admin";
         } catch (IllegalStateException e) {
             System.out.println("Forbidden action: " + e.getMessage());
@@ -89,6 +101,19 @@ public class UserController {
             return "redirect:/admin?error=updateUser";
         }
     }
+
+    /*@PostMapping("/admin/restore")
+    public String restoreUser(@RequestParam Long userId, @RequestParam String restoreOption) {
+        if("RESTORE".equals(restoreOption)) {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            optionalUser.ifPresent(user -> {
+                user.setDeleted(false);
+                user.setDeletionDate(null);
+                userRepository.save(user);
+            });
+        }
+        return "redirect:/admin";
+    }*/
 
     @PostMapping("/user/edit")
     public String editProfile(@RequestParam Long userId,
