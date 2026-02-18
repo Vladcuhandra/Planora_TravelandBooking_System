@@ -271,7 +271,7 @@ a:hover { color: var(--p-blue); }
 
 
 
-/* ===== Planora dark table ===== */
+/* ===== dark table ===== */
 .table.planora-table {
   --bs-table-bg: transparent;
   --bs-table-color: var(--d-text);
@@ -312,7 +312,7 @@ a:hover { color: var(--p-blue); }
   padding: 10px;
 }
 
-/* Dark  field inside of table */
+/* Dark field inside of table */
 .planora-table .form-control,
 .planora-table .form-select {
   background-color: rgba(255,255,255,0.05) !important;
@@ -324,9 +324,20 @@ a:hover { color: var(--p-blue); }
   color: rgba(143,161,189,0.9) !important;
 }
 
+/* Native select options (dark) */
+.form-select option,
 .planora-table .form-select option {
   background: #0F1A30;
   color: var(--d-text);
+}
+.planora-table select.form-select {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .planora-table select.form-select {
+    min-width: 80px;
+  }
 }
 
 
@@ -339,130 +350,7 @@ a:hover { color: var(--p-blue); }
   line-height: 1.25;
 }
 
-/* ================================
-   Planora Dark Dropdown (Choices)
-   ================================ */
-
-/* container */
-.choices {
-  margin-bottom: 0;
-  width: 100%;
-}
-
-/* field (closed select) */
-.choices__inner {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid var(--d-border) !important;
-  border-radius: 12px !important;
-  color: var(--d-text) !important;
-  min-height: 44px;
-  padding: 8px 12px !important;
-  transition: all .15s ease;
-}
-
-/* focus / open - like input */
-.choices.is-focused .choices__inner,
-.choices.is-open .choices__inner {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(47,111,219,0.7) !important;
-  box-shadow: 0 0 0 .25rem rgba(47,111,219,0.18);
-}
-
-/* remove  double border between field  and list */
-.choices.is-open .choices__inner {
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  border-bottom-color: transparent !important;
-}
-
-/* dropdown list */
-.choices__list--dropdown,
-.choices__list[aria-expanded] {
-  background: rgba(15,26,48,0.98) !important; /* dark background*/
-  border: 1px solid rgba(47,111,219,0.35) !important;
-  border-top: none !important;
-  border-bottom-left-radius: 12px !important;
-  border-bottom-right-radius: 12px !important;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  z-index: 9999;
-}
-
-/* list */
-.choices__list--dropdown .choices__list {
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-/* list elements */
-.choices__item--choice {
-  color: var(--d-text) !important;
-  padding: 10px 12px !important;
-  background: transparent !important;
-  border-top: 1px solid rgba(227,232,240,0.08);
-}
-
-/* hover */
-.choices__item--choice.is-highlighted {
-  background: rgba(47,111,219,0.22) !important;
-}
-
-/* choosen */
-.choices__item--choice.is-selected {
-  background: rgba(47,111,219,0.16) !important;
-  color: var(--d-text) !important;
-}
-
-/* placeholder */
-.choices__placeholder {
-  color: var(--d-muted) !important;
-  opacity: 1;
-}
-
-/* arrow */
-.choices[data-type*="select-one"]::after {
-  border-color: rgba(185,198,221,0.9) transparent transparent transparent !important;
-}
-.choices[data-type*="select-one"].is-open::after {
-  border-color: transparent transparent rgba(185,198,221,0.9) transparent !important;
-}
-
-/* iside  of tables */
-.planora-table .choices__inner {
-  background: rgba(255,255,255,0.05) !important;
-}
-/* to dropdown dont cropped by page's container */
-.table-responsive {
-  overflow: visible; /* for dropdown */
-}
-/* but horizontal scroll will be as it is */
-/*@media (max-width: 992px) {
-  .table-responsive {
-    overflow-x: auto;
-    overflow-y: visible;
-  }
-}*/
-.table-responsive {
-    overflow-x: auto;
-    overflow-y: visible;
-}
-/* Fix overflow on medium screens: keep horizontal scroll, but don't clip dropdown */
-.table-responsive-unclip {
-  max-width: 100%;
-  overflow-x: auto !important;
-  overflow-y: visible !important;
-}
-
-.table-responsive-unclip > table {
-  width: 100%;
-  max-width: 100%;
-}
-
-
-
-
-
-/* Compact mode for dense tables Transports */
+/* ===== Compact mode for dense tables Transports ===== */
 .planora-table--compact td,
 .planora-table--compact th {
   padding-top: .45rem !important;
@@ -471,8 +359,7 @@ a:hover { color: var(--p-blue); }
 
 /* compact fields inside table */
 .planora-table--compact .form-control,
-.planora-table--compact .form-select,
-.planora-table--compact .choices__inner {
+.planora-table--compact .form-select {
   height: 38px !important;
   min-height: 38px !important;
   padding-top: .35rem !important;
@@ -531,7 +418,3 @@ a:hover { color: var(--p-blue); }
   min-width: 5ch;
   max-width: 8ch;
 }
-
-
-
-

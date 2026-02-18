@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -15,7 +16,6 @@ import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
 import org.springframework.ui.Model;
-
 import java.util.Optional;
 
 @Controller
@@ -33,8 +33,15 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
     @GetMapping("/admin")
     public String adminDashboard(@RequestParam(defaultValue = "0") int page, Model model) {
+        User currentUser = userService.getCurrentAuthenticatedUser();
+        model.addAttribute("currentUser", currentUser);
         int pageSize = 10;
         Page<UserDTO> usersPage = userService.getAllUsers(page, pageSize);
 
@@ -83,6 +90,30 @@ public class UserController {
         }
     }
 
+    @PostMapping("/user/edit")
+    public String editProfile(@RequestParam Long userId,
+                           @RequestParam String email,
+                           @RequestParam String role,
+                           @RequestParam(required = false) String password) {
+        try {
+            UserDTO existingUserDTO = userService.getUserById(userId);
+            UserDTO updatedDTO = new UserDTO();
+            updatedDTO.setId(userId);
+            updatedDTO.setEmail(email);
+            updatedDTO.setRole(role);
+            updatedDTO.setPassword(password);
+            updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
+            userService.saveUser(updatedDTO);
+            return "redirect:/user";
+        } catch (IllegalStateException e) {
+            System.out.println("Forbidden action: " + e.getMessage());
+            return "redirect:/user?error=" + e.getMessage();
+        } catch (RuntimeException e) {
+            System.out.println("Error updating user: " + e.getMessage());
+            return "redirect:/user?error=updateUser";
+        }
+    }
+
     @PostMapping("/admin/delete")
     public String deleteUser(@RequestParam Long userId) {
         try {
@@ -99,9 +130,13 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public String getUserProfile(Model model) {
+    public String getUserProfile(Model model, Authentication auth) {
+        String email = auth.getName();
+        boolean admin = isAdmin(auth);
+        model.addAttribute("isAdmin", admin);
         User currentUser = userService.getCurrentAuthenticatedUser();
         model.addAttribute("user", currentUser);
+        model.addAttribute("currentUser", currentUser);
 
         return "user-profile";
     }
@@ -159,7 +194,5 @@ public class UserController {
 
         return "redirect:/login";
     }
-
-
 
 }
