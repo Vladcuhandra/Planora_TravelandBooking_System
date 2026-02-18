@@ -548,7 +548,7 @@ a:hover { color: var(--p-blue); }
 }
 .topbar-burger {
   /*margin-left: 15px !important;*/
-  margin-left: 24px !important;
+  margin-left: 20px !important;
   border-radius: 12px;
   padding: 10px 12px;
 }
@@ -611,6 +611,8 @@ a:hover { color: var(--p-blue); }
     backdrop-filter: none;
   }
 }
+
+
 /* =========================
    Small reveal animation for drawer links
    ========================= */
