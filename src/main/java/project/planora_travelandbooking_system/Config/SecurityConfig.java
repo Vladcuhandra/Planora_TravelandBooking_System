@@ -84,10 +84,10 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
 
                         // after login
-                        .requestMatchers(HttpMethod.GET, "/api/bookings").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/bookings/save").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/bookings/edit/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/delete/*").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/bookings").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/bookings/save").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/bookings/edit/*").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/bookings/delete/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 

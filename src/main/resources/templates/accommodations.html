@@ -23,13 +23,15 @@
                 ☰
             </button>
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/admin}">
+            <a class="d-flex align-items-center gap-2 text-decoration-none"
+               th:href="${isAdmin} ? @{/admin} : @{/accommodations}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
-                    <div class="p-hint" style="margin-top:-2px;">Admin Panel</div>
+                    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Area'"></div>
                 </div>
             </a>
+
         </div>
 
         <div class="d-flex align-items-center gap-2">
@@ -49,15 +51,23 @@
         <aside class="col-lg-3 d-none d-lg-block">
             <div class="p-card p-3">
                 <div class="p-subtitle fw-semibold mb-2">Navigation</div>
-                <div class="d-grid gap-1">
+
+                <!-- Admin nav -->
+                <div class="d-grid gap-1" th:if="${isAdmin}">
                     <a class="p-nav-link" th:href="@{/admin}">Users</a>
                     <a class="p-nav-link" th:href="@{/transports}">Transport</a>
-                    <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
+                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link" th:href="@{/api/bookings}">Bookings</a>
+                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                 </div>
-                <hr class="p-divider my-3">
-            </div>
+
+                <!-- User nav -->
+                <div class="d-grid gap-1" th:if="${!isAdmin}">
+                    <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
+                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
+                    <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
+                </div>
         </aside>
 
         <!-- Offcanvas sidebar (mobile) -->
@@ -70,12 +80,19 @@
             </div>
             <div class="offcanvas-body">
                 <div class="p-card p-3">
-                    <div class="d-grid gap-1">
+                    <div class="d-grid gap-1" th:if="${isAdmin}">
                         <a class="p-nav-link" th:href="@{/admin}">Users</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transport</a>
-                        <a class="p-nav-link active" th:href="@{/accommodations}">Accommodations</a>
+                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                         <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link" th:href="@{/api/bookings}">Bookings</a>
+                        <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
+                    </div>
+
+                    <div class="d-grid gap-1" th:if="${!isAdmin}">
+                        <a class="p-nav-link" th:href="@{/transports}">Transport</a>
+                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
+                        <a class="p-nav-link" th:href="@{/trips}">Trips</a>
+                        <a class="p-nav-link active" th:href="@{/bookings}">Bookings</a>
                     </div>
                 </div>
             </div>
