@@ -21,7 +21,7 @@
                 ☰
             </button>
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/admin}">
+            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/user}">
                 <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
                 <div class="d-none d-sm-block">
                     <div class="p-title fw-semibold">Planora</div>
@@ -49,6 +49,7 @@
             <div class="p-card p-3">
                 <div class="p-subtitle fw-semibold mb-2">Navigation</div>
                 <div class="d-grid gap-1">
+                    <a class="p-nav-link" th:href="@{/user}">Profile</a>
                     <a class="p-nav-link active" th:href="@{/admin}">Users</a>
                     <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
@@ -68,6 +69,7 @@
             <div class="offcanvas-body">
                 <div class="p-card p-3">
                     <div class="d-grid gap-1">
+                        <a class="p-nav-link" th:href="@{/user}">Profile</a>
                         <a class="p-nav-link active" th:href="@{/admin}">Users</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                         <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>

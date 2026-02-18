@@ -33,12 +33,7 @@ public class AuthController {
             Optional<User> userOptional = userRepository.findByEmailAndDeletedFalse(email);
 
             if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                if (user.getRole() == User.Role.ADMIN) {
-                    return "redirect:/admin";  // Redirect admin users
-                } else {
-                    return "redirect:/user";  // Redirect normal users
-                }
+                return "redirect:/user";
             }
         }
         return "login";
