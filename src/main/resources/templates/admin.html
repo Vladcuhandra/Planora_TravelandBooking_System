@@ -10,78 +10,15 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
-<body class="planora-dark">
-<!-- Topbar -->
-<nav class="navbar p-topbar sticky-top">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center gap-2">
-            <!-- Burger for mobile -->
-            <button class="btn btn-soft d-lg-none" type="button"
-                    data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
-                ☰
-            </button>
+<body class="planora-dark" th:with="isAdmin=true">
 
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/user}">
-                <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
-                <div class="d-none d-sm-block">
-                    <div class="p-title fw-semibold">Planora</div>
-                    <div class="p-hint" style="margin-top:-2px;">Admin Panel</div>
-                </div>
-            </a>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-
-
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button class="btn btn-danger-soft" type="submit">Logout</button>
-            </form>
-        </div>
-    </div>
-</nav>
+<div th:replace="fragments/topbar :: topbar"></div>
+<div th:replace="fragments/sidebar :: sidebar"></div>
 
 <div class="container-fluid">
     <div class="row g-3 g-lg-4 py-3">
 
-        <!-- Sidebar (desktop) -->
-        <aside class="col-lg-3 d-none d-lg-block">
-            <div class="p-card p-3">
-                <div class="p-subtitle fw-semibold mb-2">Navigation</div>
-                <div class="d-grid gap-1">
-                    <a class="p-nav-link" th:href="@{/user}">Profile</a>
-                    <a class="p-nav-link active" th:href="@{/admin}">Users</a>
-                    <a class="p-nav-link" th:href="@{/transports}">Transports</a>
-                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
-                </div>
-                <!--<hr class="p-divider my-3">-->
-            </div>
-        </aside>
-
-        <!-- Offcanvas sidebar (mobile) -->
-        <div class="offcanvas offcanvas-start planora-dark" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Menu</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-                <div class="p-card p-3">
-                    <div class="d-grid gap-1">
-                        <a class="p-nav-link" th:href="@{/user}">Profile</a>
-                        <a class="p-nav-link active" th:href="@{/admin}">Users</a>
-                        <a class="p-nav-link" th:href="@{/transports}">Transports</a>
-                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                        <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main -->
-        <main class="col-12 col-lg-9">
+        <main class="col-12">
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Users</div>
@@ -140,12 +77,12 @@
                             <th style="width: 220px;">Actions</th>
                         </tr>
                         </thead>
+
                         <tbody>
                         <tr th:each="user : ${users}">
-                            <!-- ID -->
                             <td th:text="${user.id}"></td>
 
-                            <!-- Email (click-to-edit) -->
+                            <!-- Email -->
                             <td>
                                 <span class="text" th:text="${user.email}" th:if="${user.superAdmin == true}"></span>
                                 <span class="editable-text" th:text="${user.email}" th:if="${user.superAdmin != true}"></span>
@@ -153,18 +90,19 @@
                                        th:value="${user.email}" th:attr="form=${'edit-' + user.id}" required>
                             </td>
 
-                            <!-- Role (click-to-edit select) -->
+                            <!-- Role -->
                             <td>
-                                 <span class="text" th:text="${user.role}" th:if="${user.superAdmin == true}"></span>
-                                 <select class="form-select"
-                                         name="role"
-                                         th:attr="form=${'edit-' + user.id}" th:if="${user.superAdmin != true}">
-                                     <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
-                                     <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
-                                 </select>
-                             </td>
+                                <span class="text" th:text="${user.role}" th:if="${user.superAdmin == true}"></span>
+                                <select class="form-select"
+                                        name="role"
+                                        th:attr="form=${'edit-' + user.id}"
+                                        th:if="${user.superAdmin != true}">
+                                    <option value="USER" th:selected="${user.role == 'USER'}">USER</option>
+                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">ADMIN</option>
+                                </select>
+                            </td>
 
-                             <!-- Password (click-to-edit) -->
+                            <!-- Password -->
                             <td>
                                 <span class="text" th:if="${user.superAdmin == true}">••••••••</span>
                                 <span class="editable-text" th:if="${user.superAdmin != true}">••••••••</span>
@@ -172,36 +110,35 @@
                                        placeholder="Optional" th:attr="form=${'edit-' + user.id}">
                             </td>
 
-                            <!-- Account Status -->
+                            <!-- Account Status (UPDATED) -->
                             <td>
                                 <!-- Active users -->
                                 <span class="text" th:if="${!user.deleted}" th:text="'ACTIVE'"></span>
 
                                 <!-- Deleted users: dropdown to optionally restore -->
                                 <span th:if="${user.deleted}">
-                                    <select class="form-select form-select-sm" name="restoreOption" th:attr="form=${'edit-' + user.id}">
-                                        <option value="KEEP" selected>
-                                            DELETING (<span th:text="${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')}"></span>)
-                                        </option>
-                                        <option value="RESTORE">Restore Account</option>
-                                    </select>
-                                </span>
+                  <select class="form-select form-select-sm"
+                          name="restoreOption"
+                          th:attr="form=${'edit-' + user.id}">
+                    <option value="KEEP" selected
+                            th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'">
+                      DELETING
+                    </option>
+                    <option value="RESTORE">Restore Account</option>
+                  </select>
+                </span>
                             </td>
 
                             <!-- Actions -->
                             <td class="align-middle">
                                 <div class="d-flex align-items-center gap-2">
-                                    <!-- EDIT FORM -->
                                     <form th:id="${'edit-' + user.id}" th:action="@{/admin/edit}" method="post" class="m-0">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
-                                        <button class="btn btn-soft btn-sm" type="submit"
-                                                th:if="${user.id != currentUser.id and user.superAdmin != true}">Save</button>
+                                        <button class="btn btn-soft btn-sm" type="submit" th:if="${user.superAdmin != true}">Save</button>
                                     </form>
 
-                                    <!-- DELETE FORM -->
-                                    <form th:action="@{/admin/delete}" method="post" class="m-0"
-                                          th:if="${user.id != currentUser.id and user.superAdmin != true}">
+                                    <form th:action="@{/admin/delete}" method="post" class="m-0" th:if="${user.superAdmin != true}">
                                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <input type="hidden" name="userId" th:value="${user.id}" />
                                         <button class="btn btn-danger-soft btn-sm" type="submit"
@@ -209,7 +146,6 @@
                                             Delete
                                         </button>
                                     </form>
-
                                 </div>
                             </td>
                         </tr>
@@ -237,6 +173,7 @@
                 </div>
             </section>
         </main>
+
     </div>
 </div>
 

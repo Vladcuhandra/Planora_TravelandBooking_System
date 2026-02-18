@@ -18,6 +18,7 @@
     });
   }
 
+
   function editField(span) {
     const input = span.nextElementSibling;
     if (!input) return;

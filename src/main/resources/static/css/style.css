@@ -1,7 +1,7 @@
 :root {
---p-blue: #3B8CFF;        /* main, soft */
---p-blue-light: #7BB4FF;  /* hover / focus */
---p-blue-dark: #1E6FE6;   /* pressed / active */
+  --p-blue: #3B8CFF;        /* main, soft */
+  --p-blue-light: #7BB4FF;  /* hover / focus */
+  --p-blue-dark: #1E6FE6;   /* pressed / active */
 
   --p-sky: #F2F6FF;
   --p-steel: #C7D7F2;
@@ -29,9 +29,12 @@
 
   --radius: 14px;
   --shadow: 0 8px 30px rgba(0,0,0,.28);
+
+  /* Sidebar layout vars */
+  --topbar-height: 64px;          /* Height of topbar */
+  --mini-sidebar-width: 84px;     /* Width of icon-only sidebar */
+  --drawer-sidebar-width: 280px;  /* Width of expanded sidebar */
 }
-
-
 
 /* Logo */
 /* default logo (header/admin) */
@@ -97,7 +100,6 @@
   }
 }
 
-
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
@@ -105,7 +107,7 @@ body.planora-dark {
   min-height: 100vh;
   background-color: var(--d-bg);
   background-image:
-linear-gradient(
+    linear-gradient(
       135deg,
       rgba(59, 140, 255, 0.06),
       rgba(123, 180, 255, 0.03) 40%,
@@ -227,9 +229,15 @@ a:hover { color: var(--p-blue); }
 }
 
 .p-topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
   background: rgba(15,26,48,0.75);
   border-bottom: 1px solid var(--d-border);
-  backdrop-filter: blur(10px);
+  /*backdrop-filter: blur(10px);*/
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transform: translateZ(0);
 }
 
 .p-logo {
@@ -269,8 +277,6 @@ a:hover { color: var(--p-blue); }
 .p-alert.error { border-color: rgba(239,68,68,0.25); color: #FFD7D7; }
 .p-alert.ok { border-color: rgba(34,197,94,0.25); color: #CFF7DD; }
 
-
-
 /* ===== dark table ===== */
 .table.planora-table {
   --bs-table-bg: transparent;
@@ -304,7 +310,7 @@ a:hover { color: var(--p-blue); }
   border-color: var(--d-border) !important;
 }
 
-/*  "table-responsive" */
+/* "table-responsive" */
 .table-responsive {
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--d-border);
@@ -339,7 +345,6 @@ a:hover { color: var(--p-blue); }
     min-width: 80px;
   }
 }
-
 
 /* Unified input / select height */
 .form-control,
@@ -392,10 +397,8 @@ a:hover { color: var(--p-blue); }
   border-radius: 10px;
 }
 
-
-
 /* === Auto-width number inputs in tables accommodation (fit content) === */
-.planora-table td .form-control[type="number"]{
+.planora-table td .form-control[type="number"] {
   width: max-content;
   min-width: 6ch;
   max-width: 14ch;
@@ -404,17 +407,232 @@ a:hover { color: var(--p-blue); }
   text-align: center;
 }
 
-.planora-table td input[name="pricePerNight"]{
+.planora-table td input[name="pricePerNight"] {
   min-width: 8ch;
   max-width: 16ch;
 }
 
-.planora-table td input[name="rating"]{
+.planora-table td input[name="rating"] {
   min-width: 5ch;
   max-width: 8ch;
 }
 
-.planora-table td input[name="room"]{
+.planora-table td input[name="room"] {
   min-width: 5ch;
   max-width: 8ch;
 }
+
+/* =====================================================
+   Sidebar: mini (always visible on desktop)
+   Drawer: opens OVER the mini sidebar (overlay)
+   ===================================================== */
+
+/* Sidebar layout variables */
+/*:root{
+  --topbar-height: 56px;          *//* Topbar height *//*
+  --mini-sidebar-width: 84px;     *//* Mini sidebar width *//*
+  --drawer-sidebar-width: 280px;  *//* Drawer width *//*
+}*/
+
+/* =========================
+   Mini sidebar (desktop)
+   ========================= */
+.mini-sidebar{
+  position: fixed;
+  top: var(--topbar-height);
+  left: 0;
+  bottom: 0;
+  width: var(--mini-sidebar-width);
+  padding: 10px 8px;
+  background: var(--d-bg);
+  border-right: 1px solid var(--d-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1030; /* Under offcanvas (1055), above content */
+}
+
+.mini-sidebar-item{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  color: var(--d-text);
+  text-decoration: none;
+}
+
+.mini-sidebar-item:hover{
+  background: rgba(255,255,255,0.06);
+  color: var(--d-text);
+}
+
+.mini-sidebar-label{
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.sidebar-icon{
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* =========================
+   Drawer sidebar (offcanvas)
+   Opens from the left edge and overlays everything
+   ========================= */
+.offcanvas.planora-dark.sidebar-drawer{
+  background: var(--d-bg);
+  color: var(--d-text);
+  border-right: 1px solid var(--d-border);
+}
+
+/* Apply width only to this sidebar drawer */
+.offcanvas.sidebar-drawer.offcanvas-start{
+  --bs-offcanvas-width: var(--drawer-sidebar-width);
+  left: 0; /* Ensure it overlays from the very left */
+}
+
+/* Drawer navigation */
+.sidebar-nav{
+  display: grid;
+  gap: 6px;
+}
+
+.sidebar-link{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--d-text);
+  text-decoration: none;
+}
+
+.sidebar-link:hover{
+  background: rgba(255,255,255,0.06);
+  color: var(--d-text);
+}
+
+.offcanvas-backdrop.show{
+  opacity: 0.25; /* Increase for stronger overlay */
+}
+
+/* =========================
+   Content offset: keep mini sidebar visible space on desktop
+   (mini sidebar is always there, so content should not go under it)
+   ========================= */
+@media (min-width: 992px){
+  body.planora-dark .container-fluid{
+    padding-left: calc(var(--mini-sidebar-width) + 12px);
+  }
+}
+
+/* On mobile: no mini sidebar offset */
+@media (max-width: 991.98px){
+  body.planora-dark .container-fluid{
+    padding-left: 12px;
+  }
+}
+.topbar-tight {
+  padding-left: 0px !important;
+  padding-right: 12px !important;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.topbar-burger {
+  /*margin-left: 15px !important;*/
+  margin-left: 24px !important;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.topbar-left-slot {
+  width: var(--mini-sidebar-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Topbar auto-hide animation */
+.p-topbar {
+  transition: transform 200ms ease, opacity 200ms ease;
+  will-change: transform;
+}
+/* Hidden state */
+.p-topbar.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0.98;
+}
+
+/*@media (min-width: 992px) {
+  .topbar-burger {
+    margin-left: 8px !important; *//* same as mini sidebar internal padding *//*
+  }
+}*/
+.topbar-brand {
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--d-text);
+  text-decoration: none;
+}
+.topbar-brand:hover {
+  color: var(--d-text);
+}
+.topbar-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--d-border);
+}
+.topbar-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  font-size: 18px;
+}
+/* Ensure inner container matches the bar height */
+.p-topbar .container-fluid {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+/* Optional: disable backdrop-filter on small screens to avoid flicker */
+@media (max-width: 768px) {
+  .p-topbar {
+    backdrop-filter: none;
+  }
+}
+/* =========================
+   Small reveal animation for drawer links
+   ========================= */
+.offcanvas.sidebar-drawer.show .sidebar-link{
+  animation: sidebarLinkIn 0.2s ease-out both;
+}
+.sidebar-icon-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 22px;
+}
+
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(1){ animation-delay: 0.04s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(2){ animation-delay: 0.08s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(3){ animation-delay: 0.12s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(4){ animation-delay: 0.16s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(5){ animation-delay: 0.20s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(6){ animation-delay: 0.24s; }
+
+@keyframes sidebarLinkIn{
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
