@@ -62,7 +62,7 @@
 
                 <!-- User nav -->
                 <div class="d-grid gap-1" th:if="${!isAdmin}">
-                    <a class="p-nav-link" th:href="@{/admin}">Users</a>
+                    <a class="p-nav-link" th:href="@{/user}">Profile</a>
                     <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                     <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                     <a class="p-nav-link" th:href="@{/trips}">Trips</a>
@@ -92,7 +92,7 @@
                     </div>
 
                     <div class="d-grid gap-1" th:if="${!isAdmin}">
-                        <a class="p-nav-link" th:href="@{/admin}">Users</a>
+                        <a class="p-nav-link" th:href="@{/user}">Profile</a>
                         <a class="p-nav-link" th:href="@{/transports}">Transports</a>
                         <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
                         <a class="p-nav-link" th:href="@{/trips}">Trips</a>
