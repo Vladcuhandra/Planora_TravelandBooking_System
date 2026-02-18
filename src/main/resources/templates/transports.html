@@ -5,105 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Planora • Transport</title>
 
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body class="planora-dark">
 
-<!-- Topbar -->
-<nav class="navbar p-topbar sticky-top">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center gap-2">
-            <!-- Burger for mobile -->
-            <button class="btn btn-soft d-lg-none" type="button"
-                    data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
-                ☰
-            </button>
-
-            <a class="d-flex align-items-center gap-2 text-decoration-none" th:href="@{/user}">
-                <img class="p-logo" th:src="@{/img/logo.png}" alt="Planora logo">
-                <div class="d-none d-sm-block">
-                    <div class="p-title fw-semibold">Planora</div>
-                    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Panel'"></div>
-                </div>
-            </a>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <input type="hidden" th:if="${_csrf != null}"
-                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button class="btn btn-danger-soft" type="submit">Logout</button>
-            </form>
-        </div>
-    </div>
-</nav>
+<div th:replace="fragments/topbar :: topbar"></div>
+<div th:replace="fragments/sidebar :: sidebar"></div>
 
 <div class="container-fluid">
     <div class="row g-3 g-lg-4 py-3">
 
-        <!-- Sidebar (desktop) -->
-        <aside class="col-lg-3 d-none d-lg-block">
-            <div class="p-card p-3">
-                <div class="p-subtitle fw-semibold mb-2">Navigation</div>
-                <div class="d-grid gap-1">
-                    <a class="p-nav-link" th:href="@{/user}">Profile</a>
-                </div>
-
-                <div class="d-grid gap-1" th:if="${isAdmin}">
-                    <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                </div>
-
-                <div class="d-grid gap-1">
-                    <a class="p-nav-link active" th:href="@{/transports}">Transport</a>
-                    <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                    <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                    <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Offcanvas sidebar (mobile) -->
-        <div class="offcanvas offcanvas-start planora-dark" tabindex="-1"
-             id="adminSidebar" aria-labelledby="adminSidebarLabel">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Menu</h5>
-                <button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-                <div class="p-card p-3">
-                    <div class="d-grid gap-1">
-                        <a class="p-nav-link" th:href="@{/user}">Profile</a>
-                    </div>
-
-                    <div class="d-grid gap-1" th:if="${isAdmin}">
-                        <a class="p-nav-link" th:href="@{/admin}">Users</a>
-                    </div>
-
-                    <div class="d-grid gap-1">
-                        <a class="p-nav-link  active" th:href="@{/transports}">Transport</a>
-                        <a class="p-nav-link" th:href="@{/accommodations}">Accommodations</a>
-                        <a class="p-nav-link" th:href="@{/trips}">Trips</a>
-                        <a class="p-nav-link" th:href="@{/bookings}">Bookings</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Main -->
-        <main class="col-12 col-lg-9">
+        <main class="col-12">
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Transport</div>
-                    <div class="p-hint" th:if="${isAdmin}">Create, edit, and delete transports</div>
+                    <div class="p-hint">Create, edit and delete transports</div>
                 </div>
             </div>
 
             <!-- Create Transport -->
-            <section class="p-card p-3 p-md-4 mb-3" th:if="${isAdmin}">
+            <section class="p-card p-3 p-md-4 mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create transport</div>
                 </div>
@@ -189,7 +114,7 @@
                             <th style="width: 110px;">Seats</th>
                             <th style="width: 130px;">Price</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
+                            <th style="width: 210px;">Actions</th>
                         </tr>
                         </thead>
 
@@ -255,7 +180,7 @@
                             </td>
 
                             <td class="align-middle">
-                                <div class="d-flex align-items-center gap-2" th:if="${isAdmin}">
+                                <div class="d-flex align-items-center gap-2">
 
                                     <form th:id="${'edit-transport-' + t.id}"
                                           th:action="@{/transports/edit}"
