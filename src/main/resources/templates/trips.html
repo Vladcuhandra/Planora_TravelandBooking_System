@@ -12,8 +12,8 @@
 
 <body class="planora-dark">
 
-<div th:replace="fragments/topbar :: topbar"></div>
-<div th:replace="fragments/sidebar :: sidebar"></div>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
 <div class="container-fluid">
     <div class="row g-3 g-lg-4 py-3">
@@ -30,45 +30,66 @@
             <section class="p-card p-3 p-md-4 mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create trip</div>
+
+                    <button class="btn btn-soft btn-sm"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#createTripCollapse"
+                            aria-controls="createTripCollapse"
+                            aria-expanded="false"
+                            data-collapse-toggle="createTripCollapse"
+                            data-text-show="Show"
+                            data-text-hide="Hide">
+                        Show
+                    </button>
                 </div>
 
-                <form th:action="@{/trips/save}" th:object="${tripDto}" method="post" class="row g-2 g-md-3">
-                    <input type="hidden" th:if="${_csrf != null}"
-                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <!-- by default hidden -->
+                <div class="collapse" id="createTripCollapse">
+                    <form th:action="@{/trips/save}" th:object="${tripDto}" method="post"
+                          class="row g-2 g-md-3 mt-1">
 
-                    <div class="col-12 col-md-6">
-                        <label class="form-label p-hint mb-1">Title</label>
-                        <input class="form-control" type="text" th:field="*{title}" required />
-                    </div>
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <div class="col-12 col-md-6">
-                        <label class="form-label p-hint mb-1">Description</label>
-                        <input class="form-control" type="text" th:field="*{description}" required />
-                    </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label p-hint mb-1">Title</label>
+                            <input class="form-control" type="text" th:field="*{title}" required />
+                        </div>
 
-                    <div class="col-12 col-md-4">
-                        <label class="form-label p-hint mb-1">Start Date</label>
-                        <input class="form-control" type="datetime-local" th:field="*{startDate}" required />
-                    </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label p-hint mb-1">Description</label>
+                            <input class="form-control" type="text" th:field="*{description}" required />
+                        </div>
 
-                    <div class="col-12 col-md-4">
-                        <label class="form-label p-hint mb-1">End Date</label>
-                        <input class="form-control" type="datetime-local" th:field="*{endDate}" required />
-                    </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Start Date</label>
+                            <input class="form-control" type="datetime-local" th:field="*{startDate}" required />
+                        </div>
 
-                    <div class="col-12 col-md-4">
-                        <label class="form-label p-hint mb-1">User</label>
-                        <select class="form-select" th:field="*{userId}" required>
-                            <option value="">-- Select --</option>
-                            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.email}"></option>
-                        </select>
-                    </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">End Date</label>
+                            <input class="form-control" type="datetime-local" th:field="*{endDate}" required />
+                        </div>
 
-                    <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn-planora px-4" type="submit">Create</button>
-                    </div>
-                </form>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">User</label>
+                            <select class="form-select" th:field="*{userId}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="user : ${users}"
+                                        th:value="${user.id}"
+                                        th:text="${user.email}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-planora px-4" type="submit">Create</button>
+                        </div>
+                    </form>
+                </div>
             </section>
+
 
             <!-- Trips list -->
             <section class="p-card p-3 p-md-4">
@@ -167,6 +188,8 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer th:src="@{/js/ui.js}"></script>
+<script defer th:src="@{/js/collapse-toggles.js}"></script>
+
 
 </body>
 </html>

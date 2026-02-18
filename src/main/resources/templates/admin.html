@@ -12,8 +12,8 @@
 
 <body class="planora-dark" th:with="isAdmin=true">
 
-<div th:replace="fragments/topbar :: topbar"></div>
-<div th:replace="fragments/sidebar :: sidebar"></div>
+<div th:replace="~{fragments/topbar :: topbar}"></div>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
 <div class="container-fluid">
     <div class="row g-3 g-lg-4 py-3">
@@ -30,33 +30,50 @@
             <section class="p-card p-3 p-md-4 mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create new user</div>
+
+                    <button class="btn btn-soft btn-sm"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#createUserCollapse"
+                            aria-controls="createUserCollapse"
+                            aria-expanded="false"
+                            data-collapse-toggle="createUserCollapse"
+                            data-text-show="Show"
+                            data-text-hide="Hide">
+                        Show
+                    </button>
                 </div>
 
-                <form th:action="@{/admin/create}" th:object="${newUser}" method="post" class="row g-2 g-md-3">
-                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="collapse" id="createUserCollapse">
+                    <form th:action="@{/admin/create}" th:object="${newUser}" method="post" class="row g-2 g-md-3 mt-1">
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <div class="col-12 col-md-5">
-                        <label class="form-label p-hint mb-1">Email</label>
-                        <input class="form-control" type="email" th:field="*{email}" placeholder="user@example.com" required>
-                    </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label p-hint mb-1">Email</label>
+                            <input class="form-control" type="email" th:field="*{email}"
+                                   placeholder="user@example.com" autocomplete="email" required>
+                        </div>
 
-                    <div class="col-12 col-md-4">
-                        <label class="form-label p-hint mb-1">Password</label>
-                        <input class="form-control" type="password" th:field="*{password}" placeholder="••••••••" required>
-                    </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Password</label>
+                            <input class="form-control" type="password" th:field="*{password}"
+                                   placeholder="••••••••" autocomplete="new-password" required>
+                        </div>
 
-                    <div class="col-12 col-md-3">
-                        <label class="form-label p-hint mb-1">Role</label>
-                        <select class="form-select" th:field="*{role}">
-                            <option value="USER">USER</option>
-                            <option value="ADMIN">ADMIN</option>
-                        </select>
-                    </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label p-hint mb-1">Role</label>
+                            <select class="form-select" th:field="*{role}">
+                                <option value="USER">USER</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
 
-                    <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn-planora px-4" type="submit">Create</button>
-                    </div>
-                </form>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-planora px-4" type="submit">Create</button>
+                        </div>
+                    </form>
+                </div>
             </section>
 
             <!-- Users table -->
@@ -179,6 +196,9 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer th:src="@{/js/ui.js}"></script>
+<script defer th:src="@{/js/collapse-toggles.js}"></script>
+
+
 
 </body>
 </html>
