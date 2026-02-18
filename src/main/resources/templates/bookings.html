@@ -17,9 +17,9 @@
         <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <img th:src="@{/img/logo.png}" alt="Planora" class="p-logo">
-                <div>
-                    <div class="p-brand">Planora</div>
-                    <div class="p-muted">Bookings</div>
+                <div class="d-none d-sm-block">
+                    <div class="p-title fw-semibold">Planora</div>
+                    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Panel'"></div>
                 </div>
             </div>
 
@@ -63,6 +63,12 @@
 
         <!-- Main -->
         <main class="col-12 col-lg-9 col-xxl-10">
+            <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+                <div>
+                    <div class="p-title h4 mb-1">Bookings</div>
+                    <div class="p-hint" th:if="${isAdmin}">Create, edit, and delete bookings</div>
+                </div>
+            </div>
             <div class="row g-3 g-md-4">
 
                 <!-- Create booking -->
