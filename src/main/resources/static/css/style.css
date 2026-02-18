@@ -330,9 +330,16 @@ a:hover { color: var(--p-blue); }
   background: #0F1A30;
   color: var(--d-text);
 }
-  .planora-table td .form-select {
-    width: fit-content;
+.planora-table select.form-select {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .planora-table select.form-select {
+    min-width: 80px;
   }
+}
+
 
 /* Unified input / select height */
 .form-control,
@@ -411,4 +418,3 @@ a:hover { color: var(--p-blue); }
   min-width: 5ch;
   max-width: 8ch;
 }
-
