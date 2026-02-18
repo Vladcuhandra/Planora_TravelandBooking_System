@@ -116,7 +116,7 @@
                            th:value="${currentUser.id}" />
 
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email:</label>
 
                         <span class="editable-text"
                               th:text="${currentUser.email}"></span>
@@ -129,7 +129,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" th:if="${isAdmin}"><strong>Role</strong></label>
+                        <label class="form-label" th:if="${isAdmin}"><strong>Role:</strong></label>
 
                         <span class="editable-text"
                               th:text="${currentUser.role}" th:if="${isAdmin}"></span>
@@ -148,7 +148,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><strong>Password</strong></label>
+                        <label class="form-label"><strong>Password:</strong></label>
 
                         <span class="editable-text">••••••••</span>
 
