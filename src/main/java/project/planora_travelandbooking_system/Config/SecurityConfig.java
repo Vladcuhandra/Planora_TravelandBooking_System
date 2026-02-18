@@ -46,15 +46,33 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
+                        //ACCOMMODATIONS
+                        .requestMatchers(HttpMethod.GET, "/api/accommodation/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/accommodation/**")
+                        .hasAnyRole("ADMIN")
+
+                        //TRIPS
+                        .requestMatchers(HttpMethod.GET, "/api/trip/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/trip/**")
+                        .hasAnyRole("ADMIN")
+
+                        //TRANSPORTS
                         .requestMatchers(HttpMethod.GET, "/api/transports/**")
                         .hasAnyRole("USER", "ADMIN")
-
                         .requestMatchers(HttpMethod.POST, "/api/transports/**")
                         .hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.PUT, "/api/transports/**")
                         .hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
                         .hasRole("ADMIN")
                         
