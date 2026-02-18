@@ -1,6 +1,7 @@
 package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,17 @@ public class TransportController {
         this.transportService = transportService;
     }
 
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
     @GetMapping("/transports")
-    public String transports(Model model) {
+    public String transports(Model model, Authentication auth) {
+        String email = auth.getName();
+        boolean admin = isAdmin(auth);
+
+        model.addAttribute("isAdmin", admin);
         model.addAttribute("transports", transportService.getAllTransports());
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
