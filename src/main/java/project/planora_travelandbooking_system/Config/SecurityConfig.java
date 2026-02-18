@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/user/restore",
+                                "/user/edit",
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
@@ -116,6 +117,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/user").hasAnyRole("USER", "ADMIN")
+
 
                         .anyRequest().authenticated()
 

@@ -100,12 +100,80 @@
                 </div>
             </div>
 
-            <p><strong>Email:</strong> <span th:text="${user.email}">email@example.com</span></p>
-            <p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
-            <p><strong>Birth Date:</strong> <span th:text="${user.birthDate}"></span></p>
+            <div class="d-flex align-items-center gap-2">
+
+                <form th:id="${'edit-' + currentUser.id}"
+                      th:action="@{/user/edit}"
+                      method="post"
+                      class="m-0">
+
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}" />
+
+                    <input type="hidden" name="userId"
+                           th:value="${currentUser.id}" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+
+                        <span class="editable-text"
+                              th:text="${currentUser.email}"></span>
+
+                        <input class="form-control editable-input d-none"
+                               type="email"
+                               name="email"
+                               th:value="${currentUser.email}"
+                               required th:if="${!(currentUser.superAdmin)}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" th:if="${isAdmin}"><strong>Role</strong></label>
+
+                        <span class="editable-text"
+                              th:text="${currentUser.role}" th:if="${isAdmin}"></span>
+
+                        <select class="form-select editable-input d-none"
+                                name="role" th:if="${!(currentUser.superAdmin)}">
+                            <option value="USER"
+                                    th:selected="${currentUser.role == 'USER'}">
+                                USER
+                            </option>
+                            <option value="ADMIN"
+                                    th:selected="${currentUser.role == 'ADMIN'}">
+                                ADMIN
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Password</strong></label>
+
+                        <span class="editable-text">••••••••</span>
+
+                        <input class="form-control editable-input d-none"
+                               type="password"
+                               name="password"
+                               placeholder="New password (optional)"
+                               th:if="${!(currentUser.superAdmin)}">
+                    </div>
+
+                    <button class="btn btn-planora py-2"
+                            type="submit"
+                            th:if="${!(currentUser.superAdmin)}">
+                        Save Changes
+                    </button>
+
+                </form>
+            </div>
+
+            <td></td>
 
             <form th:action="@{/user/delete}" method="post"
-                  onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')">
+                  onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')"
+                  class="m-0"
+                  th:if="${!(currentUser.superAdmin)}">
                 <button type="submit" class="btn btn-danger">Delete My Account</button>
             </form>
 
