@@ -1,6 +1,8 @@
 package project.planora_travelandbooking_system.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
@@ -29,6 +31,11 @@ public class TransportService {
         Transport savedTransport = transportRepository.save(transport);
 
         return convertToDTO(savedTransport);
+    }
+
+    public Page<TransportDTO> getAllTransports(int page, int pageSize) {
+        Page<Transport> transportPage = transportRepository.findAll(PageRequest.of(page, pageSize));
+        return transportPage.map(this::convertToDTO);
     }
 
     public List<TransportDTO> getAllTransports() {
