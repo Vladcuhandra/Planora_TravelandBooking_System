@@ -147,7 +147,7 @@
 
                                 <select class="form-select editable-input d-none"
                                         name="transportType"
-                                        th:attr="form=${'edit-transport-' + t.id}">
+                                        th:attr="form=${'edit-transport-' + t.id}" th:if="${isAdmin}">
                                     <option value="FLIGHT" th:selected="${t.transportType == 'FLIGHT'}">FLIGHT</option>
                                     <option value="TRAIN"  th:selected="${t.transportType == 'TRAIN'}">TRAIN</option>
                                     <option value="BUS"    th:selected="${t.transportType == 'BUS'}">BUS</option>
@@ -163,6 +163,7 @@
                                        name="company"
                                        th:value="${t.company}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -174,6 +175,7 @@
                                        name="originAddress"
                                        th:value="${t.originAddress}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -185,6 +187,7 @@
                                        name="destinationAddress"
                                        th:value="${t.destinationAddress}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -197,6 +200,7 @@
                                        name="departureTime"
                                        th:value="${#temporals.format(t.departureTime, 'yyyy-MM-dd''T''HH:mm')}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -209,6 +213,7 @@
                                        name="arrivalTime"
                                        th:value="${#temporals.format(t.arrivalTime, 'yyyy-MM-dd''T''HH:mm')}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -221,6 +226,7 @@
                                        min="1"
                                        th:value="${t.seat}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -233,6 +239,7 @@
                                        name="price"
                                        th:value="${t.price}"
                                        th:attr="form=${'edit-transport-' + t.id}"
+                                       th:if="${isAdmin}"
                                        required>
                             </td>
 
@@ -241,7 +248,8 @@
 
                                 <select class="form-select editable-input d-none"
                                         name="status"
-                                        th:attr="form=${'edit-transport-' + t.id}">
+                                        th:attr="form=${'edit-transport-' + t.id}"
+                                        th:if="${isAdmin}">
                                     <option value="AVAILABLE"   th:selected="${t.status == 'AVAILABLE'}">AVAILABLE</option>
                                     <option value="UNAVAILABLE" th:selected="${t.status == 'UNAVAILABLE'}">UNAVAILABLE</option>
                                 </select>
