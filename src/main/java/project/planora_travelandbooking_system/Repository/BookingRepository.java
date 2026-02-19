@@ -17,7 +17,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByAccommodationId(Long accommodationId);
 
-    // USER sees only bookings where trip.user.email = current user
     List<Booking> findByTripUserEmail(String email);
 
     // --- uniqueness checks (ACTIVE = status != CANCELLED) ---
@@ -27,4 +26,3 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     boolean existsByTransportIdAndStatusNotAndIdNot(Long transportId, Booking.BookingStatus status, Long id);
     boolean existsByAccommodationIdAndStatusNotAndIdNot(Long accommodationId, Booking.BookingStatus status, Long id);
 }
-//new

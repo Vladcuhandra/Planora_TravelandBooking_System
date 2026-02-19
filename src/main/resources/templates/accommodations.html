@@ -128,7 +128,7 @@
                             <th style="width: 110px;">Rooms</th>
                             <th style="width: 140px;">Price / Night</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;">Actions</th>
+                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
                         </tr>
                         </thead>
 
@@ -141,8 +141,11 @@
                             <td th:text="${a.id}"></td>
 
                             <td>
-                                <select class="form-select" name="accommodationType"
-                                        th:attr="form=${'edit-acc-' + a.id}">
+                                <span class="editable-text" th:text="${a.accommodationType}"></span>
+
+                                <select class="form-select editable-input d-none"
+                                        name="accommodationType"
+                                        th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
                                     <option value="HOTEL" th:selected="${a.accommodationType == 'HOTEL'}">HOTEL</option>
                                     <option value="HOSTEL" th:selected="${a.accommodationType == 'HOSTEL'}">HOSTEL</option>
                                     <option value="AIRBNB" th:selected="${a.accommodationType == 'AIRBNB'}">AIRBNB</option>
@@ -152,44 +155,93 @@
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="name" th:value="${a.name}"
-                                       th:attr="form=${'edit-acc-' + a.id}" required>
+                                <span class="editable-text" th:text="${a.name}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="name"
+                                       th:value="${a.name}"
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       th:if="${isAdmin}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="city" th:value="${a.city}"
-                                       th:attr="form=${'edit-acc-' + a.id}" required>
+                                <span class="editable-text" th:text="${a.city}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="city"
+                                       th:value="${a.city}"
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       th:if="${isAdmin}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="address" th:value="${a.address}"
-                                       th:attr="form=${'edit-acc-' + a.id}" required>
+                                <span class="editable-text" th:text="${a.address}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="address"
+                                       th:value="${a.address}"
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       th:if="${isAdmin}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="number" step="0.1" min="0" max="10" name="rating"
-                                       th:value="${a.rating}" th:attr="form=${'edit-acc-' + a.id}" required>
+                                <span class="editable-text" th:text="${a.rating}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="number"
+                                       step="0.1"
+                                       min="0"
+                                       max="10"
+                                       name="rating"
+                                       th:value="${a.rating}"
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       th:if="${isAdmin}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="number" min="0" name="room"
-                                       th:value="${a.room}" th:attr="form=${'edit-acc-' + a.id}">
+                                <span class="editable-text" th:text="${a.room}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="number"
+                                       min="0"
+                                       name="room"
+                                       th:value="${a.room}"
+                                       th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
                             </td>
 
                             <td>
-                                <input class="form-control" type="number" step="0.01" min="0" name="pricePerNight"
-                                       th:value="${a.pricePerNight}" th:attr="form=${'edit-acc-' + a.id}" required>
+                                <span class="editable-text" th:text="${a.pricePerNight}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="number"
+                                       step="0.01"
+                                       min="0"
+                                       name="pricePerNight"
+                                       th:value="${a.pricePerNight}"
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       th:if="${isAdmin}"
+                                       required>
                             </td>
 
                             <td>
-                                <select class="form-select" name="status"
-                                        th:attr="form=${'edit-acc-' + a.id}">
+                                <span class="editable-text" th:text="${a.status}"></span>
+
+                                <select class="form-select editable-input d-none"
+                                        name="status"
+                                        th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
                                     <option value="AVAILABLE" th:selected="${a.status == 'AVAILABLE'}">AVAILABLE</option>
                                     <option value="UNAVAILABLE" th:selected="${a.status == 'UNAVAILABLE'}">UNAVAILABLE</option>
                                 </select>
                             </td>
 
-                            <td class="align-middle">
+                            <td class="align-middle" th:if="${isAdmin}">
                                 <div class="d-flex align-items-center gap-2">
 
                                     <form th:id="${'edit-acc-' + a.id}"
