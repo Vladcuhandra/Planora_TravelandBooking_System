@@ -52,6 +52,12 @@ public class TripService {
     }
 
     public TripDTO saveTrip(TripDTO tripDTO) {
+        DateValidation.endNotBeforeStart(
+                tripDTO.getStartDate(),
+                tripDTO.getEndDate(),
+                "startDate",
+                "endDate"
+        );
         User user = userService.getUserId(tripDTO.getUserId());
         if (user == null) throw new RuntimeException("User not found with ID: " + tripDTO.getUserId());
 
@@ -68,6 +74,12 @@ public class TripService {
     }
 
     public TripDTO updateTrip(Long tripId, TripDTO tripDTO, User user) {
+        DateValidation.endNotBeforeStart(
+                tripDTO.getStartDate(),
+                tripDTO.getEndDate(),
+                "startDate",
+                "endDate"
+        );
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + tripId));
 

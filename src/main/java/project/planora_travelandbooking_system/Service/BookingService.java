@@ -52,6 +52,13 @@ public class BookingService {
 
     @Transactional
     public void saveBooking(BookingDTO bookingDTO, String email, boolean isAdmin) {
+        DateValidation.endNotBeforeStart(
+                bookingDTO.getStartDate(),
+                bookingDTO.getEndDate(),
+                "startDate",
+                "endDate"
+        );
+
         Trip trip = tripRepository.findById(bookingDTO.getTripId())
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
 
@@ -79,6 +86,13 @@ public class BookingService {
 
     @Transactional
     public void updateBooking(Long id, BookingDTO bookingDTO, String email, boolean isAdmin) {
+        DateValidation.endNotBeforeStart(
+                bookingDTO.getStartDate(),
+                bookingDTO.getEndDate(),
+                "startDate",
+                "endDate"
+        );
+
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 

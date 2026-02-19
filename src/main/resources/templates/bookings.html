@@ -45,9 +45,9 @@
                 </div>
 
                 <div class="collapse" id="createBookingCollapse"
-                     th:classappend="${selectedType != null and selectedType != ''} ? ' show' : ''">
+                     th:classappend="${(selectedType != null and selectedType != '') or (openCreate == true) or (error != null)} ? ' show' : ''">
 
-                    <!-- TYPE SELECTOR (single source of truth) -->
+                <!-- BACKEND TOGGLE: select type then APPLY -->
                     <form th:action="@{/bookings}"
                           method="get"
                           class="row g-2 g-md-3 align-items-end mb-3">
@@ -95,7 +95,6 @@
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-4"></div>
 
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Start date</label>
@@ -136,6 +135,10 @@
                         <!-- When type not chosen: show nothing extra (same as before) -->
                         <div class="col-12 d-flex justify-content-end">
                             <button class="btn btn-planora px-4" type="submit">Create</button>
+                        </div>
+
+                        <div>
+                            <span th:if="${error}" class="text-danger small" th:text="${error}"></span>
                         </div>
                     </form>
                 </div>

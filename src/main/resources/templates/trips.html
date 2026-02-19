@@ -43,8 +43,10 @@
                     </button>
                 </div>
 
-                <div class="collapse" id="createTripCollapse">
-                    <form th:action="@{/trips/save}" th:object="${tripDto}" method="post"
+                <div class="collapse" id="createTripCollapse"
+                     th:classappend="${(openCreate == true) or (error != null)} ? ' show' : ''">
+
+                <form th:action="@{/trips/save}" th:object="${tripDto}" method="post"
                           class="row g-2 g-md-3 mt-1">
 
                         <input type="hidden" th:if="${_csrf != null}"
@@ -79,6 +81,10 @@
                                         th:text="${user.email}">
                                 </option>
                             </select>
+                        </div>
+
+                        <div>
+                            <span th:if="${error}" class="text-danger small" th:text="${error}"></span>
                         </div>
 
                         <div class="col-12 d-flex justify-content-end">
