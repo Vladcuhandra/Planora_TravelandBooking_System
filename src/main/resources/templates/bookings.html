@@ -217,8 +217,13 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="bookingType" th:attr="form=${'edit-booking-' + b.id}" required>
-                                    <option th:each="type : ${bookingTypes}"
+                                <select class="form-select booking-type"
+                                        name="bookingType"
+                                        th:attr="form=${'edit-booking-' + b.id}"
+                                        th:attrappend="data-rowid=${b.id}"
+                                        required>
+
+                                <option th:each="type : ${bookingTypes}"
                                             th:value="${type}"
                                             th:text="${type}"
                                             th:selected="${type.name() == b.bookingType}">
@@ -249,8 +254,12 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="transportId" th:attr="form=${'edit-booking-' + b.id}">
-                                    <option value="">--</option>
+                                <select class="form-select booking-transport"
+                                        name="transportId"
+                                        th:attr="form=${'edit-booking-' + b.id}"
+                                        th:attrappend="data-rowid=${b.id}">
+
+                                <option value="">--</option>
                                     <option th:each="tr : ${transports}"
                                             th:value="${tr.id}"
                                             th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}"
@@ -260,8 +269,12 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="accommodationId" th:attr="form=${'edit-booking-' + b.id}">
-                                    <option value="">--</option>
+                                <select class="form-select booking-accommodation"
+                                        name="accommodationId"
+                                        th:attr="form=${'edit-booking-' + b.id}"
+                                        th:attrappend="data-rowid=${b.id}">
+
+                                <option value="">--</option>
                                     <option th:each="a : ${accommodations}"
                                             th:value="${a.id}"
                                             th:text="${a.name + ' (' + a.address + ') price/night=' + a.pricePerNight}"
@@ -360,6 +373,78 @@
         sync();
     })();
 </script>
+
+<script>
+    (function () {
+
+        function applyRowRules(rowId) {
+            const typeEl = document.querySelector('.booking-type[data-rowid="' + rowId + '"]');
+            const trEl = document.querySelector('.booking-transport[data-rowid="' + rowId + '"]');
+            const accEl = document.querySelector('.booking-accommodation[data-rowid="' + rowId + '"]');
+            const formEl = document.getElementById('edit-booking-' + rowId);
+
+            if (!typeEl || !trEl || !accEl || !formEl) return;
+
+            const type = (typeEl.value || '').toUpperCase();
+
+            // Reset validation
+            trEl.required = false;
+            accEl.required = false;
+
+            if (type === 'TRANSPORT') {
+
+                trEl.required = true;
+                trEl.disabled = false;
+
+                accEl.value = '';
+                accEl.disabled = true;
+
+            } else if (type === 'ACCOMMODATION') {
+
+                accEl.required = true;
+                accEl.disabled = false;
+
+                trEl.value = '';
+                trEl.disabled = true;
+
+            } else {
+
+                trEl.disabled = false;
+                accEl.disabled = false;
+            }
+        }
+
+        function initAll() {
+            document.querySelectorAll('.booking-type[data-rowid]').forEach(function (el) {
+                applyRowRules(el.getAttribute('data-rowid'));
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initAll);
+        initAll();
+
+        document.addEventListener('change', function (e) {
+            if (!e.target.classList.contains('booking-type')) return;
+            applyRowRules(e.target.getAttribute('data-rowid'));
+        });
+
+        // Force browser validation popup when saving
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form || !form.id || !form.id.startsWith('edit-booking-')) return;
+
+            const rowId = form.id.replace('edit-booking-', '');
+            applyRowRules(rowId);
+
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                form.reportValidity();
+            }
+        }, true);
+
+    })();
+</script>
+
 
 </body>
 </html>
