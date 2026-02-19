@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,12 +23,12 @@
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Transport</div>
-                    <div class="p-hint">Create, edit and delete transports</div>
+                    <div class="p-hint" sec:authorize="hasRole('ADMIN')">Create, edit and delete transports</div>
                 </div>
             </div>
 
             <!-- Create Transport -->
-            <section class="p-card p-3 p-md-4 mb-3">
+            <section class="p-card p-3 p-md-4 mb-3" sec:authorize="hasRole('ADMIN')">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create transport</div>
 
@@ -137,7 +138,7 @@
                             <th style="width: 110px;">Seats</th>
                             <th style="width: 130px;">Price</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
+                            <th style="width: 210px;" sec:authorize="hasRole('ADMIN')">Actions</th>
                         </tr>
                         </thead>
 
@@ -154,7 +155,8 @@
 
                                 <select class="form-select editable-input d-none"
                                         name="transportType"
-                                        th:attr="form=${'edit-transport-' + t.id}" th:if="${isAdmin}">
+                                        th:attr="form=${'edit-transport-' + t.id}"
+                                        sec:authorize="hasRole('ADMIN')">
                                     <option value="FLIGHT" th:selected="${t.transportType == 'FLIGHT'}">FLIGHT</option>
                                     <option value="TRAIN"  th:selected="${t.transportType == 'TRAIN'}">TRAIN</option>
                                     <option value="BUS"    th:selected="${t.transportType == 'BUS'}">BUS</option>
@@ -170,7 +172,7 @@
                                        name="company"
                                        th:value="${t.company}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -182,7 +184,7 @@
                                        name="originAddress"
                                        th:value="${t.originAddress}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -194,7 +196,7 @@
                                        name="destinationAddress"
                                        th:value="${t.destinationAddress}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -207,7 +209,7 @@
                                        name="departureTime"
                                        th:value="${#temporals.format(t.departureTime, 'yyyy-MM-dd''T''HH:mm')}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -220,7 +222,7 @@
                                        name="arrivalTime"
                                        th:value="${#temporals.format(t.arrivalTime, 'yyyy-MM-dd''T''HH:mm')}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -233,7 +235,7 @@
                                        min="1"
                                        th:value="${t.seat}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -246,7 +248,7 @@
                                        name="price"
                                        th:value="${t.price}"
                                        th:attr="form=${'edit-transport-' + t.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -256,13 +258,13 @@
                                 <select class="form-select editable-input d-none"
                                         name="status"
                                         th:attr="form=${'edit-transport-' + t.id}"
-                                        th:if="${isAdmin}">
+                                        sec:authorize="hasRole('ADMIN')">
                                     <option value="AVAILABLE"   th:selected="${t.status == 'AVAILABLE'}">AVAILABLE</option>
                                     <option value="UNAVAILABLE" th:selected="${t.status == 'UNAVAILABLE'}">UNAVAILABLE</option>
                                 </select>
                             </td>
 
-                            <td class="align-middle" th:if="${isAdmin}">
+                            <td class="align-middle" sec:authorize="hasRole('ADMIN')">
                                 <div class="d-flex align-items-center gap-2">
 
                                     <form th:id="${'edit-transport-' + t.id}"

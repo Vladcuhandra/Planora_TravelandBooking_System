@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,12 +23,12 @@
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Accommodations</div>
-                    <div class="p-hint">Create, edit and delete accommodations</div>
+                    <div class="p-hint" sec:authorize="hasRole('ADMIN')">Create, edit and delete accommodations</div>
                 </div>
             </div>
 
             <!-- Create Accommodation -->
-            <section class="p-card p-3 p-md-4 mb-3">
+            <section class="p-card p-3 p-md-4 mb-3" sec:authorize="hasRole('ADMIN')">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create accommodation</div>
 
@@ -128,7 +129,7 @@
                             <th style="width: 110px;">Rooms</th>
                             <th style="width: 140px;">Price / Night</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
+                            <th style="width: 210px;" sec:authorize="hasRole('ADMIN')">Actions</th>
                         </tr>
                         </thead>
 
@@ -145,7 +146,8 @@
 
                                 <select class="form-select editable-input d-none"
                                         name="accommodationType"
-                                        th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
+                                        th:attr="form=${'edit-acc-' + a.id}"
+                                        sec:authorize="hasRole('ADMIN')">
                                     <option value="HOTEL" th:selected="${a.accommodationType == 'HOTEL'}">HOTEL</option>
                                     <option value="HOSTEL" th:selected="${a.accommodationType == 'HOSTEL'}">HOSTEL</option>
                                     <option value="AIRBNB" th:selected="${a.accommodationType == 'AIRBNB'}">AIRBNB</option>
@@ -162,7 +164,7 @@
                                        name="name"
                                        th:value="${a.name}"
                                        th:attr="form=${'edit-acc-' + a.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -174,7 +176,7 @@
                                        name="city"
                                        th:value="${a.city}"
                                        th:attr="form=${'edit-acc-' + a.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -186,7 +188,7 @@
                                        name="address"
                                        th:value="${a.address}"
                                        th:attr="form=${'edit-acc-' + a.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -201,7 +203,7 @@
                                        name="rating"
                                        th:value="${a.rating}"
                                        th:attr="form=${'edit-acc-' + a.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -213,7 +215,8 @@
                                        min="0"
                                        name="room"
                                        th:value="${a.room}"
-                                       th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
+                                       th:attr="form=${'edit-acc-' + a.id}"
+                                       sec:authorize="hasRole('ADMIN')">
                             </td>
 
                             <td>
@@ -226,7 +229,7 @@
                                        name="pricePerNight"
                                        th:value="${a.pricePerNight}"
                                        th:attr="form=${'edit-acc-' + a.id}"
-                                       th:if="${isAdmin}"
+                                       sec:authorize="hasRole('ADMIN')"
                                        required>
                             </td>
 
@@ -235,13 +238,14 @@
 
                                 <select class="form-select editable-input d-none"
                                         name="status"
-                                        th:attr="form=${'edit-acc-' + a.id}" th:if="${isAdmin}">
+                                        th:attr="form=${'edit-acc-' + a.id}"
+                                        sec:authorize="hasRole('ADMIN')">
                                     <option value="AVAILABLE" th:selected="${a.status == 'AVAILABLE'}">AVAILABLE</option>
                                     <option value="UNAVAILABLE" th:selected="${a.status == 'UNAVAILABLE'}">UNAVAILABLE</option>
                                 </select>
                             </td>
 
-                            <td class="align-middle" th:if="${isAdmin}">
+                            <td class="align-middle" sec:authorize="hasRole('ADMIN')">
                                 <div class="d-flex align-items-center gap-2">
 
                                     <form th:id="${'edit-acc-' + a.id}"
