@@ -1,59 +1,93 @@
 package project.planora_travelandbooking_system.Controller.api;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TripDTO;
+import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Service.TripService;
 import project.planora_travelandbooking_system.Service.UserService;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trip")
+@RequestMapping("/api/trips")
 public class TripRestController {
 
     private final TripService tripService;
     private final UserService userService;
 
-    @Autowired
     public TripRestController(TripService tripService, UserService userService) {
         this.tripService = tripService;
         this.userService = userService;
     }
 
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    // GET all trips (admin: all, user: own)
     @GetMapping
-    public List<TripDTO> getAllTrips() {
-        return tripService.getAllTrips();
+    public ResponseEntity<List<TripDTO>> getTrips(Authentication auth) {
+        boolean admin = isAdmin(auth);
+        if (admin) return ResponseEntity.ok(tripService.getAllTrips());
+        return ResponseEntity.ok(tripService.getTripsForUser(auth.getName(), 0, Integer.MAX_VALUE).getContent());
     }
 
-    @PostMapping
-    public ResponseEntity<TripDTO> create(@RequestBody TripDTO tripDTO) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        TripDTO created = tripService.saveTrip(tripDTO, auth);
-        return ResponseEntity.ok(created);
-    }
-
+    // GET by id
     @GetMapping("/{id}")
-    public TripDTO getTrip(@PathVariable Long id) {
-        return tripService.getTripById(id);
+    public ResponseEntity<TripDTO> getTrip(@PathVariable Long id) {
+        return ResponseEntity.ok(tripService.getTripById(id));
     }
 
+    // CREATE
+    @PostMapping
+    public ResponseEntity<TripDTO> createTrip(@RequestBody TripDTO dto, Authentication auth) {
+        boolean admin = isAdmin(auth);
+
+        if (!admin) {
+            User current = userService.getUserByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            dto.setUserId(current.getId());
+        }
+        // admin can provide userId in dto as before
+
+        return ResponseEntity.ok(tripService.saveTrip(dto));
+    }
+
+    // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<TripDTO> update(@PathVariable Long id,
-                                          @RequestBody TripDTO tripDTO) {
+    public ResponseEntity<TripDTO> updateTrip(@PathVariable Long id,
+                                              @RequestBody TripDTO dto,
+                                              Authentication auth) {
+        boolean admin = isAdmin(auth);
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        TripDTO updated = tripService.updateTrip(id, tripDTO, auth);
-        return ResponseEntity.ok(updated);
+        User user;
+        if (admin) {
+            // admin can update and can assign to userId provided in dto
+            user = userService.getUserId(dto.getUserId());
+            if (user == null) throw new RuntimeException("User not found with ID: " + dto.getUserId());
+        } else {
+            user = userService.getUserByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            dto.setUserId(user.getId());
+        }
+
+        return ResponseEntity.ok(tripService.updateTrip(id, dto, user));
     }
 
+    // DELETE (blocked if trip has bookings, per your current TripService)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        tripService.deleteTrip(id, auth);
+    public ResponseEntity<Void> deleteTrip(@PathVariable Long id, Authentication auth) {
+        tripService.deleteTripAuthorized(id, auth.getName(), isAdmin(auth));
         return ResponseEntity.noContent().build();
     }
 
+    // BULK DELETE
+    @PostMapping("/bulk-delete")
+    public ResponseEntity<Void> bulkDelete(@RequestBody List<Long> ids, Authentication auth) {
+        tripService.bulkDeleteTrips(ids, auth.getName(), isAdmin(auth));
+        return ResponseEntity.noContent().build();
+    }
 }
