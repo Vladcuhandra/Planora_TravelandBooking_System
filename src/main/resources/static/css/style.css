@@ -587,12 +587,12 @@ a:hover { color: var(--p-blue); }
   color: var(--d-text);
 }
 .topbar-logo {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
-  border-radius: 10px;
+/*  border-radius: 10px;
   background: rgba(255,255,255,0.06);
-  border: 1px solid var(--d-border);
+  border: 1px solid var(--d-border);*/
 }
 .topbar-title {
   font-weight: 700;
@@ -616,9 +616,9 @@ a:hover { color: var(--p-blue); }
 /* =========================
    Small reveal animation for drawer links
    ========================= */
-.offcanvas.sidebar-drawer.show .sidebar-link{
+/*.offcanvas.sidebar-drawer.show .sidebar-link{
   animation: sidebarLinkIn 0.2s ease-out both;
-}
+}*/
 .sidebar-icon-img {
   width: 22px;
   height: 22px;
@@ -626,12 +626,12 @@ a:hover { color: var(--p-blue); }
   flex: 0 0 22px;
 }
 
-.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(1){ animation-delay: 0.04s; }
+/*.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(1){ animation-delay: 0.04s; }
 .offcanvas.sidebar-drawer.show .sidebar-link:nth-child(2){ animation-delay: 0.08s; }
 .offcanvas.sidebar-drawer.show .sidebar-link:nth-child(3){ animation-delay: 0.12s; }
 .offcanvas.sidebar-drawer.show .sidebar-link:nth-child(4){ animation-delay: 0.16s; }
 .offcanvas.sidebar-drawer.show .sidebar-link:nth-child(5){ animation-delay: 0.20s; }
-.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(6){ animation-delay: 0.24s; }
+.offcanvas.sidebar-drawer.show .sidebar-link:nth-child(6){ animation-delay: 0.24s; }*/
 
 @keyframes sidebarLinkIn{
   from { opacity: 0; transform: translateX(-6px); }

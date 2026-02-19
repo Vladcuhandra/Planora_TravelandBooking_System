@@ -15,13 +15,13 @@
       </button>
 
       <!-- logo for title -->
-      <a class="topbar-brand"> <!-- th:href="@{/user} -->
+      <a class="topbar-brand" th:href="@{/user}">
         <img class="topbar-logo" th:src="@{/img/logo.png}" alt="Planora logo">
         <span class="topbar-title">Planora</span>
       </a>
     </div>
 
-    <div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Panel'"></div>
+    <!--<div class="p-hint" style="margin-top:-2px;" th:text="${isAdmin} ? 'Admin Panel' : 'User Panel'"></div>-->
 
     <form th:action="@{/logout}" method="post" class="m-0">
       <button class="btn btn-danger-soft" type="submit">Logout</button>
