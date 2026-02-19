@@ -103,18 +103,29 @@ public class UserController {
 
     @PostMapping("/user/edit")
     public String editProfile(@RequestParam Long userId,
-                           @RequestParam String email,
-                           @RequestParam String role,
-                           @RequestParam(required = false) String password) {
+                              @RequestParam String email,
+                              @RequestParam(required = false) String role,  // Make role optional
+                              @RequestParam(required = false) String password) {
         try {
+            // Fetch the existing user details
             UserDTO existingUserDTO = userService.getUserById(userId);
             UserDTO updatedDTO = new UserDTO();
             updatedDTO.setId(userId);
             updatedDTO.setEmail(email);
-            updatedDTO.setRole(role);
-            updatedDTO.setPassword(password);
+
+            if (!existingUserDTO.isSuperAdmin()) {
+                updatedDTO.setRole("USER");
+            } else {
+                updatedDTO.setRole(role);
+            }
+
+            if (password != null && !password.isEmpty()) {
+                updatedDTO.setPassword(password);
+            }
+
             updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
             userService.saveUser(updatedDTO);
+
             return "redirect:/user";
         } catch (IllegalStateException e) {
             System.out.println("Forbidden action: " + e.getMessage());
@@ -124,6 +135,7 @@ public class UserController {
             return "redirect:/user?error=updateUser";
         }
     }
+
 
     @PostMapping("/admin/delete")
     public String deleteUser(@RequestParam Long userId) {

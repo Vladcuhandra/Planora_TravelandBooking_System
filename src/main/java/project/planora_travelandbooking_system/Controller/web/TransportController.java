@@ -2,6 +2,7 @@ package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,18 +45,21 @@ public class TransportController {
         return "transports";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/transports/save")
     public String saveTransport(@ModelAttribute TransportDTO dto, Model model) {
         transportService.saveTransport(dto);
         return "redirect:/transports";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/transports/{id}")
     public String deleteTransport(@PathVariable Long id) {
         transportService.deleteTransport(id);
         return "redirect:/transports";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/transports/edit")
     public String editTransport(@RequestParam Long transportId,
                                 @RequestParam String transportType,
@@ -93,6 +97,7 @@ public class TransportController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/transports/{id}")
     public String updateTransport(@PathVariable Long id,
                                   @ModelAttribute("transportDto") TransportDTO dto) {
