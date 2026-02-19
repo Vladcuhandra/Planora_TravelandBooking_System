@@ -134,16 +134,16 @@
 
                                 <!-- Deleted users: dropdown to optionally restore -->
                                 <span th:if="${user.deleted}">
-                  <select class="form-select form-select-sm"
-                          name="restoreOption"
-                          th:attr="form=${'edit-' + user.id}">
-                    <option value="KEEP" selected
-                            th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'">
-                      DELETING
-                    </option>
-                    <option value="RESTORE">Restore Account</option>
-                  </select>
-                </span>
+                                  <select class="form-select form-select-sm"
+                                          name="restoreOption"
+                                          th:attr="form=${'edit-' + user.id}">
+                                    <option value="KEEP" selected
+                                            th:text="'DELETING (' + ${#temporals.format(user.deletionDate.plusDays(30), 'yyyy-MM-dd')} + ')'">
+                                      DELETING
+                                    </option>
+                                    <option value="RESTORE">Restore Account</option>
+                                  </select>
+                                </span>
                             </td>
 
                             <!-- Actions -->

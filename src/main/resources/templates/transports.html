@@ -130,7 +130,7 @@
                             <th style="width: 110px;">Seats</th>
                             <th style="width: 130px;">Price</th>
                             <th style="width: 170px;">Status</th>
-                            <th style="width: 210px;">Actions</th>
+                            <th style="width: 210px;" th:if="${isAdmin}">Actions</th>
                         </tr>
                         </thead>
 
@@ -143,7 +143,10 @@
                             <td th:text="${t.id}"></td>
 
                             <td>
-                                <select class="form-select" name="transportType"
+                                <span class="editable-text" th:text="${t.transportType}"></span>
+
+                                <select class="form-select editable-input d-none"
+                                        name="transportType"
                                         th:attr="form=${'edit-transport-' + t.id}">
                                     <option value="FLIGHT" th:selected="${t.transportType == 'FLIGHT'}">FLIGHT</option>
                                     <option value="TRAIN"  th:selected="${t.transportType == 'TRAIN'}">TRAIN</option>
@@ -153,49 +156,98 @@
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="company" th:value="${t.company}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text" th:text="${t.company}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="company"
+                                       th:value="${t.company}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="originAddress" th:value="${t.originAddress}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text" th:text="${t.originAddress}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="originAddress"
+                                       th:value="${t.originAddress}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="text" name="destinationAddress" th:value="${t.destinationAddress}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text" th:text="${t.destinationAddress}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="text"
+                                       name="destinationAddress"
+                                       th:value="${t.destinationAddress}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="datetime-local" name="departureTime" th:value="${t.departureTime}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text"
+                                      th:text="${#temporals.format(t.departureTime, 'yyyy-MM-dd HH:mm')}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="datetime-local"
+                                       name="departureTime"
+                                       th:value="${#temporals.format(t.departureTime, 'yyyy-MM-dd''T''HH:mm')}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="datetime-local" name="arrivalTime" th:value="${t.arrivalTime}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                               <span class="editable-text"
+                                     th:text="${#temporals.format(t.arrivalTime, 'yyyy-MM-dd HH:mm')}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="datetime-local"
+                                       name="arrivalTime"
+                                       th:value="${#temporals.format(t.arrivalTime, 'yyyy-MM-dd''T''HH:mm')}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="number" name="seat" th:value="${t.seat}" min="1"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text" th:text="${t.seat}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="number"
+                                       name="seat"
+                                       min="1"
+                                       th:value="${t.seat}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <input class="form-control" type="number" name="price" step="0.01" th:value="${t.price}"
-                                       th:attr="form=${'edit-transport-' + t.id}" required>
+                                <span class="editable-text" th:text="${t.price}"></span>
+
+                                <input class="form-control editable-input d-none"
+                                       type="number"
+                                       step="0.01"
+                                       name="price"
+                                       th:value="${t.price}"
+                                       th:attr="form=${'edit-transport-' + t.id}"
+                                       required>
                             </td>
 
                             <td>
-                                <select class="form-select" name="status"
+                                <span class="editable-text" th:text="${t.status}"></span>
+
+                                <select class="form-select editable-input d-none"
+                                        name="status"
                                         th:attr="form=${'edit-transport-' + t.id}">
                                     <option value="AVAILABLE"   th:selected="${t.status == 'AVAILABLE'}">AVAILABLE</option>
                                     <option value="UNAVAILABLE" th:selected="${t.status == 'UNAVAILABLE'}">UNAVAILABLE</option>
                                 </select>
                             </td>
 
-                            <td class="align-middle">
+                            <td class="align-middle" th:if="${isAdmin}">
                                 <div class="d-flex align-items-center gap-2">
 
                                     <form th:id="${'edit-transport-' + t.id}"
