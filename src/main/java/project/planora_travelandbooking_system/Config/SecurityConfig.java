@@ -104,8 +104,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // allow Postman for API
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/user/restore",
-                                "/user/edit",
+                                "/",
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
@@ -153,6 +152,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/user").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/user/edit").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/user/restore").hasAnyRole("USER", "ADMIN")
 
 
                         .anyRequest().authenticated()
