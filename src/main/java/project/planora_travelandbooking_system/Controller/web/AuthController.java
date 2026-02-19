@@ -26,6 +26,11 @@ public class AuthController {
         this.userService = userService;
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "index";
+    }
+
     @GetMapping("/login")
     public String login(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
