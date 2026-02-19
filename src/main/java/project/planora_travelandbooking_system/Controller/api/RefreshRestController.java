@@ -25,7 +25,6 @@ public class RefreshRestController {
     private final JwtRefreshService refreshService;
     private final JwtUtil jwtUtil;
 
-    // adjust to match your desired TTLs
     private final int refreshDays = 14;
 
     public RefreshRestController(JwtRefreshService refreshService, JwtUtil jwtUtil) {
@@ -52,14 +51,12 @@ public class RefreshRestController {
                     .body(Map.of("message", ex.getMessage()));
         }
 
-        // rotate refresh token (recommended)
+        // rotating refresh token
         refreshService.revoke(stored);
         User user = stored.getUser();
         String newRefresh = refreshService.createToken(user, refreshDays);
         setRefreshCookie(response, newRefresh, refreshDays);
 
-        // IMPORTANT: subject must match what your JwtFilter/UserDetailsService expects.
-        // Replace getEmail() with getLogin()/getUserName()/etc if that's what you use at login.
         String subject = user.getEmail();
 
         String newAccessToken = jwtUtil.generateToken(subject);
@@ -67,7 +64,6 @@ public class RefreshRestController {
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
-    // ---- cookie helpers ----
 
     private String readCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();

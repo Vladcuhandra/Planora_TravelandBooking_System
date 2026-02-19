@@ -50,10 +50,8 @@ public class AuthRestController {
 
             String email = auth.getName();
 
-            // Access token
             String accessToken = jwtUtil.generateToken(email);
 
-            // Fetch User entity (needed for refresh token DB record)
             User user = userService.getUserByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -72,6 +70,7 @@ public class AuthRestController {
             return ResponseEntity.status(500).body("Login failed");
         }
     }
+
 
     private void setRefreshCookie(HttpServletResponse response, String token, int days) {
         int maxAge = (int) Duration.ofDays(days).getSeconds();
