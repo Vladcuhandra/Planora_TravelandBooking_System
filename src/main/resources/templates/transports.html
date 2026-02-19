@@ -45,8 +45,10 @@
                 </div>
 
                 <!-- by default hidden -->
-                <div class="collapse" id="createTransportCollapse">
-                    <form th:action="@{/transports/save}" th:object="${transportDto}" method="post"
+                <div class="collapse" id="createTransportCollapse"
+                     th:classappend="${(openCreate == true) or (error != null)} ? ' show' : ''">
+
+                <form th:action="@{/transports/save}" th:object="${transportDto}" method="post"
                           class="row g-2 g-md-3 mt-1">
 
                         <input type="hidden" th:if="${_csrf != null}"
@@ -83,6 +85,7 @@
                             <input class="form-control" type="text" th:field="*{destinationAddress}" required />
                         </div>
 
+
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Departure</label>
                             <input class="form-control" type="datetime-local" th:field="*{departureTime}" required />
@@ -101,6 +104,10 @@
                         <div class="col-6 col-md-2">
                             <label class="form-label p-hint mb-1">Price</label>
                             <input class="form-control" type="number" th:field="*{price}" step="0.01" min="0" required />
+                        </div>
+
+                        <div>
+                            <span th:if="${error}" class="text-danger small" th:text="${error}"></span>
                         </div>
 
                         <div class="col-12 d-flex justify-content-end">

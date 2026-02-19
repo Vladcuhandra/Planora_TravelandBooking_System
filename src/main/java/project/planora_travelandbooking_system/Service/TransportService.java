@@ -24,6 +24,13 @@ public class TransportService {
     }
 
     public TransportDTO saveTransport(TransportDTO transportDTO) {
+        DateValidation.endNotBeforeStart(
+                transportDTO.getDepartureTime(),
+                transportDTO.getArrivalTime(),
+                "departureTime",
+                "arrivalTime"
+        );
+
         Transport.TransportType transportType = Transport.TransportType.valueOf(transportDTO.getTransportType());
         Transport.Status status = Transport.Status.valueOf(transportDTO.getStatus());
 
@@ -66,7 +73,12 @@ public class TransportService {
 
     @Transactional
     public TransportDTO updateTransport(Long transportId, TransportDTO transportDTO) {
-
+        DateValidation.endNotBeforeStart(
+                transportDTO.getDepartureTime(),
+                transportDTO.getArrivalTime(),
+                "departureTime",
+                "arrivalTime"
+        );
         Transport transport = transportRepository.findById(transportId)
                 .orElseThrow(() ->
                         new RuntimeException("Transport not found with ID: " + transportId));
