@@ -78,6 +78,7 @@ public class SecurityConfig {
                         
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e
