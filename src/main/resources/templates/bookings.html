@@ -44,13 +44,13 @@
                     </button>
                 </div>
 
-                <div class="collapse" id="createBookingCollapse" th:classappend="${selectedType != null and selectedType != ''} ? ' show' : ''">
+                <div class="collapse" id="createBookingCollapse"
+                     th:classappend="${selectedType != null and selectedType != ''} ? ' show' : ''">
 
-                    <!-- BACKEND TOGGLE: select type then APPLY -->
+                    <!-- TYPE SELECTOR (single source of truth) -->
                     <form th:action="@{/bookings}"
                           method="get"
                           class="row g-2 g-md-3 align-items-end mb-3">
-
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Booking Type</label>
                             <select class="form-select" name="type">
@@ -65,9 +65,13 @@
                         </div>
                     </form>
 
+                    <!-- CREATE FORM -->
                     <form th:action="@{/bookings/save}" method="post" th:object="${bookingDto}" class="row g-2 g-md-3">
                         <input type="hidden" th:if="${_csrf != null}"
                                th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <!-- IMPORTANT: bookingType is set from selectedType; no duplicate visible field -->
+                        <input type="hidden" th:field="*{bookingType}" th:value="${selectedType}" />
 
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Trip</label>
@@ -76,17 +80,6 @@
                                 <option th:each="t : ${trips}"
                                         th:value="${t.id}"
                                         th:text="${t.title + ' (id=' + t.id + ')'}">
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-md-4">
-                            <label class="form-label p-hint mb-1">Booking Type</label>
-                            <select class="form-select" th:field="*{bookingType}" required>
-                                <option value="">-- Select --</option>
-                                <option th:each="type : ${bookingTypes}"
-                                        th:value="${type}"
-                                        th:text="${type}">
                                 </option>
                             </select>
                         </div>
@@ -102,6 +95,8 @@
                             </select>
                         </div>
 
+                        <div class="col-12 col-md-4"></div>
+
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Start date</label>
                             <input class="form-control" type="datetime-local" th:field="*{startDate}" />
@@ -111,6 +106,8 @@
                             <label class="form-label p-hint mb-1">End date</label>
                             <input class="form-control" type="datetime-local" th:field="*{endDate}" />
                         </div>
+
+                        <div class="col-12 col-md-4"></div>
 
                         <!-- TRANSPORT only -->
                         <div class="col-12 col-md-4" th:if="${selectedType == 'TRANSPORT'}">
@@ -136,6 +133,7 @@
                             </select>
                         </div>
 
+                        <!-- When type not chosen: show nothing extra (same as before) -->
                         <div class="col-12 d-flex justify-content-end">
                             <button class="btn btn-planora px-4" type="submit">Create</button>
                         </div>
