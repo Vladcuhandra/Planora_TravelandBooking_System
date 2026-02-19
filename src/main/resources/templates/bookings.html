@@ -44,7 +44,6 @@
                     </button>
                 </div>
 
-                <!-- by default hidden -->
                 <div class="collapse" id="createBookingCollapse" th:classappend="${selectedType != null and selectedType != ''} ? ' show' : ''">
 
                     <!-- BACKEND TOGGLE: select type then APPLY -->
@@ -54,13 +53,10 @@
 
                         <div class="col-12 col-md-4">
                             <label class="form-label p-hint mb-1">Booking Type</label>
-                            <select class="form-select" name="type" required>
+                            <select class="form-select" name="type">
                                 <option value="">-- Select --</option>
-                                <option th:each="bt : ${bookingTypes}"
-                                        th:value="${bt.name()}"
-                                        th:text="${bt.name()}"
-                                        th:selected="${selectedType == bt.name()}">
-                                </option>
+                                <option value="TRANSPORT" th:selected="${selectedType == 'TRANSPORT'}">TRANSPORT</option>
+                                <option value="ACCOMMODATION" th:selected="${selectedType == 'ACCOMMODATION'}">ACCOMMODATION</option>
                             </select>
                         </div>
 
@@ -69,123 +65,147 @@
                         </div>
                     </form>
 
-                    <!-- CREATE FORM (show only after Apply) -->
-                    <div th:if="${selectedType != null and selectedType != ''}">
-                        <form th:action="@{/bookings/save}"
-                              th:object="${bookingDto}"
-                              method="post"
-                              class="row g-2 g-md-3">
+                    <form th:action="@{/bookings/save}" method="post" th:object="${bookingDto}" class="row g-2 g-md-3">
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                            <input type="hidden" th:if="${_csrf != null}"
-                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Trip</label>
+                            <select class="form-select" th:field="*{tripId}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="t : ${trips}"
+                                        th:value="${t.id}"
+                                        th:text="${t.title + ' (id=' + t.id + ')'}">
+                                </option>
+                            </select>
+                        </div>
 
-                            <!-- bookingType from backend -->
-                            <input type="hidden" th:field="*{bookingType}" th:value="${selectedType}" />
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Booking Type</label>
+                            <select class="form-select" th:field="*{bookingType}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="type : ${bookingTypes}"
+                                        th:value="${type}"
+                                        th:text="${type}">
+                                </option>
+                            </select>
+                        </div>
 
-                            <div class="col-12 col-md-6">
-                                <label class="form-label p-hint mb-1">Trip</label>
-                                <select class="form-select" th:field="*{tripId}" required>
-                                    <option value="">-- Select --</option>
-                                    <option th:each="t : ${trips}"
-                                            th:value="${t.id}"
-                                            th:text="${t.title + ' (id=' + t.id + ')'}">
-                                    </option>
-                                </select>
-                            </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Status</label>
+                            <select class="form-select" th:field="*{status}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="st : ${bookingStatuses}"
+                                        th:value="${st}"
+                                        th:text="${st}">
+                                </option>
+                            </select>
+                        </div>
 
-                            <div class="col-12 col-md-3">
-                                <label class="form-label p-hint mb-1">Status</label>
-                                <select class="form-select" th:field="*{status}" required>
-                                    <option th:each="st : ${bookingStatuses}"
-                                            th:value="${st.name()}"
-                                            th:text="${st.name()}">
-                                    </option>
-                                </select>
-                            </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Start date</label>
+                            <input class="form-control" type="datetime-local" th:field="*{startDate}" />
+                        </div>
 
-                            <div class="col-12 col-md-6">
-                                <label class="form-label p-hint mb-1">Start Date</label>
-                                <input class="form-control" type="datetime-local" th:field="*{startDate}" />
-                            </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">End date</label>
+                            <input class="form-control" type="datetime-local" th:field="*{endDate}" />
+                        </div>
 
-                            <div class="col-12 col-md-6">
-                                <label class="form-label p-hint mb-1">End Date</label>
-                                <input class="form-control" type="datetime-local" th:field="*{endDate}" />
-                            </div>
+                        <!-- TRANSPORT only -->
+                        <div class="col-12 col-md-4" th:if="${selectedType == 'TRANSPORT'}">
+                            <label class="form-label p-hint mb-1">Transport</label>
+                            <select class="form-select" th:field="*{transportId}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="tr : ${transports}"
+                                        th:value="${tr.id}"
+                                        th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}">
+                                </option>
+                            </select>
+                        </div>
 
-                            <!-- TRANSPORT ONLY -->
-                            <div class="col-12 col-md-6" th:if="${selectedType == 'TRANSPORT'}">
-                                <label class="form-label p-hint mb-1">Transport</label>
-                                <select class="form-select" th:field="*{transportId}" required>
-                                    <option value="">-- Select --</option>
-                                    <option th:each="tr : ${transports}"
-                                            th:value="${tr.id}"
-                                            th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}">
-                                    </option>
-                                </select>
-                            </div>
+                        <!-- ACCOMMODATION only -->
+                        <div class="col-12 col-md-4" th:if="${selectedType == 'ACCOMMODATION'}">
+                            <label class="form-label p-hint mb-1">Accommodation</label>
+                            <select class="form-select" th:field="*{accommodationId}" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="a : ${accommodations}"
+                                        th:value="${a.id}"
+                                        th:text="${a.name + ' (' + a.address + ') price/night=' + a.pricePerNight}">
+                                </option>
+                            </select>
+                        </div>
 
-                            <!-- ACCOMMODATION ONLY -->
-                            <div class="col-12 col-md-6" th:if="${selectedType == 'ACCOMMODATION'}">
-                                <label class="form-label p-hint mb-1">Accommodation</label>
-                                <select class="form-select" th:field="*{accommodationId}" required>
-                                    <option value="">-- Select --</option>
-                                    <option th:each="a : ${accommodations}"
-                                            th:value="${a.id}"
-                                            th:text="${a.name + ' (' + a.city + ') price/night=' + a.pricePerNight}">
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="col-12 d-flex justify-content-end">
-                                <button class="btn btn-planora px-4" type="submit">Save</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Optional hint when not selected -->
-                    <div class="p-hint mt-2" th:if="${selectedType == null or selectedType == ''}">
-                        Choose Booking Type and click Apply to continue.
-                    </div>
-
+                        <div class="col-12 d-flex justify-content-end">
+                            <button class="btn btn-planora px-4" type="submit">Create</button>
+                        </div>
+                    </form>
                 </div>
             </section>
 
-            <!-- LIST + INLINE EDIT (already works like transport) -->
+            <!-- TABLE -->
             <section class="p-card p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">All bookings</div>
                     <div class="p-hint">Edit in table → Save</div>
                 </div>
 
+                <!-- Bulk delete bar -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <div class="p-hint m-0">Select rows and delete them.</div>
+
+                    <form id="bulk-booking-delete"
+                          th:action="@{/bookings/bulk-delete}"
+                          method="post"
+                          class="m-0 d-flex align-items-center gap-2"
+                          onsubmit="return confirm('Delete selected bookings?');">
+                        <input type="hidden" th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button id="bookingBulkDeleteBtn" class="btn btn-danger-soft btn-sm" type="submit" disabled>
+                            Delete selected
+                        </button>
+                    </form>
+                </div>
+
                 <div class="table-responsive table-responsive-unclip">
                     <table class="table planora-table planora-table--compact table-hover align-middle mb-0">
                         <thead>
                         <tr>
-                            <th style="width: 80px;">ID</th>
-                            <th style="min-width: 220px;">Trip</th>
-                            <th style="width: 160px;">Type</th>
-                            <th style="width: 170px;">Status</th>
-                            <th style="min-width: 190px;">Start</th>
-                            <th style="min-width: 190px;">End</th>
-                            <th style="min-width: 220px;">Transport</th>
+                            <th style="width:44px;">
+                                <input id="bookingSelectAll" class="form-check-input" type="checkbox" aria-label="Select all bookings">
+                            </th>
+                            <th style="width: 70px;">ID</th>
+                            <th style="min-width: 190px;">Trip</th>
+                            <th style="min-width: 140px;">Type</th>
+                            <th style="min-width: 140px;">Status</th>
+                            <th style="min-width: 180px;">Start</th>
+                            <th style="min-width: 180px;">End</th>
+                            <th style="min-width: 240px;">Transport</th>
                             <th style="min-width: 240px;">Accommodation</th>
-                            <th style="width: 140px;">Total</th>
+                            <th style="min-width: 120px;">Total</th>
                             <th style="width: 220px;">Actions</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         <tr th:if="${bookings == null or bookings.isEmpty()}">
-                            <td colspan="10" class="p-hint">No bookings found.</td>
+                            <td colspan="11" class="p-hint">No bookings found.</td>
                         </tr>
 
                         <tr th:each="b : ${bookings}">
+                            <td>
+                                <input class="form-check-input booking-select"
+                                       type="checkbox"
+                                       name="ids"
+                                       form="bulk-booking-delete"
+                                       th:value="${b.id}"
+                                       aria-label="Select booking">
+                            </td>
+
                             <td th:text="${b.id}"></td>
 
                             <td>
-                                <select class="form-select" name="tripId"
-                                        th:attr="form=${'edit-booking-' + b.id}" required>
+                                <select class="form-select" name="tripId" th:attr="form=${'edit-booking-' + b.id}" required>
                                     <option value="">-- Select --</option>
                                     <option th:each="t : ${trips}"
                                             th:value="${t.id}"
@@ -196,22 +216,20 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="bookingType"
-                                        th:attr="form=${'edit-booking-' + b.id}" required>
-                                    <option th:each="bt : ${bookingTypes}"
-                                            th:value="${bt.name()}"
-                                            th:text="${bt.name()}"
-                                            th:selected="${bt.name() == b.bookingType}">
+                                <select class="form-select" name="bookingType" th:attr="form=${'edit-booking-' + b.id}" required>
+                                    <option th:each="type : ${bookingTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}"
+                                            th:selected="${type.name() == b.bookingType}">
                                     </option>
                                 </select>
                             </td>
 
                             <td>
-                                <select class="form-select" name="status"
-                                        th:attr="form=${'edit-booking-' + b.id}" required>
+                                <select class="form-select" name="status" th:attr="form=${'edit-booking-' + b.id}" required>
                                     <option th:each="st : ${bookingStatuses}"
-                                            th:value="${st.name()}"
-                                            th:text="${st.name()}"
+                                            th:value="${st}"
+                                            th:text="${st}"
                                             th:selected="${st.name() == b.status}">
                                     </option>
                                 </select>
@@ -230,10 +248,8 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="transportId"
-                                        th:attr="form=${'edit-booking-' + b.id}"
-                                        th:disabled="${b.bookingType != 'TRANSPORT'}">
-                                    <option value="">-- None --</option>
+                                <select class="form-select" name="transportId" th:attr="form=${'edit-booking-' + b.id}">
+                                    <option value="">--</option>
                                     <option th:each="tr : ${transports}"
                                             th:value="${tr.id}"
                                             th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}"
@@ -243,13 +259,11 @@
                             </td>
 
                             <td>
-                                <select class="form-select" name="accommodationId"
-                                        th:attr="form=${'edit-booking-' + b.id}"
-                                        th:disabled="${b.bookingType != 'ACCOMMODATION'}">
-                                    <option value="">-- None --</option>
+                                <select class="form-select" name="accommodationId" th:attr="form=${'edit-booking-' + b.id}">
+                                    <option value="">--</option>
                                     <option th:each="a : ${accommodations}"
                                             th:value="${a.id}"
-                                            th:text="${a.name + ' (' + a.city + ') price/night=' + a.pricePerNight}"
+                                            th:text="${a.name + ' (' + a.address + ') price/night=' + a.pricePerNight}"
                                             th:selected="${a.id == b.accommodationId}">
                                     </option>
                                 </select>
@@ -262,18 +276,20 @@
 
                                     <form th:id="${'edit-booking-' + b.id}"
                                           th:action="@{/bookings/edit/{id}(id=${b.id})}"
-                                          method="post" class="m-0">
+                                          method="post"
+                                          class="m-0">
                                         <input type="hidden" th:if="${_csrf != null}"
-                                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <button class="btn btn-soft btn-sm" type="submit">Save</button>
                                     </form>
 
                                     <form th:action="@{/bookings/delete/{id}(id=${b.id})}"
-                                          method="post" class="m-0"
+                                          method="post"
+                                          class="m-0"
                                           onsubmit="return confirm('Delete this booking?');">
                                         <input type="hidden" name="_method" value="delete"/>
                                         <input type="hidden" th:if="${_csrf != null}"
-                                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                               th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                         <button class="btn btn-danger-soft btn-sm" type="submit">Delete</button>
                                     </form>
 
@@ -283,11 +299,12 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Pagination -->
                 <div class="d-flex align-items-center justify-content-between mt-3" th:if="${totalPages > 0}">
                     <a class="btn btn-soft"
                        th:if="${currentPage > 0}"
-                       th:href="@{/bookings(page=${currentPage - 1})}">
+                       th:href="@{/bookings(page=${currentPage - 1}, type=${selectedType})}">
                         ← Previous
                     </a>
 
@@ -297,11 +314,13 @@
 
                     <a class="btn btn-soft"
                        th:if="${currentPage + 1 < totalPages}"
-                       th:href="@{/bookings(page=${currentPage + 1})}">
+                       th:href="@{/bookings(page=${currentPage + 1}, type=${selectedType})}">
                         Next →
                     </a>
                 </div>
+
             </section>
+
         </main>
     </div>
 </div>
@@ -309,5 +328,37 @@
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer th:src="@{/js/ui.js}"></script>
 <script defer th:src="@{/js/collapse-toggles.js}"></script>
+
+<script>
+    (function () {
+        const selectAll = document.getElementById('bookingSelectAll');
+        const btn = document.getElementById('bookingBulkDeleteBtn');
+
+        function getChecks() { return Array.from(document.querySelectorAll('.booking-select')); }
+
+        function sync() {
+            const checks = getChecks();
+            const any = checks.some(c => c.checked);
+            btn.disabled = !any;
+
+            const all = checks.length > 0 && checks.every(c => c.checked);
+            if (selectAll) selectAll.checked = all;
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                getChecks().forEach(c => c.checked = selectAll.checked);
+                sync();
+            });
+        }
+
+        document.addEventListener('change', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('booking-select')) sync();
+        });
+
+        sync();
+    })();
+</script>
+
 </body>
 </html>

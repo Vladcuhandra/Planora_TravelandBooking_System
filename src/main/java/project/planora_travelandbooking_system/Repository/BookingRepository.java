@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import project.planora_travelandbooking_system.Model.Booking;
+
 import java.util.List;
 
 @Repository
@@ -26,4 +27,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByTransportIdAndStatusNotAndIdNot(Long transportId, Booking.BookingStatus status, Long id);
     boolean existsByAccommodationIdAndStatusNotAndIdNot(Long accommodationId, Booking.BookingStatus status, Long id);
+    boolean existsByTripId(Long tripId);
 }

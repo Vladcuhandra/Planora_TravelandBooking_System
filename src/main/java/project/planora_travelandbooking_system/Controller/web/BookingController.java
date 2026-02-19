@@ -12,6 +12,8 @@ import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
 import project.planora_travelandbooking_system.Service.BookingService;
 
+import java.util.List;
+
 @Controller
 public class BookingController {
 
@@ -55,9 +57,7 @@ public class BookingController {
         model.addAttribute("isAdmin", admin);
 
         BookingDTO createDto = new BookingDTO();
-        if (!selectedType.isEmpty()) {
-            createDto.setBookingType(selectedType);
-        }
+        if (!selectedType.isEmpty()) createDto.setBookingType(selectedType);
         model.addAttribute("bookingDto", createDto);
 
         model.addAttribute("selectedType", selectedType);
@@ -77,8 +77,7 @@ public class BookingController {
 
     @PostMapping("/bookings/save")
     public String saveBooking(@ModelAttribute BookingDTO dto, Authentication auth) {
-        String email = auth.getName();
-        bookingService.saveBooking(dto, email, isAdmin(auth));
+        bookingService.saveBooking(dto, auth.getName(), isAdmin(auth));
         return "redirect:/bookings";
     }
 
@@ -86,15 +85,21 @@ public class BookingController {
     public String updateBooking(@PathVariable Long id,
                                 @ModelAttribute BookingDTO dto,
                                 Authentication auth) {
-        String email = auth.getName();
-        bookingService.updateBooking(id, dto, email, isAdmin(auth));
+        bookingService.updateBooking(id, dto, auth.getName(), isAdmin(auth));
         return "redirect:/bookings";
     }
 
     @RequestMapping(value = "/bookings/delete/{id}", method = RequestMethod.DELETE)
     public String deleteBooking(@PathVariable Long id, Authentication auth) {
-        String email = auth.getName();
-        bookingService.deleteBooking(id, email, isAdmin(auth));
+        bookingService.deleteBooking(id, auth.getName(), isAdmin(auth));
+        return "redirect:/bookings";
+    }
+
+    // NEW
+    @PostMapping("/bookings/bulk-delete")
+    public String bulkDeleteBookings(@RequestParam(value = "ids", required = false) List<Long> ids,
+                                     Authentication auth) {
+        bookingService.bulkDeleteBookings(ids, auth.getName(), isAdmin(auth));
         return "redirect:/bookings";
     }
 }

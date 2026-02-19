@@ -13,9 +13,12 @@ import project.planora_travelandbooking_system.Repository.AccommodationRepositor
 import project.planora_travelandbooking_system.Repository.BookingRepository;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class BookingService {
@@ -119,10 +122,24 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    /**
-     * Enforces: one Transport/Accommodation can be used by only ONE ACTIVE booking (status != CANCELLED).
-     * That prevents multiple trips from using the same booking resource.
-     */
+    // NEW: bulk delete (same authorization rules as deleteBooking)
+    @Transactional
+    public void bulkDeleteBookings(List<Long> ids, String email, boolean isAdmin) {
+        if (ids == null || ids.isEmpty()) return;
+
+        List<Booking> bookings = bookingRepository.findAllById(ids);
+
+        if (!isAdmin) {
+            for (Booking b : bookings) {
+                if (b.getTrip() == null || b.getTrip().getUser() == null) throw new RuntimeException("Access denied");
+                if (!email.equals(b.getTrip().getUser().getEmail())) throw new RuntimeException("Access denied");
+            }
+        }
+
+        Set<Long> uniqueIds = new HashSet<>(ids);
+        bookingRepository.deleteAllByIdInBatch(uniqueIds);
+    }
+
     private void applyTypeAndPrice(Booking booking,
                                    BookingDTO bookingDTO,
                                    Booking.BookingType bookingType,
@@ -153,7 +170,7 @@ public class BookingService {
             booking.setAccommodation(null);
             booking.setTotalPrice(transport.getPrice());
 
-        } else { // ACCOMMODATION
+        } else {
 
             if (bookingDTO.getAccommodationId() == null) {
                 throw new RuntimeException("Accommodation must be selected for booking");
@@ -205,4 +222,3 @@ public class BookingService {
         return bookingDTO;
     }
 }
-//new
