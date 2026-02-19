@@ -1,5 +1,7 @@
 package project.planora_travelandbooking_system.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.BookingDTO;
@@ -11,7 +13,6 @@ import project.planora_travelandbooking_system.Repository.AccommodationRepositor
 import project.planora_travelandbooking_system.Repository.BookingRepository;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,12 +35,11 @@ public class BookingService {
         this.accommodationRepository = accommodationRepository;
     }
 
-    public List<BookingDTO> getBookings(String email, boolean isAdmin) {
-        List<Booking> bookings = isAdmin
-                ? bookingRepository.findAll()
-                : bookingRepository.findByTripUserEmail(email);
-
-        return bookings.stream().map(this::toDTO).toList();
+    public Page<BookingDTO> getAllBookings(int page, int pageSize, String email, boolean isAdmin) {
+        Page<Booking> bookingPage = isAdmin
+                ? bookingRepository.findAll(PageRequest.of(page, pageSize))
+                : bookingRepository.findByTripUserEmail(email, PageRequest.of(page, pageSize));
+        return bookingPage.map(this::convertToDTO);
     }
 
     public Booking getBookingEntity(Long id) {
@@ -188,7 +188,7 @@ public class BookingService {
         return nights;
     }
 
-    private BookingDTO toDTO(Booking booking) {
+    private BookingDTO convertToDTO(Booking booking) {
         BookingDTO bookingDTO = new BookingDTO();
         bookingDTO.setId(booking.getId());
         bookingDTO.setTripId(booking.getTrip() != null ? booking.getTrip().getId() : null);

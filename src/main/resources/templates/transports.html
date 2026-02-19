@@ -284,6 +284,24 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <div class="d-flex align-items-center justify-content-between mt-3" th:if="${totalPages > 0}">
+                    <a class="btn btn-soft"
+                       th:if="${currentPage > 0}"
+                       th:href="@{/transports(page=${currentPage - 1})}">
+                        ← Previous
+                    </a>
+
+                    <div class="p-hint text-center flex-grow-1">
+                        Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span>
+                    </div>
+
+                    <a class="btn btn-soft"
+                       th:if="${currentPage + 1 < totalPages}"
+                       th:href="@{/transports(page=${currentPage + 1})}">
+                        Next →
+                    </a>
+                </div>
             </section>
         </main>
     </div>

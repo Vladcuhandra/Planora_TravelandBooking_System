@@ -1,5 +1,6 @@
 package project.planora_travelandbooking_system.Controller.web;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,20 +36,23 @@ public class BookingController {
     }
 
     @GetMapping("/bookings")
-    public String bookings(Model model,
+    public String bookings(@RequestParam(defaultValue = "0") int page, Model model,
                            Authentication auth,
                            @RequestParam(value = "type", required = false) String type) {
-
         String email = auth.getName();
         boolean admin = isAdmin(auth);
+        int pageSize = 10;
+        Page<BookingDTO> bookingPage = bookingService.getAllBookings(page, pageSize, email, admin);
 
         String selectedType = (type == null) ? "" : type.trim().toUpperCase();
         if (!"TRANSPORT".equals(selectedType) && !"ACCOMMODATION".equals(selectedType)) {
             selectedType = "";
         }
 
+        model.addAttribute("bookings", bookingPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", bookingPage.getTotalPages());
         model.addAttribute("isAdmin", admin);
-        model.addAttribute("bookings", bookingService.getBookings(email, admin));
 
         BookingDTO createDto = new BookingDTO();
         if (!selectedType.isEmpty()) {

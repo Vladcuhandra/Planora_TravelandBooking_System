@@ -1,6 +1,7 @@
 package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,12 +29,16 @@ public class TripController {
     }
 
     @GetMapping("/trips")
-    public String trips(Model model, Authentication auth) {
+    public String trips(@RequestParam(defaultValue = "0") int page, Model model, Authentication auth) {
         String email = auth.getName();
         boolean admin = isAdmin(auth);
+        int pageSize = 10;
+        Page<TripDTO> tripPage = tripService.getAllTrips(page, pageSize);
 
+        model.addAttribute("trips", tripPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", tripPage.getTotalPages());
         model.addAttribute("isAdmin", admin);
-        model.addAttribute("trips", tripService.getAllTrips());
         model.addAttribute("tripDto", new TripDTO());
         model.addAttribute("users", userService.getAllUsers());
         return "trips";

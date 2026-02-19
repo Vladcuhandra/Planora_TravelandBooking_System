@@ -1,6 +1,7 @@
 package project.planora_travelandbooking_system.Controller.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
-
 import java.time.LocalDateTime;
 
 @Controller
@@ -27,12 +27,16 @@ public class TransportController {
     }
 
     @GetMapping("/transports")
-    public String transports(Model model, Authentication auth) {
+    public String transports(@RequestParam(defaultValue = "0") int page, Model model, Authentication auth) {
         String email = auth.getName();
         boolean admin = isAdmin(auth);
+        int pageSize = 10;
+        Page<TransportDTO> transportPage = transportService.getAllTransports(page, pageSize);
 
+        model.addAttribute("transports", transportPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", transportPage.getTotalPages());
         model.addAttribute("isAdmin", admin);
-        model.addAttribute("transports", transportService.getAllTransports());
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
         model.addAttribute("statuses", Transport.Status.values());

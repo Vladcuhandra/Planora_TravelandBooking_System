@@ -1,9 +1,10 @@
 package project.planora_travelandbooking_system.Repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import project.planora_travelandbooking_system.Model.Booking;
-
 import java.util.List;
 
 @Repository
@@ -17,7 +18,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByAccommodationId(Long accommodationId);
 
-    List<Booking> findByTripUserEmail(String email);
+    Page<Booking> findByTripUserEmail(String email, Pageable pageable);
 
     // --- uniqueness checks (ACTIVE = status != CANCELLED) ---
     boolean existsByTransportIdAndStatusNot(Long transportId, Booking.BookingStatus status);
