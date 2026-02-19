@@ -33,10 +33,10 @@ public class TransportController {
         int pageSize = 10;
         Page<TransportDTO> transportPage = transportService.getAllTransports(page, pageSize);
 
+        model.addAttribute("transports", transportPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", transportPage.getTotalPages());
         model.addAttribute("isAdmin", admin);
-        model.addAttribute("transports", transportService.getAllTransports());
         model.addAttribute("transportDto", new TransportDTO());
         model.addAttribute("transportTypes", Transport.TransportType.values());
         model.addAttribute("statuses", Transport.Status.values());
