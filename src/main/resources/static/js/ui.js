@@ -25,6 +25,9 @@
 
     // 3) Sidebar: close AND navigate (works on mobile + desktop)
     bindSidebarNavigation();
+
+    // 4) Highlight current page in sidebar (mini + drawer)
+    highlightActiveNav();
   }
 
   function bindSidebarNavigation() {
@@ -66,6 +69,40 @@
     });
   }
 
+  // Adds .active to .p-nav-link matching current path
+  function highlightActiveNav() {
+    const links = document.querySelectorAll(".p-nav-link");
+    if (!links.length) return;
+
+    const normalize = (p) => (p || "").replace(/\/+$/, "") || "/";
+    const currentPath = normalize(window.location.pathname);
+
+    links.forEach((a) => {
+      // some anchors may not have href (or can be '#')
+      const rawHref = a.getAttribute("href");
+      if (!rawHref || rawHref === "#" || rawHref.startsWith("javascript:")) return;
+
+      let linkPath = "";
+      try {
+        linkPath = normalize(new URL(rawHref, window.location.origin).pathname);
+      } catch (e) {
+        // ignore malformed href
+        return;
+      }
+
+      // exact match OR subpath match (e.g., /bookings/123 should activate /bookings)
+      const isActive =
+        linkPath !== "/" &&
+        (currentPath === linkPath || currentPath.startsWith(linkPath + "/"));
+
+      // Special case: if you ever have a real "/" nav item
+      const isHomeActive = linkPath === "/" && currentPath === "/";
+
+      if (isActive || isHomeActive) a.classList.add("active");
+      else a.classList.remove("active");
+    });
+  }
+
   function editField(span) {
     const input = span.nextElementSibling;
     if (!input) return;
@@ -96,27 +133,4 @@
 
   // Expose refresh for dynamic UI updates
   window.PlanoraUI = { refresh: initAll };
-
-   /*// Topbar: visible only at the very top of the page
-     (function initTopbarOnlyAtTop() {
-       const topbar = document.querySelector(".p-topbar");
-       if (!topbar) return;
-
-       const SHOW_AT_TOP_PX = 25; // tolerance for "top"
-
-       function update() {
-         if (window.scrollY <= SHOW_AT_TOP_PX) {
-           topbar.classList.remove("is-hidden");
-         } else {
-           topbar.classList.add("is-hidden");
-         }
-       }*/
-
-       // Initial state
-       update();
-
-       window.addEventListener("scroll", update, { passive: true });
-       window.addEventListener("resize", update);
-     })();
-
 })();
