@@ -14,5 +14,6 @@ public class TripDTO {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Long userId;
+    private String userEmail;
     private LocalDateTime createdAt;
 }
