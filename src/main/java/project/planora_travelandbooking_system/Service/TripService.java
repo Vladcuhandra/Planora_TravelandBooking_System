@@ -1,5 +1,7 @@
 package project.planora_travelandbooking_system.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import project.planora_travelandbooking_system.DTO.TripDTO;
 import project.planora_travelandbooking_system.Model.Trip;
@@ -19,6 +21,11 @@ public class TripService {
     public TripService(TripRepository tripRepository, UserService userService) {
         this.tripRepository = tripRepository;
         this.userService = userService;
+    }
+
+    public Page<TripDTO> getAllTrips(int page, int pageSize) {
+        Page<Trip> tripPage = tripRepository.findAll(PageRequest.of(page, pageSize));
+        return tripPage.map(this::convertToDTO);
     }
 
     public List<TripDTO> getAllTrips() {
