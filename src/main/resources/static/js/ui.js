@@ -97,7 +97,7 @@
   // Expose refresh for dynamic UI updates
   window.PlanoraUI = { refresh: initAll };
 
-   // Topbar: visible only at the very top of the page
+   /*// Topbar: visible only at the very top of the page
      (function initTopbarOnlyAtTop() {
        const topbar = document.querySelector(".p-topbar");
        if (!topbar) return;
@@ -110,7 +110,7 @@
          } else {
            topbar.classList.add("is-hidden");
          }
-       }
+       }*/
 
        // Initial state
        update();

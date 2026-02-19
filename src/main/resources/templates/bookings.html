@@ -30,92 +30,125 @@
             <section class="p-card p-3 p-md-4 mb-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="p-subtitle fw-semibold">Create booking</div>
+
+                    <button class="btn btn-soft btn-sm"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#createBookingCollapse"
+                            aria-controls="createBookingCollapse"
+                            aria-expanded="false"
+                            data-collapse-toggle="createBookingCollapse"
+                            data-text-show="Show"
+                            data-text-hide="Hide">
+                        Show
+                    </button>
                 </div>
 
-                <!-- BACKEND TOGGLE: select type then APPLY (GET reload) -->
-                <form th:action="@{/bookings}" method="get" class="row g-2 g-md-3 align-items-end mb-3">
-                    <div class="col-12 col-md-4">
-                        <label class="form-label p-hint mb-1">Booking Type</label>
-                        <select class="form-select" name="type" required>
-                            <option value="">-- Select --</option>
-                            <option th:each="bt : ${bookingTypes}"
-                                    th:value="${bt.name()}"
-                                    th:text="${bt.name()}"
-                                    th:selected="${selectedType == bt.name()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <button class="btn btn-soft w-100" type="submit">Apply</button>
-                    </div>
-                </form>
+                <!-- by default hidden -->
+                <div class="collapse" id="createBookingCollapse" th:classappend="${selectedType != null and selectedType != ''} ? ' show' : ''">
 
-                <form th:action="@{/bookings/save}" th:object="${bookingDto}" method="post" class="row g-2 g-md-3">
-                    <input type="hidden" th:if="${_csrf != null}"
-                           th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <!-- BACKEND TOGGLE: select type then APPLY -->
+                    <form th:action="@{/bookings}"
+                          method="get"
+                          class="row g-2 g-md-3 align-items-end mb-3">
 
-                    <!-- bookingType comes from backend selectedType -->
-                    <input type="hidden" th:field="*{bookingType}" th:value="${selectedType}" />
+                        <div class="col-12 col-md-4">
+                            <label class="form-label p-hint mb-1">Booking Type</label>
+                            <select class="form-select" name="type" required>
+                                <option value="">-- Select --</option>
+                                <option th:each="bt : ${bookingTypes}"
+                                        th:value="${bt.name()}"
+                                        th:text="${bt.name()}"
+                                        th:selected="${selectedType == bt.name()}">
+                                </option>
+                            </select>
+                        </div>
 
-                    <div class="col-12 col-md-6">
-                        <label class="form-label p-hint mb-1">Trip</label>
-                        <select class="form-select" th:field="*{tripId}" required>
-                            <option value="">-- Select --</option>
-                            <option th:each="t : ${trips}"
-                                    th:value="${t.id}"
-                                    th:text="${t.title + ' (id=' + t.id + ')'}">
-                            </option>
-                        </select>
+                        <div class="col-12 col-md-2">
+                            <button class="btn btn-soft w-100" type="submit">Apply</button>
+                        </div>
+                    </form>
+
+                    <!-- CREATE FORM (show only after Apply) -->
+                    <div th:if="${selectedType != null and selectedType != ''}">
+                        <form th:action="@{/bookings/save}"
+                              th:object="${bookingDto}"
+                              method="post"
+                              class="row g-2 g-md-3">
+
+                            <input type="hidden" th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                            <!-- bookingType from backend -->
+                            <input type="hidden" th:field="*{bookingType}" th:value="${selectedType}" />
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label p-hint mb-1">Trip</label>
+                                <select class="form-select" th:field="*{tripId}" required>
+                                    <option value="">-- Select --</option>
+                                    <option th:each="t : ${trips}"
+                                            th:value="${t.id}"
+                                            th:text="${t.title + ' (id=' + t.id + ')'}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-3">
+                                <label class="form-label p-hint mb-1">Status</label>
+                                <select class="form-select" th:field="*{status}" required>
+                                    <option th:each="st : ${bookingStatuses}"
+                                            th:value="${st.name()}"
+                                            th:text="${st.name()}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label p-hint mb-1">Start Date</label>
+                                <input class="form-control" type="datetime-local" th:field="*{startDate}" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label p-hint mb-1">End Date</label>
+                                <input class="form-control" type="datetime-local" th:field="*{endDate}" />
+                            </div>
+
+                            <!-- TRANSPORT ONLY -->
+                            <div class="col-12 col-md-6" th:if="${selectedType == 'TRANSPORT'}">
+                                <label class="form-label p-hint mb-1">Transport</label>
+                                <select class="form-select" th:field="*{transportId}" required>
+                                    <option value="">-- Select --</option>
+                                    <option th:each="tr : ${transports}"
+                                            th:value="${tr.id}"
+                                            th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- ACCOMMODATION ONLY -->
+                            <div class="col-12 col-md-6" th:if="${selectedType == 'ACCOMMODATION'}">
+                                <label class="form-label p-hint mb-1">Accommodation</label>
+                                <select class="form-select" th:field="*{accommodationId}" required>
+                                    <option value="">-- Select --</option>
+                                    <option th:each="a : ${accommodations}"
+                                            th:value="${a.id}"
+                                            th:text="${a.name + ' (' + a.city + ') price/night=' + a.pricePerNight}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-end">
+                                <button class="btn btn-planora px-4" type="submit">Save</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="col-12 col-md-3">
-                        <label class="form-label p-hint mb-1">Status</label>
-                        <select class="form-select" th:field="*{status}" required>
-                            <option th:each="st : ${bookingStatuses}"
-                                    th:value="${st.name()}"
-                                    th:text="${st.name()}"></option>
-                        </select>
+                    <!-- Optional hint when not selected -->
+                    <div class="p-hint mt-2" th:if="${selectedType == null or selectedType == ''}">
+                        Choose Booking Type and click Apply to continue.
                     </div>
 
-                    <div class="col-12 col-md-6">
-                        <label class="form-label p-hint mb-1">Start Date</label>
-                        <input class="form-control" type="datetime-local" th:field="*{startDate}" />
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <label class="form-label p-hint mb-1">End Date</label>
-                        <input class="form-control" type="datetime-local" th:field="*{endDate}" />
-                    </div>
-
-                    <!-- TRANSPORT ONLY (backend render) -->
-                    <div class="col-12 col-md-6" th:if="${selectedType == 'TRANSPORT'}">
-                        <label class="form-label p-hint mb-1">Transport</label>
-                        <select class="form-select" th:field="*{transportId}" required>
-                            <option value="">-- Select --</option>
-                            <option th:each="tr : ${transports}"
-                                    th:value="${tr.id}"
-                                    th:text="${tr.company + ' (' + tr.originAddress + ' → ' + tr.destinationAddress + ') price=' + tr.price}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- ACCOMMODATION ONLY (backend render) -->
-                    <div class="col-12 col-md-6" th:if="${selectedType == 'ACCOMMODATION'}">
-                        <label class="form-label p-hint mb-1">Accommodation</label>
-                        <select class="form-select" th:field="*{accommodationId}" required>
-                            <option value="">-- Select --</option>
-                            <option th:each="a : ${accommodations}"
-                                    th:value="${a.id}"
-                                    th:text="${a.name + ' (' + a.city + ') price/night=' + a.pricePerNight}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="col-12 d-flex justify-content-end">
-                        <button class="btn btn-planora px-4" type="submit"
-                                th:disabled="${selectedType == ''}">Save</button>
-                    </div>
-                </form>
+                </div>
             </section>
 
             <!-- LIST + INLINE EDIT (already works like transport) -->
@@ -258,5 +291,6 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer th:src="@{/js/ui.js}"></script>
+<script defer th:src="@{/js/collapse-toggles.js}"></script>
 </body>
 </html>
