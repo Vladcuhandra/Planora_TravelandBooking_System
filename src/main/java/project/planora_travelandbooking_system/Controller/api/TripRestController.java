@@ -6,10 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TripDTO;
-import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Service.TripService;
 import project.planora_travelandbooking_system.Service.UserService;
-
 import java.util.List;
 
 @RestController
@@ -32,7 +30,8 @@ public class TripRestController {
 
     @PostMapping
     public ResponseEntity<TripDTO> create(@RequestBody TripDTO tripDTO) {
-        TripDTO created = tripService.saveTrip(tripDTO);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        TripDTO created = tripService.saveTrip(tripDTO, auth);
         return ResponseEntity.ok(created);
     }
 
@@ -46,20 +45,15 @@ public class TripRestController {
                                           @RequestBody TripDTO tripDTO) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-
-        User user = userService.getUserByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-
-        TripDTO updated = tripService.updateTrip(id, tripDTO, user);
+        TripDTO updated = tripService.updateTrip(id, tripDTO, auth);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@RequestBody TripDTO tripDTO) {
-         tripService.deleteTrip(tripDTO.getId());
-         return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        tripService.deleteTrip(id, auth);
+        return ResponseEntity.noContent().build();
     }
-
 
 }
