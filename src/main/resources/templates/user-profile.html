@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +11,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
-<body class="planora-dark" th:with="isAdmin=${isAdmin}">
+<body class="planora-dark">
 
 <div th:replace="~{fragments/topbar :: topbar}"></div>
 <div th:replace="~{fragments/sidebar :: sidebar}"></div>
@@ -21,7 +22,7 @@
             <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
                 <div>
                     <div class="p-title h4 mb-1">Profile</div>
-                    <div class="p-hint">Update profile, set new password</div>
+                    <div class="p-hint" >Update profile, set new password</div>
                 </div>
             </div>
 
@@ -60,7 +61,7 @@
                     </div>
 
                     <!-- Role (visible only when isAdmin == true) -->
-                    <div class="col-12 col-md-6" th:if="${isAdmin}">
+                    <div class="col-12 col-md-6" sec:authorize="hasRole('ADMIN')">
                         <label class="form-label p-hint mb-1">Role</label>
 
                         <!-- SuperAdmin: read-only -->
@@ -92,6 +93,16 @@
                                placeholder="New password (optional)">
                     </div>
 
+                    <!-- Current Password (required to save changes) -->
+                    <div class="col-12 col-md-6" th:if="${!currentUser.superAdmin}">
+                        <label class="form-label p-hint mb-1">Current Password *</label>
+                        <input class="form-control"
+                               type="password"
+                               name="currentPassword"
+                               placeholder="Enter your current password"
+                               required>
+                    </div>
+
                     <!-- Actions -->
                     <div class="col-12 d-flex flex-wrap gap-2 justify-content-startgit">
                         <button class="btn btn-planora px-4"
@@ -117,6 +128,14 @@
                                th:if="${_csrf != null}"
                                th:name="${_csrf.parameterName}"
                                th:value="${_csrf.token}" />
+
+                        <div class="mb-2">
+                            <input type="password"
+                                   name="currentPassword"
+                                   class="form-control"
+                                   placeholder="Enter your current password"
+                                   required>
+                        </div>
 
                         <button type="submit" class="btn btn-danger-soft">
                             Delete My Account

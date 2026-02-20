@@ -63,13 +63,24 @@ public class UserService {
             user.setCreatedAt(LocalDateTime.now());
         }
 
-        user.setEmail(userDTO.getEmail());
-        user.setRole(User.Role.valueOf(userDTO.getRole()));
-        user.setBirthDate(userDTO.getBirthDate());
+        // Only update fields that are non-null in DTO
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            user.setEmail(userDTO.getEmail());
+        }
+
+        if (userDTO.getRole() != null && !userDTO.getRole().isBlank()) {
+            user.setRole(User.Role.valueOf(userDTO.getRole()));
+        }
+
+        if (userDTO.getBirthDate() != null) {
+            user.setBirthDate(userDTO.getBirthDate());
+        }
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
+
+        // Preserve all other fields like deleted, creation date, etc.
         userRepository.save(user);
         return convertToDTO(user);
     }
