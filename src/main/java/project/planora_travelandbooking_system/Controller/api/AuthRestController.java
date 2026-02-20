@@ -80,6 +80,6 @@ public class AuthRestController {
                         + "; Path=/api/auth/refresh"
                         + "; Secure"
                         + "; HttpOnly"
-                        + "; SameSite=Lax");
+                        + "; SameSite=None");
     }
 }

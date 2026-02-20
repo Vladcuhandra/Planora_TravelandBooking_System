@@ -43,6 +43,8 @@ public class SecurityConfig {
                                                       JwtFilter jwtFilter) throws Exception {
         http
                 .securityMatcher("/api/**")
+                .cors(cors -> {})   // Enable CORS for React
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())

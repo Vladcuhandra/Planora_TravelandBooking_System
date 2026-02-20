@@ -53,6 +53,6 @@ public class LogoutRestController {
 
     private void clearRefreshCookie(HttpServletResponse response) {
         response.addHeader("Set-Cookie",
-                REFRESH_COOKIE + "=; Max-Age=0; Path=/api/auth/refresh; Secure; HttpOnly; SameSite=Lax");
+                REFRESH_COOKIE + "=; Max-Age=0; Path=/api/auth/refresh; Secure; HttpOnly; SameSite=None");
     }
 }
