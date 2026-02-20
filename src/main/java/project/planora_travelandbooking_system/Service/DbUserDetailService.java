@@ -18,7 +18,7 @@ public class DbUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var u = userRepository.findByEmail(email)
+        var u = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException(email));
 
         boolean accountNonLocked = !u.isDeleted();

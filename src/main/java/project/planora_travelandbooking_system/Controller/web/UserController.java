@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +17,7 @@ import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
 import org.springframework.ui.Model;
+import java.security.Principal;
 import java.util.Optional;
 
 @Controller
@@ -39,17 +41,24 @@ public class UserController {
     }
 
     @GetMapping("/admin")
-    public String adminDashboard(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String adminDashboard(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "") String searchEmail,
+                                 @RequestParam(defaultValue = "") String role,
+                                 @RequestParam(defaultValue = "") String accountStatus,
+                                 Model model) {
         User currentUser = userService.getCurrentAuthenticatedUser();
         model.addAttribute("currentUser", currentUser);
         int pageSize = 10;
-        Page<UserDTO> usersPage = userService.getAllUsers(page, pageSize);
 
-        System.out.println("Current Page: " + page);
+        // Get the filtered users from the service layer
+        Page<UserDTO> usersPage = userService.searchUsersByFilters(searchEmail, role, accountStatus, page, pageSize);
 
         model.addAttribute("users", usersPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", usersPage.getTotalPages());
+        model.addAttribute("searchEmail", searchEmail);
+        model.addAttribute("role", role);
+        model.addAttribute("accountStatus", accountStatus);
         model.addAttribute("newUser", new UserDTO());
 
         return "admin";
@@ -103,39 +112,63 @@ public class UserController {
 
     @PostMapping("/user/edit")
     public String editProfile(@RequestParam Long userId,
-                              @RequestParam String email,
-                              @RequestParam(required = false) String role,  // Make role optional
-                              @RequestParam(required = false) String password) {
+                              @RequestParam String currentPassword,
+                              @RequestParam(required = false) String email,
+                              @RequestParam(required = false) String role,
+                              @RequestParam(required = false) String password,
+                              Principal principal,
+                              RedirectAttributes redirectAttributes) {
         try {
-            // Fetch the existing user details
-            UserDTO existingUserDTO = userService.getUserById(userId);
+            User existingUser = userService.getUserId(userId);
+
+            if (!principal.getName().equals(existingUser.getEmail())) {
+                throw new IllegalStateException("Unauthorized action.");
+            }
+
+            if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
+                redirectAttributes.addFlashAttribute("error", "Incorrect current password.");
+                return "redirect:/user";
+            }
+
+            if (email != null && !email.isBlank()) {
+                existingUser.setEmail(email);
+
+                Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                        existingUser.getEmail(),
+                        existingUser.getPassword(),
+                        ((UsernamePasswordAuthenticationToken) principal).getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+            }
+
+            if (!existingUser.isSuperAdmin()) {
+                existingUser.setRole(User.Role.USER);
+            } else if (role != null) {
+                existingUser.setRole(User.Role.valueOf(role));
+            }
+
             UserDTO updatedDTO = new UserDTO();
-            updatedDTO.setId(userId);
-            updatedDTO.setEmail(email);
+            updatedDTO.setId(existingUser.getId());
+            updatedDTO.setEmail(existingUser.getEmail());
+            updatedDTO.setRole(String.valueOf(existingUser.getRole()));
 
-            if (!existingUserDTO.isSuperAdmin()) {
-                updatedDTO.setRole("USER");
-            } else {
-                updatedDTO.setRole(role);
-            }
-
-            if (password != null && !password.isEmpty()) {
+            if (password != null && !password.isBlank()) {
                 updatedDTO.setPassword(password);
+            } else {
+                updatedDTO.setPassword(null);
             }
 
-            updatedDTO.setSuperAdmin(existingUserDTO.isSuperAdmin());
             userService.saveUser(updatedDTO);
 
+            redirectAttributes.addFlashAttribute("success", "Profile updated successfully.");
             return "redirect:/user";
+
         } catch (IllegalStateException e) {
-            System.out.println("Forbidden action: " + e.getMessage());
             return "redirect:/user?error=" + e.getMessage();
-        } catch (RuntimeException e) {
-            System.out.println("Error updating user: " + e.getMessage());
+        } catch (Exception e) {
             return "redirect:/user?error=updateUser";
         }
     }
-
 
     @PostMapping("/admin/delete")
     public String deleteUser(@RequestParam Long userId) {
@@ -165,23 +198,32 @@ public class UserController {
     }
 
     @PostMapping("/user/delete")
-    public String deleteOwnAccount(HttpServletRequest request,
+    public String deleteOwnAccount(@RequestParam String currentPassword,
+                                   HttpServletRequest request,
                                    HttpServletResponse response,
                                    RedirectAttributes redirectAttributes) {
 
         try {
             User currentUser = userService.getCurrentAuthenticatedUser();
+
+            if (!passwordEncoder.matches(currentPassword, currentUser.getPassword())) {
+                redirectAttributes.addFlashAttribute("error", "Incorrect current password.");
+                return "redirect:/user";
+            }
+
+            if (currentUser.isSuperAdmin()) {
+                throw new IllegalStateException("SuperAdmin account cannot be deleted.");
+            }
+
             userService.deleteUser(currentUser.getId());
             SecurityContextHolder.clearContext();
             request.getSession().invalidate();
 
+            return "redirect:/login?deleted";
+
         } catch (IllegalStateException e) {
-            return "redirect:/profile?error=" + e.getMessage();
+            return "redirect:/user?error=" + e.getMessage();
         }
-
-        redirectAttributes.addFlashAttribute("deactivated", true);
-
-        return "redirect:/login?deleted";
     }
 
     @PostMapping("/user/restore")
