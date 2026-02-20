@@ -41,17 +41,24 @@ public class UserController {
     }
 
     @GetMapping("/admin")
-    public String adminDashboard(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String adminDashboard(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "") String searchEmail,
+                                 @RequestParam(defaultValue = "") String role,
+                                 @RequestParam(defaultValue = "") String accountStatus,
+                                 Model model) {
         User currentUser = userService.getCurrentAuthenticatedUser();
         model.addAttribute("currentUser", currentUser);
         int pageSize = 10;
-        Page<UserDTO> usersPage = userService.getAllUsers(page, pageSize);
 
-        System.out.println("Current Page: " + page);
+        // Get the filtered users from the service layer
+        Page<UserDTO> usersPage = userService.searchUsersByFilters(searchEmail, role, accountStatus, page, pageSize);
 
         model.addAttribute("users", usersPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", usersPage.getTotalPages());
+        model.addAttribute("searchEmail", searchEmail);
+        model.addAttribute("role", role);
+        model.addAttribute("accountStatus", accountStatus);
         model.addAttribute("newUser", new UserDTO());
 
         return "admin";

@@ -1,7 +1,5 @@
 package project.planora_travelandbooking_system.Service;
 
-import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,8 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 public class UserService {
@@ -161,6 +158,43 @@ public class UserService {
         user.setDeleted(true);
         user.setDeletionDate(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    public Page<UserDTO> searchUsersByFilters(String email, String role, String accountStatus, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        // Start with an empty specification
+        Specification<User> specification = Specification.where((root, query, criteriaBuilder) -> criteriaBuilder.conjunction());
+
+        // Filter by email (if provided)
+        if (!email.isEmpty()) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), "%" + email.toLowerCase() + "%")
+            );
+        }
+
+        // Filter by role (if provided)
+        if (!role.isEmpty()) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("role"), User.Role.valueOf(role.toUpperCase()))
+            );
+        }
+
+        // Filter by account status (if provided)
+        if (!accountStatus.isEmpty()) {
+            if (accountStatus.equalsIgnoreCase("ACTIVE")) {
+                specification = specification.and((root, query, criteriaBuilder) ->
+                        criteriaBuilder.isNull(root.get("deletionDate")) // Active users have no deletionDate
+                );
+            } else if (accountStatus.equalsIgnoreCase("DELETED")) {
+                specification = specification.and((root, query, criteriaBuilder) ->
+                        criteriaBuilder.isNotNull(root.get("deletionDate")) // Deleted users have a deletionDate
+                );
+            }
+        }
+
+        // Return filtered results as a Page
+        return userRepository.findAll(specification, pageable).map(this::convertToDTO);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {
