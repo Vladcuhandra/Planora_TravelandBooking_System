@@ -1,6 +1,7 @@
 package project.planora_travelandbooking_system.Controller.api;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import project.planora_travelandbooking_system.Service.UserService;
 import java.time.Duration;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthRestController {
@@ -74,12 +76,15 @@ public class AuthRestController {
 
     private void setRefreshCookie(HttpServletResponse response, String token, int days) {
         int maxAge = (int) Duration.ofDays(days).getSeconds();
+
+        log.info("Setting refresh cookie days={}, maxAgeSeconds={}", days, maxAge);
+
         response.addHeader("Set-Cookie",
                 REFRESH_COOKIE + "=" + token
                         + "; Max-Age=" + maxAge
                         + "; Path=/api/auth/refresh"
                         + "; Secure"
                         + "; HttpOnly"
-                        + "; SameSite=Lax");
+                        + "; SameSite=None");
     }
 }
