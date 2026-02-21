@@ -2,39 +2,44 @@ import { refresh } from "./auth";
 
 const API_BASE = "https://localhost:8443";
 
-export async function apiFetch(path, options = {}) {
-    const token = localStorage.getItem("accessToken");
+// one shared refresh in flight
+let refreshPromise = null;
 
-    const res = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: {
-            ...(options.headers || {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: "include", // refresh cookie can be used if needed
-    });
-
-    // if access token expired -> try refresh once
-    if (res.status === 401) {
-        try {
-            const r = await refresh(); // { accessToken }
-            localStorage.setItem("accessToken", r.accessToken);
-
-            const retryRes = await fetch(`${API_BASE}${path}`, {
-                ...options,
-                headers: {
-                    ...(options.headers || {}),
-                    Authorization: `Bearer ${r.accessToken}`,
-                },
-                credentials: "include",
+async function getNewToken() {
+    if (!refreshPromise) {
+        refreshPromise = refresh()
+            .then((r) => r.accessToken)
+            .finally(() => {
+                refreshPromise = null;
             });
+    }
+    return refreshPromise;
+}
 
-            return retryRes;
-        } catch {
-            // refresh failed → kick back to login
-            localStorage.removeItem("accessToken");
-            throw new Error("Session expired. Please log in again.");
-        }
+export async function apiFetch(path, options = {}) {
+    const doFetch = (token) =>
+        fetch(`${API_BASE}${path}`, {
+            ...options,
+            headers: {
+                ...(options.headers || {}),
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            credentials: "include",
+        });
+
+    // try current token
+    let res = await doFetch(localStorage.getItem("accessToken"));
+    if (res.status !== 401) return res;
+
+    // wait for a single refresh shared by everyone
+    const newToken = await getNewToken();
+
+    // retry once with the new token
+    res = await doFetch(newToken);
+
+    if (res.status === 401) {
+        localStorage.removeItem("accessToken");
+        throw new Error("Session expired. Please log in again.");
     }
 
     return res;

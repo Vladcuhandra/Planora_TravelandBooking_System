@@ -3,6 +3,7 @@ package project.planora_travelandbooking_system.Controller.api;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import project.planora_travelandbooking_system.Service.JwtRefreshService;
 import java.time.Duration;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth/refresh")
 public class RefreshRestController {
@@ -61,6 +63,7 @@ public class RefreshRestController {
 
         String newAccessToken = jwtUtil.generateToken(subject);
 
+        log.info("[+]New refresh token issued");
         return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
 
@@ -77,13 +80,16 @@ public class RefreshRestController {
     private void setRefreshCookie(HttpServletResponse response, String token, int days) {
         // Prefer Set-Cookie header to include SameSite reliably
         int maxAge = (int) Duration.ofDays(days).getSeconds();
+
+        log.info("Setting refresh cookie days={}, maxAgeSeconds={}", days, maxAge);
+
         response.addHeader("Set-Cookie",
                 REFRESH_COOKIE + "=" + token
                         + "; Max-Age=" + maxAge
                         + "; Path=/api/auth/refresh"
                         + "; Secure"
                         + "; HttpOnly"
-                        + "; SameSite=Lax");
+                        + "; SameSite=None");
     }
 
     private void clearRefreshCookie(HttpServletResponse response) {

@@ -1,4 +1,4 @@
-const API_BASE = "https://localhost:8443";
+const API_BASE = "https://127.0.0.1:8443";
 
 export async function login(email, password) {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -19,15 +19,17 @@ export async function login(email, password) {
 export async function refresh() {
     const res = await fetch(`${API_BASE}/api/auth/refresh`, {
         method: "POST",
-        credentials: "include", // ✅ sends refresh cookie
+        credentials: "include",
     });
 
-    if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Refresh failed");
-    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Refresh failed");
 
-    return res.json(); // { accessToken }
+    const newToken = data.token || data.accessToken;
+    if (!newToken) throw new Error("Refresh response missing token");
+
+    localStorage.setItem("accessToken", newToken);
+    return { accessToken: newToken };
 }
 
 export async function logout() {

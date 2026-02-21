@@ -7,7 +7,7 @@ export default function Dashboard() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await apiFetch("/api/trip");
+                const res = await apiFetch("/api/trips");
                 setMsg("API status: " + res.status);
             } catch (e) {
                 setMsg(e.message);
