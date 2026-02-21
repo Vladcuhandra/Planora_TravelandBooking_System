@@ -24,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import project.planora_travelandbooking_system.Controller.web.CustomAuthenticationFailureHandler;
 import project.planora_travelandbooking_system.Model.User;
@@ -40,67 +41,48 @@ public class SecurityConfig {
 
     @Bean
     @org.springframework.core.annotation.Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
-                                                      JwtFilter jwtFilter) throws Exception {
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("""
-                { "message": "Unauthorized" }
-            """);
-                        })
-                )
-
                 .securityMatcher("/api/**")
-                .cors(cors -> {})   // Enable CORS for React
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> {})
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"Unauthorized\"}");
+                }))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN") //temp
 
-                        //ACCOMMODATIONS
-                        .requestMatchers(HttpMethod.GET, "/api/accommodation/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
+                        // ACCOMMODATIONS
+                        .requestMatchers(HttpMethod.GET, "/api/accommodation/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/accommodation/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/accommodation/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/accommodation/**").hasRole("ADMIN")
 
-                        //TRIPS
-                        .requestMatchers(HttpMethod.GET, "/api/trip/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
+                        // TRIPS
+                        .requestMatchers(HttpMethod.GET, "/api/trip/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/trip/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/trip/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/trip/**").hasRole("ADMIN")
 
-                        //TRANSPORTS
-                        .requestMatchers(HttpMethod.GET, "/api/transports/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/transports/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/transports/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
-                        .hasRole("ADMIN")
-                        
+                        // TRANSPORTS
+                        .requestMatchers(HttpMethod.GET, "/api/transports/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/transports/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/transports/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/transports/**").hasRole("ADMIN")
+
+                        // AUTH
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                )
-                .formLogin(form -> form.disable())   // important
-                .logout(logout -> logout.disable()); // optional (API usually no logout)
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable());
 
         return http.build();
     }
@@ -109,15 +91,29 @@ public class SecurityConfig {
     @org.springframework.core.annotation.Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        RequestMatcher notApi = request -> !request.getRequestURI().startsWith("/api/");
-
         http
-                .securityMatcher(notApi) // ignore /api
+                .securityMatcher(
+                        "/",
+                        "/login",
+                        "/logout",
+                        "/signup",
+                        "/css/**",
+                        "/js/**",
+                        "/img/**",
+                        "/favicon.ico",
+                        "/h2-console/**",
+                        "/user/**",
+                        "/admin/**",
+                        "/trips/**",
+                        "/accommodations/**",
+                        "/transports/**",
+                        "/bookings/**",
+                        "/error"
+                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/logout")
                         .ignoringRequestMatchers("/h2-console/**")
                 )
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // allow Postman for API
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
