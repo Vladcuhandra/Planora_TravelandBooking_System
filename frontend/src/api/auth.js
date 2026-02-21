@@ -33,9 +33,9 @@ export async function refresh() {
 }
 
 export async function logout() {
-    const res = await fetch(`${API_BASE}/api/auth/logout`, {
+    // clear local tokens on the client
+    await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
-    });
-    return res.ok;
+    }).catch(() => {});
 }
