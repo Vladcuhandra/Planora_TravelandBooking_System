@@ -1,0 +1,67 @@
+package project.planora_travelandbooking_system.Controller.api;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import project.planora_travelandbooking_system.Controller.UserAlreadyExistsException;
+import project.planora_travelandbooking_system.DTO.TripDTO;
+import project.planora_travelandbooking_system.DTO.UserDTO;
+import project.planora_travelandbooking_system.Model.User;
+import project.planora_travelandbooking_system.Repository.UserRepository;
+import project.planora_travelandbooking_system.Service.UserService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserRestController {
+
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    public UserRestController(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
+
+
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getTrip(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO,
+                                              Authentication auth) {
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new UserAlreadyExistsException(
+                    "User already exists with email: " + userDTO.getEmail()
+            );
+        } else {
+            UserDTO createdUser = userService.saveUser(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> editUser(@RequestBody UserDTO userDTO,
+                                            @PathVariable Long id) {
+        return null;
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
+        String userName = userService.getUserId(id).getEmail();
+        userService.deleteUser(id);
+        return ResponseEntity.ok(Map.of("message", "User deleted successfully: " + userName));
+    }
+
+}
