@@ -1,12 +1,10 @@
 package project.planora_travelandbooking_system.Controller.api;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.BookingDTO;
 import project.planora_travelandbooking_system.Service.BookingService;
 
@@ -32,6 +30,14 @@ public class BookingRestController {
         return bookingService.getAllBookings(page, 10, email, admin);
 
     }
+
+    @PostMapping
+    public ResponseEntity<BookingDTO> booking(@RequestBody BookingDTO dto, Authentication auth) {
+        BookingDTO savedBooking = bookingService.saveBookingAndReturn(dto, auth.getName(), isAdmin(auth));
+        return  ResponseEntity.status(201).body(savedBooking);
+    }
+
+
 
     private boolean isAdmin(Authentication auth) {
         return auth.getAuthorities().stream()

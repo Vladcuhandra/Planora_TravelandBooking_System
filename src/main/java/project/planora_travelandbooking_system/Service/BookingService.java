@@ -85,6 +85,42 @@ public class BookingService {
     }
 
     @Transactional
+    public BookingDTO saveBookingAndReturn(BookingDTO bookingDTO, String email, boolean isAdmin) {
+        DateValidation.endNotBeforeStart(
+                bookingDTO.getStartDate(),
+                bookingDTO.getEndDate(),
+                "startDate",
+                "endDate"
+        );
+
+        Trip trip = tripRepository.findById(bookingDTO.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
+
+        if (!isAdmin) {
+            if (trip.getUser() == null || trip.getUser().getEmail() == null) throw new RuntimeException("Access denied");
+            if (!trip.getUser().getEmail().equals(email)) throw new RuntimeException("Access denied");
+        }
+
+        Booking booking = new Booking();
+        booking.setTrip(trip);
+
+        Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
+        Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
+
+        booking.setBookingType(bookingType);
+        booking.setStatus(status);
+        booking.setStartDate(bookingDTO.getStartDate());
+        booking.setEndDate(bookingDTO.getEndDate());
+
+        applyTypeAndPrice(booking, bookingDTO, bookingType, null);
+
+        booking.setCreatedAt(LocalDateTime.now());
+        Booking saved = bookingRepository.save(booking);
+
+        return convertToDTO(saved);
+    }
+
+    @Transactional
     public void updateBooking(Long id, BookingDTO bookingDTO, String email, boolean isAdmin) {
         DateValidation.endNotBeforeStart(
                 bookingDTO.getStartDate(),
