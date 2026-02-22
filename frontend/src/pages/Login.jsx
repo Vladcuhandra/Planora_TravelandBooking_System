@@ -7,78 +7,139 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isRestoring, setIsRestoring] = useState(false);
+    const [restorePassword, setRestorePassword] = useState("");
 
-    async function onSubmit(e) {
+    const isValidEmail = (value) => /\S+@\S+\.\S+/.test(value);
+
+    async function handleSubmit(e) {
         e.preventDefault();
         setError("");
 
+        // Extra validation: allow "admin" or valid email
+        if (!isValidEmail(email) && email !== "admin") {
+            setError("Please enter a valid email");
+            return;
+        }
+
         try {
             const data = await login(email, password);
-
-            // store access token
             localStorage.setItem("accessToken", data.token);
             localStorage.setItem("email", data.email);
-
-            navigate("/dashboard");
+            navigate("/profile");
         } catch (err) {
             setError(err.message);
         }
     }
 
+    async function handleRestoreSubmit(e) {
+        e.preventDefault();
+        setError("");
+
+        if (!isValidEmail(email)) {
+            setError("Please enter a valid email for account restoration");
+            return;
+        }
+
+        try {
+            const data = await restoreAccount(email, restorePassword);
+            localStorage.setItem("accessToken", data.token);
+            localStorage.setItem("email", data.email);
+            navigate("/profile");
+        } catch (err) {
+            setError(err.message);
+        }
+    }
+
+
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "system-ui",
-            }}
-        >
-            <div style={{ maxWidth: 420, width: "100%" }}>
-                <h2 style={{ marginBottom: 12, textAlign: "center" }}>Sign in</h2>
-
-                {error && (
-                    <div
-                        style={{
-                            padding: 10,
-                            background: "#ffe5e5",
-                            marginBottom: 12,
-                            borderRadius: 8,
-                        }}
-                    >
-                        {error}
+        <div className="p-auth-wrap">
+            <div className="p-card p-auth-card">
+                <div className="auth-header d-flex align-items-center mb-3">
+                    <div className="auth-logo-wrap">
+                        <img className="p-logo" src="/img/logo.png" alt="Planora logo" />
                     </div>
+                    <div className="auth-text-wrap">
+                        <div className="p-title h5 mb-0">{isRestoring ? "Restore your account" : "Sign in to Planora"}</div>
+                    </div>
+                </div>
+
+                {error && <div className="p-alert error mb-3">{error}</div>}
+
+                {/* Render restore account form if isRestoring is true */}
+                {isRestoring ? (
+                    <form onSubmit={handleRestoreSubmit} className="d-grid gap-3">
+                        <div>
+                            <label className="form-label p-hint mb-1">Email</label>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="form-label p-hint mb-1">Confirm Password</label>
+                            <input
+                                className="form-control"
+                                type="password"
+                                placeholder="••••••••"
+                                value={restorePassword}
+                                onChange={(e) => setRestorePassword(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <button className="btn btn-planora py-2" type="submit">
+                            Restore Account
+                        </button>
+
+                        <div className="text-center p-hint">
+                            <a href="#" onClick={() => setIsRestoring(false)}>Back to Sign In</a>
+                        </div>
+                    </form>
+                ) : (
+                    // Login form
+                    <form onSubmit={handleSubmit} className="d-grid gap-3">
+                        <div>
+                            <label className="form-label p-hint mb-1">Email</label>
+                            <input
+                                className="form-control"
+                                type="text"
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="form-label p-hint mb-1">Password</label>
+                            <input
+                                className="form-control"
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <button className="btn btn-planora py-2" type="submit">
+                            Sign in
+                        </button>
+
+                        <div className="text-center p-hint">
+                            New to Planora? <a href="/signup">Create an account</a>
+                        </div>
+                        <div className="text-center p-hint">
+                            Forgot your account? <a href="#" onClick={() => setIsRestoring(true)}>Restore Account</a>
+                        </div>
+                    </form>
                 )}
-
-                <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-                    <label>
-                        Email
-                        <input
-                            style={{ width: "100%", padding: 10, marginTop: 6 }}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="name@example.com"
-                            autoComplete="email"
-                        />
-                    </label>
-
-                    <label>
-                        Password
-                        <input
-                            style={{ width: "100%", padding: 10, marginTop: 6 }}
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            autoComplete="current-password"
-                        />
-                    </label>
-
-                    <button style={{ padding: 10, cursor: "pointer" }} type="submit">
-                        Sign in
-                    </button>
-                </form>
             </div>
         </div>
     );

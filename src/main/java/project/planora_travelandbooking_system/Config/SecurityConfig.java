@@ -45,10 +45,28 @@ public class SecurityConfig {
                 .securityMatcher("/api/**")
                 .cors(cors -> {})   // Enable CORS for React
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        //USERS
+                        .requestMatchers(HttpMethod.GET, "/api/admin/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/admin/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/admin/**")
+                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/**")
+                        .hasAnyRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/user/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/user/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/user/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/user/**")
+                        .hasAnyRole("USER", "ADMIN")
 
                         //ACCOMMODATIONS
                         .requestMatchers(HttpMethod.GET, "/api/accommodation/**")

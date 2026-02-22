@@ -35,14 +35,19 @@ public class TripService {
         return tripPage.map(this::convertToDTO);
     }
 
-    public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
+    /*public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
         Page<Trip> tripPage = tripRepository.findByUserEmail(email, PageRequest.of(page, pageSize));
         return tripPage.map(this::convertToDTO);
-    }
+    }*/
 
-    public List<TripDTO> getAllTrips() {
-        List<Trip> trips = tripRepository.findAll();
-        return trips.stream().map(this::convertToDTO).collect(Collectors.toList());
+
+    public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
+        User user = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        PageRequest pageRequest = PageRequest.of(page, pageSize);
+        Page<Trip> trips = tripRepository.findByUser(user, pageRequest);
+
+        // Map trips to DTOs
+        return trips.map(trip -> new TripDTO());
     }
 
     public TripDTO getTripById(Long tripId) {

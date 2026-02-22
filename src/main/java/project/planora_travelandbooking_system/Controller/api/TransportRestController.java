@@ -1,48 +1,71 @@
 package project.planora_travelandbooking_system.Controller.api;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
+import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transports")
 public class TransportRestController {
+
     private final TransportService transportService;
 
+    @Autowired
     public TransportRestController(TransportService transportService) {
         this.transportService = transportService;
     }
 
     @GetMapping
-    public List<TransportDTO> list() {
-        return transportService.getAllTransports();
+    public ResponseEntity<Page<TransportDTO>> getTransports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<TransportDTO> transports = transportService.getAllTransports(page, size);
+        return ResponseEntity.ok(transports);
     }
 
-    @GetMapping("/{id}")
-    public TransportDTO get(@PathVariable Long id) {
-        return transportService.getTransportById(id);
+    @PostMapping("/save")
+    public ResponseEntity<String> saveTransport(@RequestBody TransportDTO dto) {
+        transportService.saveTransport(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Transport created successfully!");
     }
 
-    @PostMapping
-    public ResponseEntity<TransportDTO> create(@RequestBody TransportDTO transportDTO) {
-        TransportDTO created = transportService.saveTransport(transportDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
-
-    @PutMapping("/{id}")
-    public TransportDTO update(@PathVariable Long id,
-                                               @RequestBody TransportDTO transportDTO) {
-        return transportService.updateTransport(id, transportDTO);
+    @PostMapping("/edit")
+    public ResponseEntity<String> editTransport(@RequestBody TransportDTO dto) {
+        transportService.saveTransport(dto);
+        return ResponseEntity.ok("Transport updated successfully!");
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<String> deleteTransport(@PathVariable Long id) {
         transportService.deleteTransport(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Transport deleted successfully!");
     }
 
+    @GetMapping("/types")
+    public ResponseEntity<List<String>> getTransportTypes() {
+        List<String> types = Arrays.stream(Transport.TransportType.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(types);
+    }
+
+    @GetMapping("/statuses")
+    public ResponseEntity<List<String>> getStatuses() {
+        List<String> statuses = Arrays.stream(Transport.Status.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(statuses);
+    }
 }

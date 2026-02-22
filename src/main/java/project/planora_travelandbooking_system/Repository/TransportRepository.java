@@ -1,5 +1,7 @@
 package project.planora_travelandbooking_system.Repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import project.planora_travelandbooking_system.Model.Transport;
@@ -9,5 +11,7 @@ import java.util.List;
 public interface TransportRepository extends JpaRepository<Transport, Long>{
 
     List<Transport> findByStatus(Transport.Status status);
+
+    Page<Transport> findAll(Pageable pageable);
 
 }

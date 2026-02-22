@@ -2,7 +2,6 @@ import { refresh } from "./auth";
 
 const API_BASE = "https://localhost:8443";
 
-// one shared refresh in flight
 let refreshPromise = null;
 
 async function getNewToken() {

@@ -21,6 +21,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Page<Booking> findByTripUserEmail(String email, Pageable pageable);
 
+    Page<Booking> findByBookingType(String bookingType, Pageable pageable);
+
+    Page<Booking> findByTripUserEmailAndBookingType(String email, String bookingType, Pageable pageable);
+
     // --- uniqueness checks (ACTIVE = status != CANCELLED) ---
     boolean existsByTransportIdAndStatusNot(Long transportId, Booking.BookingStatus status);
     boolean existsByAccommodationIdAndStatusNot(Long accommodationId, Booking.BookingStatus status);

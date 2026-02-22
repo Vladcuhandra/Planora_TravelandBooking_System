@@ -2,11 +2,13 @@ package project.planora_travelandbooking_system.Controller.api;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +18,9 @@ import project.planora_travelandbooking_system.Security.JwtUtil;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.Service.JwtRefreshService;
 import project.planora_travelandbooking_system.Service.UserService;
-
+import project.planora_travelandbooking_system.Repository.UserRepository;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -32,15 +35,21 @@ public class AuthRestController {
     private final JwtUtil jwtUtil;
     private final JwtRefreshService refreshService;
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthRestController(AuthenticationManager authenticationManager,
                               JwtUtil jwtUtil,
                               JwtRefreshService refreshService,
-                              UserService userService) {
+                              UserService userService,
+                              UserRepository userRepository,
+                              PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshService = refreshService;
         this.userService = userService;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -57,7 +66,6 @@ public class AuthRestController {
             User user = userService.getUserByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Refresh token
             String refreshToken = refreshService.createToken(user, refreshDays);
             setRefreshCookie(response, refreshToken, refreshDays);
 
@@ -68,11 +76,37 @@ public class AuthRestController {
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(401).body("Invalid email or password");
         } catch (RuntimeException ex) {
-            // If user lookup fails or refresh creation fails
             return ResponseEntity.status(500).body("Login failed");
         }
     }
 
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody UserDTO userDTO) {
+        if (userDTO.getEmail() == null || userDTO.getEmail().isBlank()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+
+        if (userDTO.getPassword() == null || userDTO.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("Password must be at least 6 characters");
+        }
+
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email is already registered");
+        }
+
+        User user = new User();
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setRole(User.Role.USER);
+        user.setSuperAdmin(false);
+        user.setDeleted(false);
+        user.setCreatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/login")
+                .build();
+    }
 
     private void setRefreshCookie(HttpServletResponse response, String token, int days) {
         int maxAge = (int) Duration.ofDays(days).getSeconds();

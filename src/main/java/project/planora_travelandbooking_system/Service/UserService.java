@@ -31,6 +31,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
     public User getCurrentAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -60,7 +64,6 @@ public class UserService {
             user.setCreatedAt(LocalDateTime.now());
         }
 
-        // Only update fields that are non-null in DTO
         if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
             user.setEmail(userDTO.getEmail());
         }
@@ -77,7 +80,6 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
 
-        // Preserve all other fields like deleted, creation date, etc.
         userRepository.save(user);
         return convertToDTO(user);
     }
@@ -193,7 +195,6 @@ public class UserService {
             }
         }
 
-        // Return filtered results as a Page
         return userRepository.findAll(specification, pageable).map(this::convertToDTO);
     }
 
@@ -224,4 +225,5 @@ public class UserService {
         userDTO.setDeletionDate(user.getDeletionDate());
         return userDTO;
     }
+
 }

@@ -1,4 +1,4 @@
-const API_BASE = "https://127.0.0.1:8443";
+const API_BASE = "https://localhost:8443";
 
 export async function login(email, password) {
     const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -38,4 +38,29 @@ export async function logout() {
         method: "POST",
         credentials: "include",
     }).catch(() => {});
+}
+
+export function getUserRole() {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        return decoded.role || null;
+    }
+    return null;
+}
+
+export async function restoreAccount(email, password) {
+    const res = await fetch(`${API_BASE}/api/auth/restore`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "Account restoration failed");
+    }
+
+    return res.json();
 }

@@ -42,6 +42,7 @@ public class TransportService {
 
     public Page<TransportDTO> getAllTransports(int page, int pageSize) {
         Page<Transport> transportPage = transportRepository.findAll(PageRequest.of(page, pageSize));
+        System.out.println("Fetched " + transportPage.getContent().size() + " transports on page " + page);
         return transportPage.map(this::convertToDTO);
     }
 
