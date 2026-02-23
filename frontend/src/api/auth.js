@@ -41,7 +41,7 @@ export async function logout() {
 }
 
 export function getUserRole() {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
     if (token) {
         const decoded = JSON.parse(atob(token.split(".")[1]));
         return decoded.role || null;
