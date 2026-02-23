@@ -287,68 +287,70 @@ const AdminDashboard = () => {
             </div>
 
             {/* Create User */}
-            <section className="p-card p-3 p-md-4 mb-3">
-              <div className="d-flex align-items-center justify-content-between mb-2">
-                <div className="p-subtitle fw-semibold">Create user</div>
-                <button
-                    className="btn btn-soft btn-sm"
-                    type="button"
-                    onClick={() => setOpenCreate(!openCreate)}
-                >
-                  {openCreate ? "Hide" : "Show"}
-                </button>
-              </div>
+            {(isAdmin || isSuperAdmin) && (  /* Only show if user is an Admin or Super Admin */
+                <section className="p-card p-3 p-md-4 mb-3">
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <div className="p-subtitle fw-semibold">Create user</div>
+                    <button
+                        className="btn btn-soft btn-sm"
+                        type="button"
+                        onClick={() => setOpenCreate(!openCreate)}
+                    >
+                      {openCreate ? "Hide" : "Show"}
+                    </button>
+                  </div>
 
-              {openCreate && (
-                  <form onSubmit={handleCreateUser} className="row g-2 g-md-3 mt-1">
-                    <div className="col-12 col-md-4">
-                      <label className="form-label p-hint mb-1">Email</label>
-                      <input
-                          className="form-control"
-                          type="email"
-                          name="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="user@example.com"
-                          required
-                      />
-                    </div>
+                  {openCreate && (
+                      <form onSubmit={handleCreateUser} className="row g-2 g-md-3 mt-1">
+                        <div className="col-12 col-md-4">
+                          <label className="form-label p-hint mb-1">Email</label>
+                          <input
+                              className="form-control"
+                              type="email"
+                              name="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="user@example.com"
+                              required
+                          />
+                        </div>
 
-                    <div className="col-12 col-md-4">
-                      <label className="form-label p-hint mb-1">Password</label>
-                      <input
-                          className="form-control"
-                          type="password"
-                          name="password"
-                          value={createPassword}
-                          onChange={(e) => setCreatePassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                      />
-                    </div>
+                        <div className="col-12 col-md-4">
+                          <label className="form-label p-hint mb-1">Password</label>
+                          <input
+                              className="form-control"
+                              type="password"
+                              name="password"
+                              value={createPassword}
+                              onChange={(e) => setCreatePassword(e.target.value)}
+                              placeholder="••••••••"
+                              required
+                          />
+                        </div>
 
-                    <div className="col-12 col-md-4">
-                      <label className="form-label p-hint mb-1">Role</label>
-                      <select className="form-select" name="role" required>
-                        <option value="">-- Select --</option>
-                        {roles.map((r) => (
-                            <option key={r} value={r}>
-                              {r}
-                            </option>
-                        ))}
-                      </select>
-                    </div>
+                        <div className="col-12 col-md-4">
+                          <label className="form-label p-hint mb-1">Role</label>
+                          <select className="form-select" name="role" required>
+                            <option value="">-- Select --</option>
+                            {roles.map((r) => (
+                                <option key={r} value={r}>
+                                  {r}
+                                </option>
+                            ))}
+                          </select>
+                        </div>
 
-                    {error && <div className="text-danger small">{error}</div>}
+                        {error && <div className="text-danger small">{error}</div>}
 
-                    <div className="col-12 d-flex justify-content-end">
-                      <button className="btn btn-planora px-4" type="submit">
-                        Create
-                      </button>
-                    </div>
-                  </form>
-              )}
-            </section>
+                        <div className="col-12 d-flex justify-content-end">
+                          <button className="btn btn-planora px-4" type="submit">
+                            Create
+                          </button>
+                        </div>
+                      </form>
+                  )}
+                </section>
+            )}
 
             {/* Users Table */}
             <section className="p-card p-3 p-md-4">
