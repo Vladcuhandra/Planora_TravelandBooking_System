@@ -23,7 +23,7 @@ const AccommodationPage = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await apiFetch("/api/user", { method: "GET" });
+            const res = await apiFetch("/api/users/profile", { method: "GET" });
             if (res.ok) {
                 const data = await res.json();
                 setUser(data);
@@ -264,7 +264,7 @@ const AccommodationPage = () => {
                                                     {editingField?.id === a.id && editingField?.field === field ? (
                                                         <div>
                                                             {field === 'accommodationType' || field === 'status' ? (
-                                                                <select
+                                                                <select className="form-select form-select-sm"
                                                                     value={editedAccommodationData[field] || a[field]}
                                                                     onChange={(e) => handleInputChange(e, field)}
                                                                 >
@@ -275,13 +275,13 @@ const AccommodationPage = () => {
                                                                     ))}
                                                                 </select>
                                                             ) : (
-                                                                <input
+                                                                <input className="form-control form-control-sm"
                                                                     type="text"
-                                                                    value={editedAccommodationData[field] || a[field]}
+                                                                    value={editedAccommodationData[field] ?? a[field] ?? ""}
                                                                     onChange={(e) => handleInputChange(e, field)}
                                                                 />
                                                             )}
-                                                            <button
+                                                            <button className="btn btn-sm btn-planora" type="button"
                                                                 onClick={() => handleEditAccommodation(a.id, field, editedAccommodationData[field] || a[field])}
                                                             >
                                                                 Save

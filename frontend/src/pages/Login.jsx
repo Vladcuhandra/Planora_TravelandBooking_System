@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
+import { restoreAccount } from '../api/auth';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -16,7 +17,6 @@ export default function Login() {
         e.preventDefault();
         setError("");
 
-        // Extra validation: allow "admin" or valid email
         if (!isValidEmail(email) && email !== "admin") {
             setError("Please enter a valid email");
             return;
@@ -45,12 +45,12 @@ export default function Login() {
             const data = await restoreAccount(email, restorePassword);
             localStorage.setItem("accessToken", data.token);
             localStorage.setItem("email", data.email);
+
             navigate("/profile");
         } catch (err) {
-            setError(err.message);
+            setError(err.message || "An error occurred while restoring the account.");
         }
     }
-
 
     return (
         <div className="p-auth-wrap">

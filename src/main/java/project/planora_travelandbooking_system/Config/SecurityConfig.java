@@ -91,8 +91,9 @@ public class SecurityConfig {
                         //.requestMatchers(request -> isPreFlightRequest(request)).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/restore").permitAll()
 
                         //USERS
                         .requestMatchers(HttpMethod.GET, "/api/admin/**")
@@ -142,10 +143,8 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
                         .hasRole("ADMIN")
-                        
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e

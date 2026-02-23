@@ -9,7 +9,6 @@ function getEmailFromAccessToken() {
   try {
     const payload = token.split(".")[1];
     const json = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-    // many JWTs store email as "sub"
     return json.sub || json.email || null;
   } catch {
     return null;
@@ -30,13 +29,12 @@ const AdminDashboard = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [error, setError] = useState(null);
 
-  const [editingField, setEditingField] = useState(null); // { id, field }
+  const [editingField, setEditingField] = useState(null);
   const [editedUserData, setEditedUserData] = useState({});
 
-  // For self password change requirement
   const [showCurrentPasswordPrompt, setShowCurrentPasswordPrompt] = useState(false);
   const [selfCurrentPassword, setSelfCurrentPassword] = useState("");
-  const [pendingPasswordChange, setPendingPasswordChange] = useState(null); // { id, newPassword, userEmail }
+  const [pendingPasswordChange, setPendingPasswordChange] = useState(null);
 
   const myEmail = useMemo(() => getEmailFromAccessToken(), []);
 
@@ -63,9 +61,6 @@ const AdminDashboard = () => {
     if (currentPage > totalPages - 1) setCurrentPage(0);
   }, [totalPages, currentPage]);
 
-  // -------------------------
-  // API calls
-  // -------------------------
   const fetchUsers = async () => {
     try {
       setError(null);
@@ -82,7 +77,7 @@ const AdminDashboard = () => {
   };
 
   const updateUser = async (id, payload) => {
-    const response = await apiFetch(`/api/users/${id}`, {
+    const response = await apiFetch(`/api/users/edit/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -115,9 +110,6 @@ const AdminDashboard = () => {
     return { ok: false, message: data.message || "Create failed." };
   };
 
-  // -------------------------
-  // UI handlers
-  // -------------------------
   const startEditing = (id, field, currentValue) => {
     setEditingField({ id, field });
     setEditedUserData((prev) => ({ ...prev, [field]: currentValue ?? "" }));
@@ -131,7 +123,11 @@ const AdminDashboard = () => {
     try {
       setError(null);
 
-      // Build minimal payload matching UserProfileUpdateRequest
+      if (user.superAdmin) {
+        setError("This user is a Super Admin and cannot be edited.");
+        return;
+      }
+
       const payload = {};
 
       if (field === "email") {
@@ -159,20 +155,15 @@ const AdminDashboard = () => {
           return;
         }
 
-        // Spring expects newPassword
         payload.newPassword = newPass;
 
-        // If editing your OWN password, backend requires currentPassword
-        const isSelf = myEmail && user.email && user.email === myEmail;
-        if (isSelf) {
-          // show prompt to collect current password
+        if (myEmail && user.email && user.email === myEmail) {
           setPendingPasswordChange({ id: user.id, newPassword: newPass, userEmail: user.email });
           setShowCurrentPasswordPrompt(true);
-          return; // stop here until current password is provided
+          return;
         }
       }
 
-      // Execute update immediately for non-self password changes (or email/role)
       const result = await updateUser(user.id, payload);
 
       if (result.ok) {
@@ -228,6 +219,12 @@ const AdminDashboard = () => {
   const handleDeleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
+    const user = users.find((user) => user.id === id);
+    if (user && user.superAdmin) {
+      setError("You cannot delete a Super Admin.");
+      return;
+    }
+
     const result = await deleteUser(id);
     if (result.ok) {
       await fetchUsers();
@@ -253,9 +250,31 @@ const AdminDashboard = () => {
     }
   };
 
-  // -------------------------
-  // Render
-  // -------------------------
+  const handleToggleDeletionStatus = async (userId, isDeleted) => {
+    try {
+      const url = `/api/users/edit/${userId}`;
+      const response = await apiFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleted: !isDeleted }),
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        setUsers((prevUsers) =>
+            prevUsers.map((user) => (user.id === userId ? { ...user, deleted: !isDeleted } : user))
+        );
+      } else {
+        console.error("Failed to update deletion status.");
+      }
+    } catch (e) {
+      console.error("Error toggling deletion status:", e);
+    }
+  };
+
+  const isAdmin = myEmail && users.find((user) => user.email === myEmail)?.role === "ADMIN";
+  const isSuperAdmin = myEmail && users.find((user) => user.email === myEmail)?.role === "SUPER_ADMIN";
+
   return (
       <div className="container-fluid">
         <div className="row g-3 g-lg-4 py-3">
@@ -354,6 +373,7 @@ const AdminDashboard = () => {
                     <th style={{ minWidth: "200px" }}>Email</th>
                     <th style={{ width: "130px" }}>Role</th>
                     <th style={{ minWidth: "200px" }}>Password</th>
+                    <th style={{ minWidth: "200px" }}>Status</th>
                     <th style={{ width: "210px" }}>Actions</th>
                   </tr>
                   </thead>
@@ -372,94 +392,125 @@ const AdminDashboard = () => {
 
                             {/* Email */}
                             <td>
-                              {editingField?.id === user.id && editingField?.field === "email" ? (
-                                  <div className="d-flex gap-2 align-items-center">
-                                    <input
-                                        className="form-control form-control-sm"
-                                        type="email"
-                                        value={editedUserData.email ?? user.email ?? ""}
-                                        onChange={(e) => handleInputChange(e, "email")}
-                                    />
-                                    <button
-                                        className="btn btn-sm btn-planora"
-                                        type="button"
-                                        onClick={() => handleEditUser(user, "email")}
-                                    >
-                                      Save
-                                    </button>
-                                  </div>
+                              {user.superAdmin ? (
+                                  <span className="text">Super Admin</span>
                               ) : (
-                                  <div onClick={() => startEditing(user.id, "email", user.email)}>
-                                    {user.email}
-                                  </div>
+                                  editingField?.id === user.id && editingField?.field === "email" ? (
+                                      <div className="d-flex gap-2 align-items-center">
+                                        <input
+                                            className="form-control form-control-sm"
+                                            type="email"
+                                            value={editedUserData.email ?? user.email ?? ""}
+                                            onChange={(e) => handleInputChange(e, "email")}
+                                        />
+                                        <button
+                                            className="btn btn-sm btn-planora"
+                                            type="button"
+                                            onClick={() => handleEditUser(user, "email")}
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                  ) : (
+                                      <div onClick={() => startEditing(user.id, "email", user.email)}>{user.email}</div>
+                                  )
                               )}
                             </td>
 
                             {/* Role */}
                             <td>
-                              {editingField?.id === user.id && editingField?.field === "role" ? (
-                                  <div className="d-flex gap-2 align-items-center">
-                                    <select
-                                        className="form-select form-select-sm"
-                                        value={editedUserData.role ?? user.role ?? "USER"}
-                                        onChange={(e) => handleInputChange(e, "role")}
-                                    >
-                                      {roles.map((r) => (
-                                          <option key={r} value={r}>
-                                            {r}
-                                          </option>
-                                      ))}
-                                    </select>
-                                    <button
-                                        className="btn btn-sm btn-planora"
-                                        type="button"
-                                        onClick={() => handleEditUser(user, "role")}
-                                    >
-                                      Save
-                                    </button>
-                                  </div>
+                              {user.superAdmin ? (
+                                  <span className="text">Super Admin</span>
                               ) : (
-                                  <div onClick={() => startEditing(user.id, "role", user.role)}>
-                                    {user.role}
-                                  </div>
+                                  editingField?.id === user.id && editingField?.field === "role" ? (
+                                      <div className="d-flex gap-2 align-items-center">
+                                        <select
+                                            className="form-select form-select-sm"
+                                            value={editedUserData.role ?? user.role ?? "USER"}
+                                            onChange={(e) => handleInputChange(e, "role")}
+                                            disabled={user.role === "SUPER_ADMIN" || !isAdmin}
+                                        >
+                                          {roles.map((r) => (
+                                              <option key={r} value={r}>
+                                                {r}
+                                              </option>
+                                          ))}
+                                        </select>
+                                        <button
+                                            className="btn btn-sm btn-planora"
+                                            type="button"
+                                            onClick={() => handleEditUser(user, "role")}
+                                            disabled={user.superAdmin}
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                  ) : (
+                                      <div onClick={() => startEditing(user.id, "role", user.role)}>{user.role}</div>
+                                  )
                               )}
                             </td>
 
                             {/* Password */}
                             <td>
-                              {editingField?.id === user.id && editingField?.field === "password" ? (
-                                  <div className="d-flex gap-2 align-items-center">
-                                    <input
-                                        className="form-control form-control-sm"
-                                        type="password"
-                                        value={editedUserData.password ?? ""}
-                                        onChange={(e) => handleInputChange(e, "password")}
-                                        placeholder="New password"
-                                    />
-                                    <button
-                                        className="btn btn-sm btn-planora"
-                                        type="button"
-                                        onClick={() => handleEditUser(user, "password")}
-                                    >
-                                      Save
-                                    </button>
-                                  </div>
+                              {user.superAdmin ? (
+                                  <span className="text">Not editable</span>
                               ) : (
-                                  <div onClick={() => startEditing(user.id, "password", "")}>
-                                    {"••••••••"}
+                                  editingField?.id === user.id && editingField?.field === "password" ? (
+                                      <div className="d-flex gap-2 align-items-center">
+                                        <input
+                                            className="form-control form-control-sm"
+                                            type="password"
+                                            value={editedUserData.password ?? ""}
+                                            onChange={(e) => handleInputChange(e, "password")}
+                                            placeholder="New password"
+                                        />
+                                        <button
+                                            className="btn btn-sm btn-planora"
+                                            type="button"
+                                            onClick={() => handleEditUser(user, "password")}
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                  ) : (
+                                      <div onClick={() => startEditing(user.id, "password", "")}>••••••••</div>
+                                  )
+                              )}
+                            </td>
+
+                            {/* Account Status */}
+                            <td>
+                              {!user.deleted ? (
+                                  <span className="text-success">ACTIVE</span>
+                              ) : (
+                                  <div>
+                              <span className="text-warning">
+                                DELETING (Scheduled for {new Date(user.deletionDate).toLocaleDateString()})
+                              </span>
+                                    <button
+                                        className="btn btn-sm btn-primary ms-2"
+                                        onClick={() => handleToggleDeletionStatus(user.id, user.deleted)}
+                                    >
+                                      Restore Account
+                                    </button>
                                   </div>
                               )}
                             </td>
 
                             {/* Actions */}
                             <td>
-                              <button
-                                  className="btn btn-danger-soft btn-sm"
-                                  type="button"
-                                  onClick={() => handleDeleteUser(user.id)}
-                              >
-                                Delete
-                              </button>
+                              {user.superAdmin ? (
+                                  <span className="text">Cannot delete Super Admin</span>
+                              ) : (
+                                  <button
+                                      className="btn btn-danger-soft btn-sm"
+                                      type="button"
+                                      onClick={() => handleDeleteUser(user.id)}
+                                  >
+                                    Delete
+                                  </button>
+                              )}
                             </td>
                           </tr>
                       ))
@@ -467,75 +518,7 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
-
-              {/* Client-side pagination controls */}
-              <div className="d-flex justify-content-between align-items-center mt-3">
-                <div className="p-hint">
-                  Showing {pagedUsers.length} of {filteredUsers.length}
-                </div>
-                <div className="d-flex gap-2">
-                  <button
-                      className="btn btn-soft btn-sm"
-                      type="button"
-                      disabled={currentPage <= 0}
-                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                  >
-                    Prev
-                  </button>
-                  <div className="p-hint align-self-center">
-                    Page {currentPage + 1} / {totalPages}
-                  </div>
-                  <button
-                      className="btn btn-soft btn-sm"
-                      type="button"
-                      disabled={currentPage >= totalPages - 1}
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-
-              {error && <div className="text-danger small mt-2">{error}</div>}
             </section>
-
-            {/* Current password prompt (only when changing YOUR OWN password) */}
-            {showCurrentPasswordPrompt && (
-                <div
-                    style={{
-                      position: "fixed",
-                      inset: 0,
-                      background: "rgba(0,0,0,0.6)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      zIndex: 9999,
-                    }}
-                >
-                  <div className="p-card p-3" style={{ width: 420, maxWidth: "90vw" }}>
-                    <div className="p-subtitle fw-semibold mb-2">Confirm your current password</div>
-                    <div className="p-hint mb-2">
-                      You’re changing your own password. Enter your current password to confirm.
-                    </div>
-                    <input
-                        className="form-control mb-2"
-                        type="password"
-                        value={selfCurrentPassword}
-                        onChange={(e) => setSelfCurrentPassword(e.target.value)}
-                        placeholder="Current password"
-                    />
-                    {error && <div className="text-danger small mb-2">{error}</div>}
-                    <div className="d-flex justify-content-end gap-2">
-                      <button className="btn btn-soft btn-sm" type="button" onClick={cancelSelfPasswordChange}>
-                        Cancel
-                      </button>
-                      <button className="btn btn-planora btn-sm" type="button" onClick={confirmSelfPasswordChange}>
-                        Confirm
-                      </button>
-                    </div>
-                  </div>
-                </div>
-            )}
           </main>
         </div>
       </div>

@@ -15,6 +15,9 @@ export default function Profile() {
     const [newEmail, setNewEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
 
+    const [showCurrentPasswordPrompt, setShowCurrentPasswordPrompt] = useState(false);
+    const [selfCurrentPassword, setSelfCurrentPassword] = useState("");
+    const [pendingPasswordChange, setPendingPasswordChange] = useState(null);
 
     useEffect(() => {
         async function fetchProfile() {
@@ -35,6 +38,11 @@ export default function Profile() {
                 const data = await res.json();
                 setUser(data);
                 setNewEmail(data.email || "");
+
+                if (data.superAdmin || data.role === "ADMIN") {
+                    setEditableEmail(false);
+                    setEditablePassword(false);
+                }
             } catch (e) {
                 setError(e.message || "Failed to load profile");
             } finally {
@@ -45,76 +53,111 @@ export default function Profile() {
         fetchProfile();
     }, [navigate]);
 
-
-    const handleSaveChanges = async (e) => {
+    const handleSaveChanges = (e) => {
         e.preventDefault();
         setError("");
 
-        const currentPassword = e.target.currentPassword.value;
-
-        const payload = {
-            email: newEmail,
-            currentPassword,
-        };
-
-        if (newPassword.trim()) {
-            payload.newPassword = newPassword;
-        }
-
-        try {
-            const res = await apiFetch(`/api/users/${user.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.status === 401) {
-                navigate("/login");
-                return;
-            }
-
-            if (!res.ok) {
-                const msg = await res.text().catch(() => "Update failed");
-                setError(msg);
-                return;
-            }
-
-            alert("Profile updated successfully");
-            setEditableEmail(false);
-            setEditablePassword(false);
-            setNewPassword("");
-        } catch (e) {
-            setError(e.message || "Update failed");
+        if (editableEmail || editablePassword) {
+            setShowCurrentPasswordPrompt(true);
+            return;
         }
     };
 
-
-    const handleDeleteAccount = async (e) => {
+    const handleDeleteAccount = (e) => {
         e.preventDefault();
 
-        if (!window.confirm("Delete your account permanently?")) return;
+        if (!window.confirm("Delete your account?")) return;
 
-        const currentPassword = e.target.currentPassword.value;
+        if (user.superAdmin || user.role === "ADMIN") {
+            setError("Super Admin and Admin accounts cannot be deleted.");
+            return;
+        }
+
+        setPendingPasswordChange("delete");
+        setShowCurrentPasswordPrompt(true);
+    };
+
+    const handleConfirmCurrentPassword = async () => {
+        if (!selfCurrentPassword.trim()) {
+            setError("Current password is required.");
+            return;
+        }
 
         try {
-            const res = await apiFetch("/api/user/delete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ currentPassword }),
-            });
+            if (pendingPasswordChange === "password") {
+                const payload = {
+                    currentPassword: selfCurrentPassword,
+                    newPassword: newPassword,
+                };
 
-            if (!res.ok) {
-                const msg = await res.text().catch(() => "Delete failed");
-                setError(msg);
-                return;
+                const res = await apiFetch(`/api/users/edit/${user.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text().catch(() => "Update failed");
+                    setError(msg);
+                    return;
+                }
+
+                alert("Password updated successfully");
+                setShowCurrentPasswordPrompt(false);
+                setPendingPasswordChange(null);
+                setNewPassword("");
+            } else if (pendingPasswordChange === "delete") {
+                const res = await apiFetch(`/api/users/${user.id}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ currentPassword: selfCurrentPassword }),
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text().catch(() => "Delete failed");
+                    setError(msg);
+                    return;
+                }
+
+                alert("Account deleted successfully.");
+                navigate("/login");
+            } else {
+                const payload = {
+                    email: newEmail,
+                    currentPassword: selfCurrentPassword,
+                };
+
+                if (newPassword.trim()) {
+                    payload.newPassword = newPassword;
+                }
+
+                const res = await apiFetch(`/api/users/edit/${user.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text().catch(() => "Update failed");
+                    setError("Wrong password");
+                    return;
+                }
+
+                alert("Profile updated successfully");
+                setShowCurrentPasswordPrompt(false);
+                setEditableEmail(false);
+                setEditablePassword(false);
+                setNewPassword("");
             }
-
-            navigate("/login");
         } catch (e) {
-            setError(e.message || "Delete failed");
+            setError(e.message || "Operation failed");
         }
     };
 
+    const handleCancelCurrentPassword = () => {
+        setShowCurrentPasswordPrompt(false);
+        setSelfCurrentPassword("");
+    };
 
     if (loading) return <div>Loading...</div>;
     if (!user) return <div>No user found.</div>;
@@ -139,7 +182,7 @@ export default function Profile() {
                                         required
                                     />
                                 ) : (
-                                    <div onClick={() => setEditableEmail(true)}>
+                                    <div onClick={() => !(user.superAdmin || user.role === "ADMIN") && setEditableEmail(true)}>
                                         {user.email}
                                     </div>
                                 )}
@@ -147,7 +190,7 @@ export default function Profile() {
 
                             {/* Password */}
                             <div className="col-md-6">
-                                <label className="form-label">New password</label>
+                                <label className="form-label">Password</label>
                                 {editablePassword ? (
                                     <input
                                         className="form-control"
@@ -157,49 +200,89 @@ export default function Profile() {
                                         placeholder="Optional"
                                     />
                                 ) : (
-                                    <div onClick={() => setEditablePassword(true)}>
+                                    <div onClick={() => !(user.superAdmin || user.role === "ADMIN") && setEditablePassword(true)}>
                                         ••••••••
                                     </div>
                                 )}
                             </div>
 
                             {/* Current password */}
-                            <div className="col-md-6">
-                                <label className="form-label">Current password *</label>
-                                <input
-                                    className="form-control"
-                                    type="password"
-                                    name="currentPassword"
-                                    required
-                                />
-                            </div>
+                            {showCurrentPasswordPrompt && (
+                                <div className="col-md-6">
+                                    <label className="form-label">Current password *</label>
+                                    <input
+                                        className="form-control"
+                                        type="password"
+                                        value={selfCurrentPassword}
+                                        onChange={(e) => setSelfCurrentPassword(e.target.value)}
+                                        placeholder="Current password"
+                                        required
+                                    />
+                                </div>
+                            )}
 
-                            <div className="col-12">
-                                <button className="btn btn-planora" type="submit">
-                                    Save Changes
-                                </button>
-                            </div>
+                            {/* Save Changes Button - Hide for Super Admin and Admin */}
+                            {!(user.superAdmin || user.role === "ADMIN") && (
+                                <div className="col-12">
+                                    <button className="btn btn-planora" type="submit">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            )}
                         </form>
 
                         {error && <div className="text-danger mt-2">{error}</div>}
 
                         <hr className="my-4" />
 
-                        <form onSubmit={handleDeleteAccount}>
-                            <input
-                                type="password"
-                                name="currentPassword"
-                                className="form-control mb-2"
-                                placeholder="Current password"
-                                required
-                            />
-                            <button className="btn btn-danger-soft">
-                                Delete My Account
-                            </button>
-                        </form>
+                        {/* Delete Account Section - Hide for Super Admin and Admin */}
+                        {!(user.superAdmin || user.role === "ADMIN") && (
+                            <form onSubmit={handleDeleteAccount}>
+                                <button className="btn btn-danger-soft">
+                                    Delete My Account
+                                </button>
+                            </form>
+                        )}
                     </section>
                 </main>
             </div>
+
+            {showCurrentPasswordPrompt && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                    }}
+                >
+                    <div className="p-card p-3" style={{ width: 420, maxWidth: "90vw" }}>
+                        <div className="p-subtitle fw-semibold mb-2">Confirm your current password</div>
+                        <div className="p-hint mb-2">
+                            You’re changing/deleting your account. Enter your current password to confirm.
+                        </div>
+                        <input
+                            className="form-control mb-2"
+                            type="password"
+                            value={selfCurrentPassword}
+                            onChange={(e) => setSelfCurrentPassword(e.target.value)}
+                            placeholder="Current password"
+                        />
+                        {error && <div className="text-danger small mb-2">{error}</div>}
+                        <div className="d-flex justify-content-end gap-2">
+                            <button className="btn btn-soft btn-sm" type="button" onClick={handleCancelCurrentPassword}>
+                                Cancel
+                            </button>
+                            <button className="btn btn-planora btn-sm" type="button" onClick={handleConfirmCurrentPassword}>
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
