@@ -97,14 +97,4 @@ public class UserRestController {
         return ResponseEntity.ok(Map.of("message", "User deleted successfully: " + userName));
     }
 
-
-    @GetMapping("/debugme")
-    public Map<String, Object> me(Authentication auth) {
-        return Map.of(
-                "authNull", auth == null,
-                "name", auth == null ? null : auth.getName(),
-                "authenticated", auth != null && auth.isAuthenticated(),
-                "authorities", auth == null ? null : auth.getAuthorities().toString()
-        );
-    }
 }
