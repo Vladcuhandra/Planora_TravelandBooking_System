@@ -3,6 +3,7 @@ package project.planora_travelandbooking_system.Controller.api;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.Model.JwtRefresher;
@@ -10,6 +11,7 @@ import project.planora_travelandbooking_system.Service.JwtRefreshService;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth/logout")
 public class LogoutRestController {
@@ -26,10 +28,12 @@ public class LogoutRestController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
 
         String rawRefresh = readCookie(request, REFRESH_COOKIE);
+        log.info("Logout HIT!!");
 
         if (rawRefresh != null && !rawRefresh.isBlank()) {
             try {
                 JwtRefresher stored = refreshService.validateToken(rawRefresh);
+                log.info("Refresh token HIT!!");
                 refreshService.revoke(stored);
             } catch (RuntimeException ignored) {
                 // token already invalid / expired / revoked → still logout
@@ -53,6 +57,6 @@ public class LogoutRestController {
 
     private void clearRefreshCookie(HttpServletResponse response) {
         response.addHeader("Set-Cookie",
-                REFRESH_COOKIE + "=; Max-Age=0; Path=/api/auth/refresh; Secure; HttpOnly; SameSite=None");
+                REFRESH_COOKIE + "=; Max-Age=0; Path=/api/auth; Secure; HttpOnly; SameSite=None");
     }
 }

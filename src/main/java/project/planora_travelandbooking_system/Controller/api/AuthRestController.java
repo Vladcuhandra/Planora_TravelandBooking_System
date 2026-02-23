@@ -116,7 +116,7 @@ public class AuthRestController {
         response.addHeader("Set-Cookie",
                 REFRESH_COOKIE + "=" + token
                         + "; Max-Age=" + maxAge
-                        + "; Path=/api/auth/refresh"
+                        + "; Path=/api/auth"
                         + "; Secure"
                         + "; HttpOnly"
                         + "; SameSite=None");

@@ -93,6 +93,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
 
                         //USERS
                         .requestMatchers(HttpMethod.GET, "/api/admin/**")
