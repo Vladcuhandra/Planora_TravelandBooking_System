@@ -15,9 +15,7 @@ export default function Profile() {
     const [newEmail, setNewEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
 
-    // -----------------------------
-    // Load profile
-    // -----------------------------
+
     useEffect(() => {
         async function fetchProfile() {
             try {
@@ -47,9 +45,7 @@ export default function Profile() {
         fetchProfile();
     }, [navigate]);
 
-    // -----------------------------
-    // Save profile
-    // -----------------------------
+
     const handleSaveChanges = async (e) => {
         e.preventDefault();
         setError("");
@@ -92,9 +88,7 @@ export default function Profile() {
         }
     };
 
-    // -----------------------------
-    // Delete account
-    // -----------------------------
+
     const handleDeleteAccount = async (e) => {
         e.preventDefault();
 
@@ -121,9 +115,7 @@ export default function Profile() {
         }
     };
 
-    // -----------------------------
-    // Render
-    // -----------------------------
+
     if (loading) return <div>Loading...</div>;
     if (!user) return <div>No user found.</div>;
 
