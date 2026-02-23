@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.jpa.domain.Specification;
 import project.planora_travelandbooking_system.exceptions.InvalidPasswordException;
+import project.planora_travelandbooking_system.exceptions.UserNotFoundException;
 
 @Service
 public class UserService {
@@ -140,19 +141,21 @@ public class UserService {
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
 
+        System.out.println("Authorities of authenticated user: " + auth.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .collect(Collectors.joining(", ")));
+
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
         boolean editingSelf = principalEmail != null && principalEmail.equals(existingUser.getEmail());
 
-        // USER can only edit self; ADMIN/SUPER_ADMIN can edit anyone
         if (!isAdmin && !editingSelf) {
             throw new AccessDeniedException("Unauthorized action.");
         }
 
         boolean changingPassword = req.getNewPassword() != null && !req.getNewPassword().isBlank();
 
-        // Require currentPassword ONLY when user is changing THEIR OWN password
         if (changingPassword && editingSelf) {
 
             if (req.getCurrentPassword() == null || req.getCurrentPassword().isBlank()) {
@@ -169,22 +172,35 @@ public class UserService {
             existingUser.setEmail(req.getEmail().trim());
         }
 
-        // Role update: only SUPER_ADMIN (actor) may change roles
         boolean actorIsSuperAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
+        System.out.println("Is SuperAdmin: " + actorIsSuperAdmin);
+
         if (actorIsSuperAdmin && req.getRole() != null && !req.getRole().isBlank()) {
+            System.out.println("SuperAdmin is updating role to: " + req.getRole());
             existingUser.setRole(User.Role.valueOf(req.getRole().trim()));
+        } else {
+            System.out.println("Role update skipped. Either user is not SuperAdmin or no role provided.");
         }
 
-        // Password update (admin can reset others; self-change verified above)
         if (changingPassword) {
             existingUser.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        }
+
+        if (req.getDeleted() != null) {
+            existingUser.setDeleted(req.getDeleted());
+            if (req.getDeleted()) {
+                existingUser.setDeletionDate(LocalDateTime.now());
+            } else {
+                existingUser.setDeletionDate(null);
+            }
         }
 
         userRepository.save(existingUser);
         return convertToDTO(existingUser);
     }
+
     private User getUserOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
@@ -251,6 +267,18 @@ public class UserService {
         }
 
         return userRepository.findAll(specification, pageable).map(this::convertToDTO);
+    }
+
+    public UserDTO restoreUser(Long id, String principalEmail) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!user.isDeleted()) {
+            throw new IllegalStateException("User is not deleted and cannot be restored.");
+        }
+
+        user.setDeleted(false);
+        userRepository.save(user);
+        return convertToDTO(user);
     }
 
     private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {

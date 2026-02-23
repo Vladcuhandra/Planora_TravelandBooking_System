@@ -9,10 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Security.JwtUtil;
 import project.planora_travelandbooking_system.DTO.UserDTO;
@@ -22,6 +19,7 @@ import project.planora_travelandbooking_system.Repository.UserRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -108,6 +106,32 @@ public class AuthRestController {
                 .build();
     }
 
+    @PostMapping("/restore")
+    public ResponseEntity<?> restoreAccount(@RequestParam String email, @RequestParam String password) {
+        log.info("Received restore account request for email: {}", email);
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found.");
+        }
+
+        User user = userOptional.get();
+
+        if (!user.isDeleted()) {
+            return ResponseEntity.badRequest().body("Account is not scheduled for deletion.");
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.badRequest().body("Incorrect password.");
+        }
+
+        user.setDeleted(false);
+        user.setDeletionDate(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new SuccessResponse("Account restored successfully", user.getEmail()));
+    }
+
     private void setRefreshCookie(HttpServletResponse response, String token, int days) {
         int maxAge = (int) Duration.ofDays(days).getSeconds();
 
@@ -121,4 +145,23 @@ public class AuthRestController {
                         + "; HttpOnly"
                         + "; SameSite=None");
     }
+
+    public static class SuccessResponse {
+        private String message;
+        private String email;
+
+        public SuccessResponse(String message, String email) {
+            this.message = message;
+            this.email = email;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+    }
+
 }
