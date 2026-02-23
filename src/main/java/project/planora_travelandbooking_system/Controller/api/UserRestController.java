@@ -30,10 +30,16 @@ public class UserRestController {
 
 
     @GetMapping("/profile")
-    public ResponseEntity<Optional<User>> me(Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(userService.getUserByEmail(principal.getName()));
+    public ResponseEntity<?> profile(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+
+        return userService.getUserByEmail(principal.getName())
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
     }
+
     @GetMapping
     public ResponseEntity<List<UserDTO>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
