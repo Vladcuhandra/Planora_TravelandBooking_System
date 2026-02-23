@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.UserDTO;
+import project.planora_travelandbooking_system.DTO.UserProfileUpdateRequest;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import java.time.LocalDateTime;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.jpa.domain.Specification;
+import project.planora_travelandbooking_system.exceptions.InvalidPasswordException;
 
 @Service
 public class UserService {
@@ -130,6 +133,58 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public UserDTO updateProfile(Long userId, String principalEmail, UserProfileUpdateRequest req) {
+
+        User existingUser = getUserId(userId);
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+        boolean editingSelf = principalEmail != null && principalEmail.equals(existingUser.getEmail());
+
+        // USER can only edit self; ADMIN/SUPER_ADMIN can edit anyone
+        if (!isAdmin && !editingSelf) {
+            throw new AccessDeniedException("Unauthorized action.");
+        }
+
+        boolean changingPassword = req.getNewPassword() != null && !req.getNewPassword().isBlank();
+
+        // Require currentPassword ONLY when user is changing THEIR OWN password
+        if (changingPassword && editingSelf) {
+
+            if (req.getCurrentPassword() == null || req.getCurrentPassword().isBlank()) {
+                throw new IllegalArgumentException("Current password is required.");
+            }
+
+            if (!passwordEncoder.matches(req.getCurrentPassword(), existingUser.getPassword())) {
+                throw new InvalidPasswordException("Wrong current password");
+            }
+        }
+
+        if (req.getEmail() != null && !req.getEmail().isBlank()
+                && !req.getEmail().equals(existingUser.getEmail())) {
+            existingUser.setEmail(req.getEmail().trim());
+        }
+
+        // Role update: only SUPER_ADMIN (actor) may change roles
+        boolean actorIsSuperAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+        if (actorIsSuperAdmin && req.getRole() != null && !req.getRole().isBlank()) {
+            existingUser.setRole(User.Role.valueOf(req.getRole().trim()));
+        }
+
+        // Password update (admin can reset others; self-change verified above)
+        if (changingPassword) {
+            existingUser.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        }
+
+        userRepository.save(existingUser);
+        return convertToDTO(existingUser);
+    }
     private User getUserOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
@@ -216,7 +271,7 @@ public class UserService {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setEmail(user.getEmail());
-        userDTO.setPassword(user.getPassword());
+
         userDTO.setBirthDate(user.getBirthDate());
         userDTO.setRole(user.getRole().name());
         userDTO.setCreatedAt(user.getCreatedAt());

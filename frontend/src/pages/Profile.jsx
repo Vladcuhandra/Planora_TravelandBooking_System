@@ -17,7 +17,7 @@ export default function Profile() {
     useEffect(() => {
         async function fetchUserProfile() {
             try {
-                const res = await apiFetch("/api/user", { method: "GET" });
+                const res = await apiFetch("/api/users/profile", { method: "GET" });
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data);
