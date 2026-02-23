@@ -24,10 +24,12 @@ public class DbUserDetailService implements UserDetailsService {
         boolean accountNonLocked = !u.isDeleted();
         boolean enabled = !u.isDeleted();
 
+        String role = u.isSuperAdmin() ? "SUPER_ADMIN" : u.getRole().name();
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(u.getEmail())
                 .password(u.getPassword())
-                .roles(u.getRole().name())
+                .roles(role)
                 .accountLocked(!accountNonLocked)
                 .disabled(!enabled)
                 .accountExpired(false)

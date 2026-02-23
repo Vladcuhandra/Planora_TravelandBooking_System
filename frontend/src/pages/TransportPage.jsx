@@ -23,7 +23,7 @@ const TransportPage = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await apiFetch("/api/user", { method: "GET" });
+            const res = await apiFetch("/api/users/profile", { method: "GET" });
             if (res.ok) {
                 const data = await res.json();
                 setUser(data);
@@ -282,8 +282,8 @@ const TransportPage = () => {
                                                     {editingField?.id === t.id && editingField?.field === field ? (
                                                         <div>
                                                             {field === 'transportType' || field === 'status' ? (
-                                                                <select
-                                                                    value={editedTransportData[field] || t[field]}
+                                                                <select className="form-select form-select-sm"
+                                                                    value={editedTransportData[field] ?? t[field] ?? ""}
                                                                     onChange={(e) => handleInputChange(e, field)}
                                                                 >
                                                                     {(field === 'transportType' ? transportTypes : statuses).map((option) => (
@@ -293,19 +293,25 @@ const TransportPage = () => {
                                                                     ))}
                                                                 </select>
                                                             ) : field === 'departureTime' || field === 'arrivalTime' ? (
-                                                                <input
+                                                                <input className="form-select form-select-sm"
                                                                     type="datetime-local"
-                                                                    value={editedTransportData[field] || t[field]}
+                                                                    value={editedTransportData[field] ?? t[field] ?? ""}
                                                                     onChange={(e) => handleInputChange(e, field)}
                                                                 />
+                                                            ) : field === 'company' || field === 'originAddress' || 'destinationAddress' ? (
+                                                                <input className="form-control form-control-sm"
+                                                                       type={field === 'company' || field === 'originAddress' ? 'text' : 'text'}
+                                                                       value={editedTransportData[field] ?? t[field] ?? ""}
+                                                                       onChange={(e) => handleInputChange(e, field)}
+                                                                />
                                                             ) : (
-                                                                <input
+                                                                <input className="form-select form-select-sm"
                                                                     type={field === 'departureTime' || field === 'arrivalTime' ? 'datetime-local' : 'text'}
-                                                                    value={editedTransportData[field] || t[field]}
+                                                                    value={editedTransportData[field] ?? t[field] ?? ""}
                                                                     onChange={(e) => handleInputChange(e, field)}
                                                                 />
                                                             )}
-                                                            <button
+                                                            <button className="btn btn-sm btn-planora" type="button"
                                                                 onClick={() => handleEditTransport(t.id, field, editedTransportData[field] || t[field])}
                                                             >
                                                                 Save

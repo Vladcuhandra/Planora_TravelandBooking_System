@@ -49,18 +49,24 @@ export function getUserRole() {
     return null;
 }
 
-export async function restoreAccount(email, password) {
-    const res = await fetch(`${API_BASE}/api/auth/restore`, {
+export async function restoreAccount(email, restorePassword) {
+    const response = await fetch(`${API_BASE}/api/auth/restore`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+            email: email,
+            password: restorePassword,
+        }),
     });
 
-    if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Account restoration failed");
+    if (!response.ok) {
+        const data = await response.text();
+        throw new Error(data || "Account restoration failed");
     }
 
-    return res.json();
+    const data = await response.json();
+
+    return data;
 }

@@ -23,7 +23,7 @@ const TripPage = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await apiFetch("/api/user", { method: "GET" });
+            const res = await apiFetch("/api/users/profile", { method: "GET" });
             if (res.ok) {
                 const data = await res.json();
                 setUser(data);
@@ -51,15 +51,17 @@ const TripPage = () => {
     };
 
     const fetchUsers = async () => {
-        if (isAdmin) {
-            try {
-                const response = await apiFetch(`/api/admin`);
-                const data = await response.json();
-                console.log("Fetched users: ", data);
-                setUsers(data);
-            } catch (error) {
-                setError("Failed to fetch users.");
+        try {
+            setError(null);
+            const response = await apiFetch("/api/users", { method: "GET" });
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.message || "Failed to fetch users.");
             }
+            const data = await response.json();
+            setUsers(Array.isArray(data) ? data : []);
+        } catch (e) {
+            setError(e.message || "Failed to fetch users.");
         }
     };
 

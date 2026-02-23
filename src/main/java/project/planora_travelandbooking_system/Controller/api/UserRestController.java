@@ -4,17 +4,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.exceptions.UserAlreadyExistsException;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.DTO.UserProfileUpdateRequest;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
-
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -63,7 +60,7 @@ public class UserRestController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/edit/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
             @RequestBody UserProfileUpdateRequest req,
@@ -73,12 +70,23 @@ public class UserRestController {
             return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
         }
 
-        UserDTO updated = userService.updateProfile(id, principal.getName(), req);
+        UserDTO updated;
+        boolean reauthRequired = false;
+
+        if (req.getRestore() != null && req.getRestore()) {
+            updated = userService.restoreUser(id, principal.getName());
+        } else {
+            updated = userService.updateProfile(id, principal.getName(), req);
+        }
+
+        if (updated.getEmail() != null && !updated.getEmail().equals(principal.getName())) {
+            reauthRequired = true;
+        }
 
         return ResponseEntity.ok(Map.of(
                 "message", "Profile updated successfully",
                 "user", updated,
-                "reauthRequired", updated.getEmail() != null && !updated.getEmail().equals(principal.getName())
+                "reauthRequired", reauthRequired
         ));
     }
 
@@ -88,6 +96,7 @@ public class UserRestController {
         userService.deleteUser(id);
         return ResponseEntity.ok(Map.of("message", "User deleted successfully: " + userName));
     }
+
 
     @GetMapping("/debugme")
     public Map<String, Object> me(Authentication auth) {
