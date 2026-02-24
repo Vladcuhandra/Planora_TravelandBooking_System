@@ -30,7 +30,7 @@ public class TripRestController {
 
     private boolean isAdmin(Authentication auth) {
         return auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_SUPER_ADMIN".equals(a.getAuthority()));
     }
 
     @GetMapping
