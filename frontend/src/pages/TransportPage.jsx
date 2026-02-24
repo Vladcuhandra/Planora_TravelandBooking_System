@@ -23,7 +23,7 @@ const TransportPage = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await apiFetch("/api/users/profile", { method: "GET" });
+            const res = await apiFetch(`/api/users/profile`, { method: "GET" });
             if (res.ok) {
                 const data = await res.json();
                 setUser(data);
@@ -42,6 +42,7 @@ const TransportPage = () => {
         try {
             const response = await apiFetch(`/api/transports?page=${currentPage}`);
             const data = await response.json();
+            console.log("Transports fetched:", data);
             setTransports(data.content || []);
             setTotalPages(data.totalPages || 0);
         } catch (error) {
@@ -130,7 +131,7 @@ const TransportPage = () => {
         transportData.arrivalTime = new Date(transportData.arrivalTime).toISOString();
 
         try {
-            const response = await apiFetch("/api/transports/save", {
+            const response = await apiFetch(`/api/transports/save`, {
                 method: "POST",
                 body: JSON.stringify(transportData),
                 headers: {

@@ -137,13 +137,13 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN")
 
                         //TRANSPORTS
-                        .requestMatchers(HttpMethod.GET, "/api/transports/**")
+                        .requestMatchers(HttpMethod.GET, "/api/transport/**")
                         .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/transports/**")
+                        .requestMatchers(HttpMethod.POST, "/api/transport/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/transports/**")
+                        .requestMatchers(HttpMethod.PUT, "/api/transport/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
+                        .requestMatchers(HttpMethod.DELETE, "/api/transport/**")
                         .hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()

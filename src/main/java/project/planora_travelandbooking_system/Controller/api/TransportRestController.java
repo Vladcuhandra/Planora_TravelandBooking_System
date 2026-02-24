@@ -4,16 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.TransportDTO;
 import project.planora_travelandbooking_system.Model.Transport;
 import project.planora_travelandbooking_system.Service.TransportService;
-
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
