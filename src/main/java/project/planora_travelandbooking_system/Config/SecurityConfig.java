@@ -146,8 +146,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
                         .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
-                        .anyRequest().denyAll()
+                        // BOOKINGS
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/bookings/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/bookings/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                 )
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
