@@ -17,4 +17,5 @@ public class UserDTO {
     private LocalDateTime birthDate;
     private boolean deleted;
     private LocalDateTime deletionDate;
+    private String confirmPassword;
 }

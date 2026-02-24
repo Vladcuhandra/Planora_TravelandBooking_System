@@ -92,6 +92,14 @@ public class AuthRestController {
             return ResponseEntity.badRequest().body("Email is already registered");
         }
 
+        if (userDTO.getEmail() == null || !userDTO.getEmail().matches("\\S+@\\S+\\.\\S+")) {
+            return ResponseEntity.badRequest().body("Please enter a valid email");
+        }
+
+        if (!userDTO.getPassword().equals(userDTO.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+
         User user = new User();
         user.setEmail(userDTO.getEmail());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));

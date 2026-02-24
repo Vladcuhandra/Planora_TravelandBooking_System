@@ -33,7 +33,7 @@ export default function Signup() {
         try {
             const response = await apiFetch("/api/auth/signup", {
                 method: "POST",
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, confirmPassword }),
                 headers: { "Content-Type": "application/json" },
             });
 
