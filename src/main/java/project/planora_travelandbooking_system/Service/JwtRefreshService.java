@@ -60,6 +60,9 @@ public class JwtRefreshService {
         repo.save(refresher);
     }
 
+    public int revokeAllForUser(Long userId) {
+        return repo.revokeAllActiveByUserId(userId);
+    }
     private String generateRandomToken() {
         byte[] bytes = new byte[64];
         random.nextBytes(bytes);
