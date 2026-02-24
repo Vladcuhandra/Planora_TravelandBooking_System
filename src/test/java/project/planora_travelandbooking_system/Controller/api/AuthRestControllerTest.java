@@ -77,7 +77,7 @@ class AuthRestControllerTest {
         mvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"new@planora.test","password":"123456"}
+                                {"email":"new@planora.test","password":"123456", "confirmPassword" : "123456"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/login"));
@@ -140,4 +140,65 @@ class AuthRestControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Invalid email or password"));
     }
+
+    @Test
+    void login_negative_incorrectEmail_returns401() throws Exception {
+        Mockito.when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(Mockito.mock(AuthenticationException.class));
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"nonexistent@planora.test","password":"123456"}
+                            """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("Invalid email or password"));
+    }
+
+    @Test
+    void signup_negative_emailAlreadyExists_returns400() throws Exception {
+        Mockito.when(userRepository.findByEmail("existing@planora.test")).thenReturn(Optional.of(new User()));
+
+        mvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"existing@planora.test","password":"123456"}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Email is already registered"));
+    }
+
+    @Test
+    void signup_negative_invalidEmailFormat_returns400() throws Exception {
+        mvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"invalid-email","password":"123456"}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Please enter a valid email"));
+    }
+
+    @Test
+    void signup_negative_shortPassword_returns400() throws Exception {
+        mvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"new@planora.test","password":"123"}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Password must be at least 6 characters"));
+    }
+
+    @Test
+    void signup_negative_passwordsDoNotMatch_returns400() throws Exception {
+        mvc.perform(post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"email":"new@planora.test","password":"123456","confirmPassword":"654321"}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Passwords do not match"));
+    }
+
 }
