@@ -37,10 +37,10 @@ public class UserRestController {
                 .orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
     }
 
-    @GetMapping
+    /*@GetMapping
     public ResponseEntity<List<UserDTO>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
-    }
+    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getTrip(@PathVariable Long id) {

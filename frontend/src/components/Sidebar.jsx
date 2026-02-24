@@ -20,14 +20,13 @@ function Sidebar({ isAdmin = false }) {
         <>
             {/* Mini Sidebar (desktop) */}
             <aside className="mini-sidebar d-none d-lg-flex" id="miniSidebar">
-                {navItems.map(
-                    ({ label, to, icon, adminOnly }) =>
-                        (!adminOnly || isAdmin) && (
-                            <Link key={to} to={to} className="mini-sidebar-item p-nav-link">
-                                <img className="sidebar-icon-img" src={icon} alt={label} />
-                                <span className="mini-sidebar-label">{label}</span>
-                            </Link>
-                        )
+                {navItems.map(({ label, to, icon, adminOnly }) =>
+                    (!adminOnly || isAdmin) ? (
+                        <Link key={to} to={to} className="mini-sidebar-item p-nav-link">
+                            <img className="sidebar-icon-img" src={icon} alt={label} />
+                            <span className="mini-sidebar-label">{label}</span>
+                        </Link>
+                    ) : null
                 )}
             </aside>
 
@@ -51,14 +50,13 @@ function Sidebar({ isAdmin = false }) {
 
                 <div className="offcanvas-body">
                     <nav className="sidebar-nav" id="drawerSidebarNav">
-                        {navItems.map(
-                            ({ label, to, icon, adminOnly }) =>
-                                (!adminOnly || isAdmin) && (
-                                    <Link key={to} to={to} className="sidebar-link p-nav-link">
-                                        <img className="sidebar-icon-img" src={icon} alt={label} />
-                                        <span>{label}</span>
-                                    </Link>
-                                )
+                        {navItems.map(({ label, to, icon, adminOnly }) =>
+                            (!adminOnly || isAdmin) ? (
+                                <Link key={to} to={to} className="sidebar-link p-nav-link">
+                                    <img className="sidebar-icon-img" src={icon} alt={label} />
+                                    <span>{label}</span>
+                                </Link>
+                            ) : null
                         )}
                     </nav>
                 </div>
