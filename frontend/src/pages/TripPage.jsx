@@ -102,7 +102,7 @@ const TripPage = () => {
     const fetchUsers = async () => {
         try {
             setError(null);
-            const response = await apiFetch("/api/users", { method: "GET" });
+            const response = await apiFetch("/api/admin", { method: "GET" });
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
                 throw new Error(data.message || "Failed to fetch users.");

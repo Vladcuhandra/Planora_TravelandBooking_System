@@ -8,6 +8,8 @@ import TransportPage from "./pages/TransportPage";
 import AccommodationPage from "./pages/AccommodationPage";
 import TripPage from "./pages/TripPage";
 import BookingPage from "./pages/BookingPage";
+import {apiFetch} from "./api/http.js";
+import {useEffect, useState} from "react";
 
 // Protect routes that require authentication
 function RequireAuth({ children }) {
@@ -15,7 +17,59 @@ function RequireAuth({ children }) {
     return token ? children : <Navigate to="/login" replace />;
 }
 
+function RequireAdmin({ children }) {
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const res = await apiFetch("/api/users/profile", { method: "GET" });
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsAdmin(data.role === "ADMIN");
+                } else {
+                    setIsAdmin(false);
+                }
+            } catch (err) {
+                setIsAdmin(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUserProfile();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>; // Optionally, show a loading spinner
+    }
+
+    return isAdmin ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
+    const [error, setError] = useState(null);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        fetchUserProfile();
+    })
+
+    const fetchUserProfile = async () => {
+        try {
+            const res = await apiFetch(`/api/users/profile`, { method: "GET" });
+            if (res.ok) {
+                const data = await res.json();
+                console.log("User Profile:", data);
+                setUser(data);
+            } else {
+                setError("Failed to load user profile.");
+            }
+        } catch (err) {
+            setError("An error occurred: " + err.message);
+        }
+    };
+
     return (
         <BrowserRouter>
             <Routes>
@@ -27,7 +81,9 @@ export default function App() {
                 <Route path="/signup" element={<Signup />} />
                 <Route element={<Layout />}>
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/admin" element={<RequireAuth><AdminDashboard /></RequireAuth>}/>
+                    <Route path="/admin" element={
+                        <RequireAuth> <RequireAdmin> <AdminDashboard /> </RequireAdmin> </RequireAuth>}
+                    />
                     <Route path="/transports" element={<RequireAuth><TransportPage /></RequireAuth>}/>
                     <Route path="/accommodations" element={<RequireAuth><AccommodationPage /></RequireAuth>}/>
                     <Route path="/trips" element={<RequireAuth><TripPage /></RequireAuth>}/>
