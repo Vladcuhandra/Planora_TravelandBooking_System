@@ -34,7 +34,11 @@ public class LogoutRestController {
             try {
                 JwtRefresher stored = refreshService.validateToken(rawRefresh);
                 log.info("Refresh token HIT!!");
-                refreshService.revoke(stored);
+
+                Long userId = stored.getUser().getId();
+                int revokedCount = refreshService.revokeAllForUser(userId);
+
+                log.info("Revoked {} refresh tokens for userId={}", revokedCount, userId);
             } catch (RuntimeException ignored) {
                 // token already invalid / expired / revoked → still logout
             }
