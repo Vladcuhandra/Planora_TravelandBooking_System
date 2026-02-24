@@ -40,7 +40,7 @@ public class BookingRestController {
 
     private boolean isAdmin(Authentication auth) {
         return auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_SUPER_ADMIN".equals(a.getAuthority()));
     }
 
     // Get all bookings with pagination and optional filtering by type
@@ -68,13 +68,16 @@ public class BookingRestController {
     }*/
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getBookings(@RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "10") int size,
-                                                           Authentication auth) {
+    public ResponseEntity<Map<String, Object>> getBookings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth) {
+
         String email = auth.getName();
         boolean admin = isAdmin(auth);
 
-        Page<BookingDTO> bookingPage = bookingService.getAllBookings(page, size, email, admin);
+        Page<BookingDTO> bookingPage =
+                bookingService.getAllBookings(page, size, email, admin);
 
         Map<String, Object> response = new HashMap<>();
         response.put("bookings", bookingPage.getContent());
@@ -83,13 +86,6 @@ public class BookingRestController {
         response.put("totalItems", bookingPage.getTotalElements());
 
         return ResponseEntity.ok(response);
-    }
-
-    // Save a new booking
-    @PostMapping("/save")
-    public ResponseEntity<BookingDTO> saveBooking(@RequestBody BookingDTO dto, Authentication auth) {
-        bookingService.saveBooking(dto, auth.getName(), isAdmin(auth));
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
     // Update an existing booking
@@ -113,6 +109,12 @@ public class BookingRestController {
     public ResponseEntity<Void> bulkDeleteBookings(@RequestBody List<Long> ids, Authentication auth) {
         bookingService.bulkDeleteBookings(ids, auth.getName(), isAdmin(auth));
         return ResponseEntity.noContent().build();
+    }
+    // Create a new booking
+    @PostMapping("/save")
+    public ResponseEntity<Void> saveBooking(@RequestBody BookingDTO dto, Authentication auth) {
+        bookingService.saveBooking(dto, auth.getName(), isAdmin(auth));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     // Get all trips (for creating/editing bookings)
