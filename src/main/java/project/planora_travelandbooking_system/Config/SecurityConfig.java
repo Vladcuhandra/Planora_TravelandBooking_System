@@ -99,58 +99,59 @@ public class SecurityConfig {
 
                         //USERS
                         .requestMatchers(HttpMethod.GET, "/api/admin/**")
-                        .hasAnyRole("ADMIN")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/admin/**")
-                        .hasAnyRole("ADMIN")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/admin/**")
-                        .hasAnyRole("ADMIN")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/admin/**")
-                        .hasAnyRole("ADMIN")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/api/user/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/user/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/user/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/user/**")
-                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/users/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
 
                         //ACCOMMODATIONS
-                        .requestMatchers(HttpMethod.GET, "/api/accommodation/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/accommodation/**")
-                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/accommodations/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/accommodations/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/accommodations/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/accommodations/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                         //TRIPS
-                        .requestMatchers(HttpMethod.GET, "/api/trip/**")
+                        .requestMatchers(HttpMethod.GET, "/api/trips/**")
                         .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/trip/**")
-                        .hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/trips/**")
+                        .hasAnyRole("ADMIN","SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/trips/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/trips/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                         //TRANSPORTS
-                        .requestMatchers(HttpMethod.GET, "/api/transport/**")
-                        .hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/transport/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/transport/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/transport/**")
-                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transports/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/transports/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/transports/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/transports/**")
+                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().denyAll()
                 )
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .accessDeniedHandler((req, res, ex) -> res.setStatus(HttpStatus.FORBIDDEN.value()))
                 )
                 .formLogin(form -> form.disable())   // important
                 .logout(logout -> logout.disable()); // optional (API usually no logout)
@@ -160,91 +161,122 @@ public class SecurityConfig {
 
     @Bean
     @org.springframework.core.annotation.Order(2)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain spaSecurityFilterChain(HttpSecurity http) throws Exception {
 
         RequestMatcher notApi = request -> !request.getRequestURI().startsWith("/api/");
 
         http
-                .securityMatcher(notApi) // ignore /api
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/logout")
-                        .ignoringRequestMatchers("/h2-console/**")
-                )
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**")) // allow Postman for API
+                .securityMatcher(notApi)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // allow React routes + static content
                         .requestMatchers(
                                 "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
-                                "/favicon.ico"
+                                "/static/**",
+                                "/login",
+                                "/signup",
+                                "/profile",
+                                "/admin",
+                                "/transports",
+                                "/accommodations",
+                                "/trips",
+                                "/bookings"
                         ).permitAll()
-
-                        //for JWT auth
-                        //.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-
-                        //.requestMatchers(HttpMethod.POST, "/api/user/restore").permitAll()
-                        .requestMatchers("/login", "/signup").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/signup").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-
-                        // after login
-                        .requestMatchers(HttpMethod.GET, "/bookings").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/bookings/save").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/bookings/edit/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/bookings/delete/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        // Transports UI: USER read, ADMIN manage
-                        .requestMatchers(HttpMethod.GET, "/transports").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/transports/new").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/transports/save").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/transports/*/edit").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/transports/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/transports/*").hasRole("ADMIN")
-
-                        // Accommodations UI: USER read, ADMIN manage
-                        .requestMatchers(HttpMethod.GET, "/accommodations").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/accommodations/new").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/accommodations/save").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/accommodations/*/edit").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/accommodations/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/accommodations/*").hasRole("ADMIN")
-
-                        // Trips UI: USER + ADMIN (service restricts to own trips for USER)
-                        .requestMatchers(HttpMethod.GET, "/trips").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/trips/new").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/trips/save").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/trips/*/edit").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/trips/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/user").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/user/edit").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/user/restore").hasAnyRole("USER", "ADMIN")
-
-
-                        .anyRequest().authenticated()
-
+                        .anyRequest().permitAll()
                 )
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .usernameParameter("email")
-                        .successHandler(customAuthenticationSuccessHandler())
-                        .failureHandler(customAuthenticationFailureHandler)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                );
+                // IMPORTANT: prevent Spring Security default login redirects
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .logout(logout -> logout.disable());
 
         return http.build();
     }
+
+//    @Bean
+//    @org.springframework.core.annotation.Order(2)
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//
+//        RequestMatcher notApi = request -> !request.getRequestURI().startsWith("/api/");
+//
+//        http
+//                .securityMatcher(notApi)
+//                .csrf(csrf -> csrf
+//                        .ignoringRequestMatchers("/logout")
+//                        .ignoringRequestMatchers("/h2-console/**")
+//                )
+//                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/",
+//                                "/css/**",
+//                                "/js/**",
+//                                "/img/**",
+//                                "/favicon.ico"
+//                        ).permitAll()
+//
+//                        .requestMatchers("/login", "/signup").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/signup").permitAll()
+//                        .requestMatchers("/h2-console/**").permitAll()
+//
+//                        .requestMatchers(HttpMethod.GET, "/bookings").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/bookings/save").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/bookings/edit/*").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/bookings/delete/*").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers("/admin").hasRole("ADMIN")
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//
+//                        .requestMatchers(HttpMethod.GET, "/transports").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/transports/new").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/transports/save").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/transports/*/edit").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/transports/*").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/transports/*").hasRole("ADMIN")
+//
+//                        .requestMatchers(HttpMethod.GET, "/accommodations").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/accommodations/new").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/accommodations/save").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/accommodations/*/edit").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/accommodations/*").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/accommodations/*").hasRole("ADMIN")
+//
+//                        .requestMatchers(HttpMethod.GET, "/trips").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/trips/new").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST, "/trips/save").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/trips/*/edit").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.PUT, "/trips/*").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.DELETE, "/trips/*").hasAnyRole("USER", "ADMIN")
+//
+//                        .requestMatchers(HttpMethod.GET, "/user").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST,"/user/edit").hasAnyRole("USER", "ADMIN")
+//                        .requestMatchers(HttpMethod.POST,"/user/restore").hasAnyRole("USER", "ADMIN")
+//
+//
+//                        .anyRequest().authenticated()
+//
+//                )
+//                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+//                .formLogin(form -> form
+//                        .loginPage("/login")
+//                        .loginProcessingUrl("/login")
+//                        .usernameParameter("email")
+//                        .successHandler(customAuthenticationSuccessHandler())
+//                        .failureHandler(customAuthenticationFailureHandler)
+//                        .permitAll()
+//                )
+//                .logout(logout -> logout
+//                        .logoutUrl("/logout")
+//                        .logoutSuccessUrl("/login?logout")
+//                        .permitAll()
+//                );
+//
+//        return http.build();
+//    }
 
 
 
