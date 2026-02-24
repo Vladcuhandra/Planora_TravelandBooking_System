@@ -24,17 +24,20 @@ const TransportPage = () => {
     const fetchUserProfile = async () => {
         try {
             const res = await apiFetch(`/api/users/profile`, { method: "GET" });
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data);
-                setIsAdmin(data.role === "ADMIN");
-            } else {
-                setError("Failed to load user profile.");
+            if (res.status === 401) {
                 navigate("/login");
+                return;
             }
+            if (!res.ok) {
+                const txt = await res.text().catch(() => "");
+                setError(`Failed to load user profile. (${res.status}) ${txt}`);
+                return;
+            }
+            const data = await res.json();
+            setUser(data);
+            setIsAdmin(data.role === "ADMIN");
         } catch (err) {
-            setError("An error occurred: " + err.message);
-            navigate("/login");
+            setError("Profile request failed: " + err.message);
         }
     };
 
@@ -150,7 +153,8 @@ const TransportPage = () => {
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (error) return <div className="text-danger p-3">{error}</div>;
+    if (!user) return <div className="p-3">Loading...</div>;
 
     return (
         <div className="container-fluid">
