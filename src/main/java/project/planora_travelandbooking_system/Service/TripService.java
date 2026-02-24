@@ -42,12 +42,14 @@ public class TripService {
 
 
     public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
-        User user = userService.getUserByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.getUserByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         PageRequest pageRequest = PageRequest.of(page, pageSize);
         Page<Trip> trips = tripRepository.findByUser(user, pageRequest);
 
-        // Map trips to DTOs
-        return trips.map(trip -> new TripDTO());
+        // Map trips to DTOs correctly
+        return trips.map(this::convertToDTO);
     }
 
     public TripDTO getTripById(Long tripId) {

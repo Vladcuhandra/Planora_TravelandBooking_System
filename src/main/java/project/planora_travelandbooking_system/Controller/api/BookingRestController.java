@@ -14,6 +14,9 @@ import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
 import project.planora_travelandbooking_system.Service.BookingService;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -63,6 +66,24 @@ public class BookingRestController {
     public List<BookingDTO> list() {
         return bookingService.getAllBookings();
     }*/
+
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getBookings(@RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           Authentication auth) {
+        String email = auth.getName();
+        boolean admin = isAdmin(auth);
+
+        Page<BookingDTO> bookingPage = bookingService.getAllBookings(page, size, email, admin);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("bookings", bookingPage.getContent());
+        response.put("currentPage", bookingPage.getNumber());
+        response.put("totalPages", bookingPage.getTotalPages());
+        response.put("totalItems", bookingPage.getTotalElements());
+
+        return ResponseEntity.ok(response);
+    }
 
     // Save a new booking
     @PostMapping("/save")
