@@ -23,9 +23,10 @@ const AccommodationPage = () => {
 
     const fetchUserProfile = async () => {
         try {
-            const res = await apiFetch("/api/users/profile", { method: "GET" });
+            const res = await apiFetch(`/api/users/profile`, { method: "GET" });
             if (res.ok) {
                 const data = await res.json();
+                console.log("User Profile:", data);
                 setUser(data);
                 setIsAdmin(data.role === "ADMIN");
             } else {
@@ -42,6 +43,7 @@ const AccommodationPage = () => {
         try {
             const response = await apiFetch(`/api/accommodations?page=${currentPage}`);
             const data = await response.json();
+            console.log("Accommodations fetched:", data);
             setAccommodations(data.content || []);
             setTotalPages(data.totalPages || 0);
         } catch (error) {
@@ -116,11 +118,13 @@ const AccommodationPage = () => {
 
     const handleCreateAccommodation = async (event) => {
         event.preventDefault();
+        console.log("Form submission triggered");
         const form = new FormData(event.target);
         const accommodationData = Object.fromEntries(form.entries());
+        console.log("Accommodation Data being sent:", accommodationData);
 
         try {
-            const response = await apiFetch("/api/accommodations/save", {
+            const response = await apiFetch(`/api/accommodations/save`, {
                 method: "POST",
                 body: JSON.stringify(accommodationData),
                 headers: {
@@ -133,9 +137,11 @@ const AccommodationPage = () => {
             } else {
                 const data = await response.json();
                 setError(data.message || "Error creating accommodation.");
+                console.error("Error creating accommodation:", data);
             }
         } catch (error) {
             setError("Failed to create accommodation.");
+            console.error("Error in creating accommodation:", error);
         }
     };
 

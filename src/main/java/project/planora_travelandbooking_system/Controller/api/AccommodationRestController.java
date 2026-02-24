@@ -4,13 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.DTO.AccommodationDTO;
 import project.planora_travelandbooking_system.Model.Accommodation;
 import project.planora_travelandbooking_system.Service.AccommodationService;
 import project.planora_travelandbooking_system.Service.TransportService;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,21 +32,18 @@ public class AccommodationRestController {
         return ResponseEntity.ok(accommodations);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<String> saveAccommodation(@RequestBody AccommodationDTO dto) {
         accommodationService.saveAccommodation(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body("Accommodation created successfully!");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit")
     public ResponseEntity<String> editAccommodation(@RequestBody AccommodationDTO dto) {
         accommodationService.saveAccommodation(dto);
         return ResponseEntity.ok("Accommodation updated successfully!");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAccommodation(@PathVariable Long id) {
         accommodationService.deleteAccommodation(id);
@@ -63,7 +58,6 @@ public class AccommodationRestController {
         return ResponseEntity.ok(types);
     }
 
-    // Get all accommodation statuses (e.g., Available, Unavailable)
     @GetMapping("/statuses")
     public ResponseEntity<List<String>> getAccommodationStatuses() {
         List<String> statuses = Arrays.stream(Accommodation.Status.values())
