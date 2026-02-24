@@ -126,9 +126,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/accommodations/**")
                         .hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                        //TRIPS
+                        // TRIPS
                         .requestMatchers(HttpMethod.GET, "/api/trips/**")
-                        .hasAnyRole("USER", "ADMIN")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/trips/**")
                         .hasAnyRole("ADMIN","SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/trips/**")
