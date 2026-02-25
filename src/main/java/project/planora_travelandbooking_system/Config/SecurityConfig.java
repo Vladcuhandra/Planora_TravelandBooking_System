@@ -130,11 +130,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/trips/**")
                         .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/trips/**")
-                        .hasAnyRole("ADMIN","SUPER_ADMIN")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/trips/**")
-                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/trips/**")
-                        .hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
 
                         //TRANSPORTS
                         .requestMatchers(HttpMethod.GET, "/api/transports/**")

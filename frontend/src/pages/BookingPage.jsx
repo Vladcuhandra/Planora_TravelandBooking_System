@@ -187,7 +187,7 @@ const BookingPage = () => {
                 await fetchBookings();
                 setCreateDto({
                     tripId: "",
-                    bookingType: dto0.bookingType, // keep selection like Thymeleaf
+                    bookingType: dto0.bookingType,
                     status: "",
                     startDate: "",
                     endDate: "",
@@ -199,9 +199,14 @@ const BookingPage = () => {
             }
 
             const data = await res.json().catch(() => ({}));
-            setError(data.message || "Error creating booking.");
+            const msg = data.message || "Error creating booking.";
+            setError(msg);
+            window.alert(msg);
+
         } catch (err) {
-            setError(err.message || "Error creating booking.");
+            const msg = err?.message || "Error creating booking.";
+            setError(msg);
+            window.alert(msg);
         }
     };
 

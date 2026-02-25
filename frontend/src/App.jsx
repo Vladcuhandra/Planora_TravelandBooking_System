@@ -53,7 +53,7 @@ export default function App() {
 
     useEffect(() => {
         fetchUserProfile();
-    })
+    }, []);
 
     const fetchUserProfile = async () => {
         try {

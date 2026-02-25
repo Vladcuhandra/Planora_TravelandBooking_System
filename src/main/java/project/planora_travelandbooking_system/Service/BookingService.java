@@ -13,6 +13,7 @@ import project.planora_travelandbooking_system.Repository.AccommodationRepositor
 import project.planora_travelandbooking_system.Repository.BookingRepository;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
+import project.planora_travelandbooking_system.exceptions.DuplicateTripBookingTypeException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -71,6 +72,7 @@ public class BookingService {
         booking.setTrip(trip);
 
         Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
+        enforceOneBookingPerTripType(trip.getId(), bookingType, null);
         Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
@@ -111,6 +113,7 @@ public class BookingService {
         booking.setTrip(trip);
 
         Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
+        enforceOneBookingPerTripType(trip.getId(), bookingType, id);
         Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
@@ -136,7 +139,6 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    // NEW: bulk delete (same authorization rules as deleteBooking)
     @Transactional
     public void bulkDeleteBookings(List<Long> ids, String email, boolean isAdmin) {
         if (ids == null || ids.isEmpty()) return;
@@ -161,6 +163,11 @@ public class BookingService {
 
         Booking.BookingStatus cancelled = Booking.BookingStatus.CANCELLED;
 
+        if (booking.getTrip() == null || booking.getTrip().getUser() == null || booking.getTrip().getUser().getEmail() == null) {
+            throw new RuntimeException("Trip owner not found for booking");
+        }
+        String ownerEmail = booking.getTrip().getUser().getEmail();
+
         if (bookingType == Booking.BookingType.TRANSPORT) {
 
             if (bookingDTO.getTransportId() == null) {
@@ -170,11 +177,11 @@ public class BookingService {
             Long transportId = bookingDTO.getTransportId();
 
             boolean alreadyBooked = (currentBookingIdOrNull == null)
-                    ? bookingRepository.existsByTransportIdAndStatusNot(transportId, cancelled)
-                    : bookingRepository.existsByTransportIdAndStatusNotAndIdNot(transportId, cancelled, currentBookingIdOrNull);
+                    ? bookingRepository.existsByTransportIdAndStatusNotAndTripUserEmail(transportId, cancelled, ownerEmail)
+                    : bookingRepository.existsByTransportIdAndStatusNotAndTripUserEmailAndIdNot(transportId, cancelled, ownerEmail, currentBookingIdOrNull);
 
             if (alreadyBooked) {
-                throw new RuntimeException("This transport is already booked in another active booking");
+                throw new RuntimeException("You already have an active booking with this transport.");
             }
 
             Transport transport = transportRepository.findById(transportId)
@@ -193,11 +200,11 @@ public class BookingService {
             Long accommodationId = bookingDTO.getAccommodationId();
 
             boolean alreadyBooked = (currentBookingIdOrNull == null)
-                    ? bookingRepository.existsByAccommodationIdAndStatusNot(accommodationId, cancelled)
-                    : bookingRepository.existsByAccommodationIdAndStatusNotAndIdNot(accommodationId, cancelled, currentBookingIdOrNull);
+                    ? bookingRepository.existsByAccommodationIdAndStatusNotAndTripUserEmail(accommodationId, cancelled, ownerEmail)
+                    : bookingRepository.existsByAccommodationIdAndStatusNotAndTripUserEmailAndIdNot(accommodationId, cancelled, ownerEmail, currentBookingIdOrNull);
 
             if (alreadyBooked) {
-                throw new RuntimeException("This accommodation is already booked in another active booking");
+                throw new RuntimeException("You already have an active booking with this accommodation.");
             }
 
             Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -234,5 +241,22 @@ public class BookingService {
         if (booking.getAccommodation() != null) bookingDTO.setAccommodationId(booking.getAccommodation().getId());
 
         return bookingDTO;
+    }
+
+    private void enforceOneBookingPerTripType(Long tripId,
+                                              Booking.BookingType bookingType,
+                                              Long currentBookingIdOrNull) {
+
+        if (tripId == null || bookingType == null) return;
+
+        boolean exists = (currentBookingIdOrNull == null)
+                ? bookingRepository.existsByTripIdAndBookingType(tripId, bookingType)
+                : bookingRepository.existsByTripIdAndBookingTypeAndIdNot(tripId, bookingType, currentBookingIdOrNull);
+
+        if (exists) {
+            throw new DuplicateTripBookingTypeException(
+                    "This trip already has a booking of type " + bookingType
+            );
+        }
     }
 }
