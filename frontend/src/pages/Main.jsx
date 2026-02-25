@@ -1,268 +1,198 @@
 import { useMemo, useState } from "react";
+import bg from "../assets/mountain_aurora.png";
 
 export default function Main() {
-    // Step 0/1/2
     const [step, setStep] = useState(0); // 0=create, 1=details, 2=booking
-
-    // Step 1: title/description
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [activeTab, setActiveTab] = useState("transport");
 
-    // Step 2: booking type tab
-    const [activeTab, setActiveTab] = useState("transport"); // "transport" | "accommodation"
-
-    // Booking form (no id)
     const [booking, setBooking] = useState({
-        bookingType: "TRANSPORT", // TRANSPORT | ACCOMMODATION
+        bookingType: "TRANSPORT",
         startDate: "",
         endDate: "",
         totalPrice: "",
-        status: "CONFIRMED", // CONFIRMED | CANCELLED
+        status: "CONFIRMED",
         tripId: "",
         transportId: "",
         accommodationId: "",
         createdAt: new Date().toISOString().slice(0, 16),
     });
 
-    const isReadyForNext = useMemo(() => {
-        return title.trim() !== "" && description.trim() !== "";
-    }, [title, description]);
+    const isReadyForNext = useMemo(
+        () => title.trim() !== "" && description.trim() !== "",
+        [title, description]
+    );
 
-    const handleNext = () => {
-        if (!isReadyForNext) return;
-        setStep(2);
-    };
-
-    const updateBooking = (key, value) => {
-        setBooking((prev) => ({ ...prev, [key]: value }));
-    };
+    const updateBooking = (key, value) =>
+        setBooking((p) => ({ ...p, [key]: value }));
 
     const switchTab = (tab) => {
         setActiveTab(tab);
-        if (tab === "transport") {
-            setBooking((prev) => ({
-                ...prev,
-                bookingType: "TRANSPORT",
-                accommodationId: "",
-            }));
-        } else {
-            setBooking((prev) => ({
-                ...prev,
-                bookingType: "ACCOMMODATION",
-                transportId: "",
-            }));
-        }
+        setBooking((p) => ({
+            ...p,
+            bookingType: tab === "transport" ? "TRANSPORT" : "ACCOMMODATION",
+            transportId: tab === "transport" ? p.transportId : "",
+            accommodationId: tab === "accommodation" ? p.accommodationId : "",
+        }));
     };
 
-    const isTransport = activeTab === "transport";
-
     return (
-        <div style={styles.page}>
-            {/* STEP 0 */}
-            {step === 0 && (
-                <button style={styles.primaryButton} onClick={() => setStep(1)}>
-                    create
-                </button>
-            )}
+        <div style={styles.page(bg)}>
+            <div style={styles.overlay} />
 
-            {/* STEP 1 */}
-            {step === 1 && (
-                <div style={styles.card}>
-                    <input
-                        type="text"
-                        placeholder="title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        style={styles.input}
-                    />
+            <div style={styles.content}>
+                {step === 0 && (
+                    <button style={styles.primaryButton} onClick={() => setStep(1)}>
+                        create
+                    </button>
+                )}
 
-                    <textarea
-                        placeholder="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        style={styles.textarea}
-                    />
+                {step === 1 && (
+                    <div style={styles.card}>
+                        <input
+                            style={styles.input}
+                            placeholder="title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                        />
 
-                    {isReadyForNext && (
-                        <button style={styles.nextButton} onClick={handleNext}>
-                            next
-                        </button>
-                    )}
-                </div>
-            )}
+                        <textarea
+                            style={styles.textarea}
+                            placeholder="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
 
-            {/* STEP 2 */}
-            {step === 2 && (
-                <div style={styles.largePane}>
-                    <div style={styles.headerRow}>
-                        <div>
-                            <div style={styles.h1}>{title}</div>
-                            <div style={styles.subtitle}>{description}</div>
+                        {isReadyForNext && (
+                            <button style={styles.nextButton} onClick={() => setStep(2)}>
+                                next
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {step === 2 && (
+                    <div style={styles.largePane}>
+                        <div style={styles.headerRow}>
+                            <div>
+                                <div style={styles.h1}>{title}</div>
+                                <div style={styles.subtitle}>{description}</div>
+                            </div>
+                            <button style={styles.ghostButton} onClick={() => setStep(1)}>
+                                back
+                            </button>
                         </div>
 
-                        <button style={styles.ghostButton} onClick={() => setStep(1)}>
-                            back
-                        </button>
-                    </div>
+                        <div style={styles.tabs}>
+                            <button
+                                style={{
+                                    ...styles.tab,
+                                    ...(activeTab === "transport" ? styles.tabActive : {}),
+                                }}
+                                onClick={() => switchTab("transport")}
+                            >
+                                Transport booking
+                            </button>
+                            <button
+                                style={{
+                                    ...styles.tab,
+                                    ...(activeTab === "accommodation" ? styles.tabActive : {}),
+                                }}
+                                onClick={() => switchTab("accommodation")}
+                            >
+                                Accommodation booking
+                            </button>
+                        </div>
 
-                    <div style={styles.tabs}>
-                        <button
-                            style={{
-                                ...styles.tab,
-                                ...(activeTab === "transport" ? styles.tabActive : {}),
-                            }}
-                            onClick={() => switchTab("transport")}
-                        >
-                            Transport booking
-                        </button>
+                        <div style={styles.grid}>
+                            <Field label="bookingType">
+                                <input readOnly value={booking.bookingType} style={styles.input} />
+                            </Field>
 
-                        <button
-                            style={{
-                                ...styles.tab,
-                                ...(activeTab === "accommodation" ? styles.tabActive : {}),
-                            }}
-                            onClick={() => switchTab("accommodation")}
-                        >
-                            Accommodation booking
-                        </button>
-                    </div>
-
-                    <div style={styles.tabBody}>
-                        <div style={styles.form}>
-                            <div style={styles.grid}>
-                                <Field label="bookingType">
-                                    <input
-                                        value={booking.bookingType}
-                                        readOnly
-                                        style={{ ...styles.input, opacity: 0.9 }}
-                                    />
-                                </Field>
-
-                                <Field label="status">
-                                    <select
-                                        value={booking.status}
-                                        onChange={(e) => updateBooking("status", e.target.value)}
-                                        style={styles.select}
-                                    >
-                                        <option value="CONFIRMED">CONFIRMED</option>
-                                        <option value="CANCELLED">CANCELLED</option>
-                                    </select>
-                                </Field>
-
-                                <Field label="startDate">
-                                    <input
-                                        type="datetime-local"
-                                        value={booking.startDate}
-                                        onChange={(e) => updateBooking("startDate", e.target.value)}
-                                        style={styles.input}
-                                    />
-                                </Field>
-
-                                <Field label="endDate">
-                                    <input
-                                        type="datetime-local"
-                                        value={booking.endDate}
-                                        onChange={(e) => updateBooking("endDate", e.target.value)}
-                                        style={styles.input}
-                                    />
-                                </Field>
-
-                                <Field label="totalPrice">
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={booking.totalPrice}
-                                        onChange={(e) => updateBooking("totalPrice", e.target.value)}
-                                        placeholder="0.00"
-                                        style={styles.input}
-                                    />
-                                </Field>
-
-                                <Field label="createdAt">
-                                    <input
-                                        type="datetime-local"
-                                        value={booking.createdAt}
-                                        onChange={(e) => updateBooking("createdAt", e.target.value)}
-                                        style={styles.input}
-                                    />
-                                </Field>
-
-                                <Field label="tripId" span={2}>
-                                    <input
-                                        value={booking.tripId}
-                                        onChange={(e) => updateBooking("tripId", e.target.value)}
-                                        placeholder="Trip ID"
-                                        style={styles.input}
-                                    />
-                                </Field>
-
-                                {isTransport ? (
-                                    <Field label="transportId" span={2}>
-                                        <input
-                                            value={booking.transportId}
-                                            onChange={(e) =>
-                                                updateBooking("transportId", e.target.value)
-                                            }
-                                            placeholder="Transport ID"
-                                            style={styles.input}
-                                        />
-                                    </Field>
-                                ) : (
-                                    <Field label="accommodationId" span={2}>
-                                        <input
-                                            value={booking.accommodationId}
-                                            onChange={(e) =>
-                                                updateBooking("accommodationId", e.target.value)
-                                            }
-                                            placeholder="Accommodation ID"
-                                            style={styles.input}
-                                        />
-                                    </Field>
-                                )}
-                            </div>
-
-                            <div style={styles.footerRow}>
-                                <button
-                                    style={styles.primaryButton}
-                                    onClick={() => {
-                                        const payload = {
-                                            bookingType: booking.bookingType,
-                                            startDate: booking.startDate || null,
-                                            endDate: booking.endDate || null,
-                                            totalPrice:
-                                                booking.totalPrice === "" ? 0 : Number(booking.totalPrice),
-                                            status: booking.status,
-                                            trip: booking.tripId ? { id: Number(booking.tripId) } : null,
-                                            transport:
-                                                booking.bookingType === "TRANSPORT" && booking.transportId
-                                                    ? { id: Number(booking.transportId) }
-                                                    : null,
-                                            accommodation:
-                                                booking.bookingType === "ACCOMMODATION" &&
-                                                booking.accommodationId
-                                                    ? { id: Number(booking.accommodationId) }
-                                                    : null,
-                                            createdAt: booking.createdAt || null,
-                                        };
-
-                                        console.log("Booking payload:", payload);
-                                        alert("Booking form captured (check console).");
-                                    }}
+                            <Field label="status">
+                                <select
+                                    value={booking.status}
+                                    onChange={(e) => updateBooking("status", e.target.value)}
+                                    style={styles.select}
                                 >
-                                    save booking
-                                </button>
-                            </div>
+                                    <option value="CONFIRMED">CONFIRMED</option>
+                                    <option value="CANCELLED">CANCELLED</option>
+                                </select>
+                            </Field>
+
+                            <Field label="startDate">
+                                <input
+                                    type="datetime-local"
+                                    value={booking.startDate}
+                                    onChange={(e) => updateBooking("startDate", e.target.value)}
+                                    style={styles.input}
+                                />
+                            </Field>
+
+                            <Field label="endDate">
+                                <input
+                                    type="datetime-local"
+                                    value={booking.endDate}
+                                    onChange={(e) => updateBooking("endDate", e.target.value)}
+                                    style={styles.input}
+                                />
+                            </Field>
+
+                            <Field label="totalPrice">
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={booking.totalPrice}
+                                    onChange={(e) => updateBooking("totalPrice", e.target.value)}
+                                    style={styles.input}
+                                />
+                            </Field>
+
+                            <Field label="tripId">
+                                <input
+                                    value={booking.tripId}
+                                    onChange={(e) => updateBooking("tripId", e.target.value)}
+                                    style={styles.input}
+                                />
+                            </Field>
+
+                            {activeTab === "transport" ? (
+                                <Field label="transportId" span={2}>
+                                    <input
+                                        value={booking.transportId}
+                                        onChange={(e) =>
+                                            updateBooking("transportId", e.target.value)
+                                        }
+                                        style={styles.input}
+                                    />
+                                </Field>
+                            ) : (
+                                <Field label="accommodationId" span={2}>
+                                    <input
+                                        value={booking.accommodationId}
+                                        onChange={(e) =>
+                                            updateBooking("accommodationId", e.target.value)
+                                        }
+                                        style={styles.input}
+                                    />
+                                </Field>
+                            )}
+                        </div>
+
+                        <div style={styles.footerRow}>
+                            <button style={styles.primaryButton}>save booking</button>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
 
 function Field({ label, children, span = 1 }) {
     return (
-        <div style={{ ...styles.field, gridColumn: span === 2 ? "span 2" : "span 1" }}>
+        <div style={{ gridColumn: span === 2 ? "span 2" : "span 1" }}>
             <div style={styles.label}>{label}</div>
             {children}
         </div>
@@ -270,175 +200,120 @@ function Field({ label, children, span = 1 }) {
 }
 
 const styles = {
-    page: {
-        width: "100%",
-        minHeight: "100%",
+    page: (bg) => ({
+        position: "absolute",
+        inset: 0,
+        backgroundImage: `url(${bg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+    }),
+
+    overlay: {
+        position: "absolute",
+        inset: 0,
+        background:
+            "linear-gradient(180deg, rgba(10,14,25,0.15), rgba(10,14,25,0.30))",
+    },
+
+    content: {
+        position: "relative",
+        height: "100%",
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
-        padding: "24px",
+        alignItems: "center",
     },
 
     card: {
-        width: "min(520px, 100%)",
-        padding: "20px",
-        borderRadius: "14px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(255,255,255,0.05)",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+        background: "rgba(10,14,25,0.80)",
+        padding: 20,
+        borderRadius: 14,
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: 12,
+        width: 500,
     },
 
     largePane: {
-        width: "min(980px, 100%)",
-        padding: "20px",
-        borderRadius: "16px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(255,255,255,0.05)",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+        background: "rgba(10,14,25,0.82)",
+        padding: 20,
+        borderRadius: 16,
+        width: 980,
         display: "flex",
         flexDirection: "column",
-        gap: "14px",
+        gap: 14,
     },
 
     headerRow: {
         display: "flex",
-        alignItems: "flex-start",
         justifyContent: "space-between",
-        gap: "12px",
     },
 
-    h1: {
-        color: "white",
-        fontSize: "20px",
-        fontWeight: 700,
-        lineHeight: 1.2,
-    },
+    h1: { color: "white", fontSize: 20, fontWeight: 700 },
+    subtitle: { color: "rgba(255,255,255,0.7)", fontSize: 13 },
 
-    subtitle: {
-        marginTop: "6px",
-        color: "rgba(255,255,255,0.7)",
-        fontSize: "13px",
-    },
-
-    tabs: {
-        display: "flex",
-        gap: "10px",
-        padding: "6px",
-        borderRadius: "12px",
-        border: "1px solid rgba(255,255,255,0.10)",
-        background: "rgba(0,0,0,0.18)",
-        width: "fit-content",
-    },
-
+    tabs: { display: "flex", gap: 10 },
     tab: {
         padding: "8px 12px",
-        borderRadius: "10px",
-        border: "1px solid transparent",
+        borderRadius: 10,
         background: "transparent",
-        color: "rgba(255,255,255,0.8)",
-        cursor: "pointer",
-        fontWeight: 600,
-    },
-
-    tabActive: {
-        background: "rgba(255,255,255,0.08)",
-        border: "1px solid rgba(255,255,255,0.12)",
         color: "white",
+        cursor: "pointer",
     },
-
-    tabBody: {
-        paddingTop: "6px",
-    },
-
-    form: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "14px",
-    },
+    tabActive: { background: "rgba(255,255,255,0.15)" },
 
     grid: {
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
-        gap: "12px",
+        gap: 12,
     },
 
-    field: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "6px",
-    },
-
-    label: {
-        fontSize: "12px",
-        color: "rgba(255,255,255,0.65)",
-    },
+    label: { fontSize: 12, color: "rgba(255,255,255,0.6)" },
 
     input: {
-        padding: "10px 12px",
-        borderRadius: "10px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(0,0,0,0.25)",
+        padding: 10,
+        borderRadius: 10,
+        background: "rgba(0,0,0,0.35)",
         color: "white",
-        outline: "none",
+        border: "1px solid rgba(255,255,255,0.15)",
     },
 
     select: {
-        padding: "10px 12px",
-        borderRadius: "10px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(0,0,0,0.25)",
+        padding: 10,
+        borderRadius: 10,
+        background: "rgba(0,0,0,0.35)",
         color: "white",
-        outline: "none",
     },
 
     textarea: {
-        padding: "10px 12px",
-        borderRadius: "10px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(0,0,0,0.25)",
+        padding: 10,
+        borderRadius: 10,
+        background: "rgba(0,0,0,0.35)",
         color: "white",
-        outline: "none",
-        minHeight: "140px",
-        resize: "vertical",
-    },
-
-    footerRow: {
-        display: "flex",
-        justifyContent: "flex-end",
+        minHeight: 120,
     },
 
     primaryButton: {
         padding: "12px 28px",
-        fontSize: "16px",
-        cursor: "pointer",
-        borderRadius: "10px",
-        border: "1px solid rgba(255,255,255,0.18)",
-        background: "rgba(255,255,255,0.06)",
+        borderRadius: 10,
+        background: "rgba(255,255,255,0.12)",
         color: "white",
+        cursor: "pointer",
     },
 
     nextButton: {
-        marginTop: "8px",
-        padding: "10px",
-        borderRadius: "10px",
-        border: "none",
-        background: "linear-gradient(135deg, #4f8cff, #6fd1ff)",
-        color: "#0b1020",
-        fontWeight: "600",
-        cursor: "pointer",
         alignSelf: "flex-end",
+        padding: "10px 16px",
+        borderRadius: 10,
+        background: "#6fd1ff",
+        color: "#0b1020",
+        fontWeight: 600,
     },
 
     ghostButton: {
-        padding: "10px 12px",
-        borderRadius: "10px",
-        border: "1px solid rgba(255,255,255,0.12)",
-        background: "rgba(255,255,255,0.04)",
+        background: "transparent",
         color: "white",
         cursor: "pointer",
-        height: "fit-content",
     },
+
+    footerRow: { display: "flex", justifyContent: "flex-end" },
 };
