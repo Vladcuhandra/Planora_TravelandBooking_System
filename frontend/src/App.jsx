@@ -10,6 +10,7 @@ import TripPage from "./pages/TripPage";
 import BookingPage from "./pages/BookingPage";
 import {apiFetch} from "./api/http.js";
 import {useEffect, useState} from "react";
+import Main from "./pages/Main.jsx";
 
 // Protect routes that require authentication
 function RequireAuth({ children }) {
@@ -88,6 +89,7 @@ export default function App() {
                     <Route path="/accommodations" element={<RequireAuth><AccommodationPage /></RequireAuth>}/>
                     <Route path="/trips" element={<RequireAuth><TripPage /></RequireAuth>}/>
                     <Route path="/bookings" element={<RequireAuth><BookingPage /></RequireAuth>}/>
+                    <Route path="/main" element={<Main />} />
                 </Route>
 
                 {/* Catch-all redirects to login */}
