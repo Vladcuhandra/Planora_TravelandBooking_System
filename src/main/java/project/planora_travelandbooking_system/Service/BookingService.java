@@ -13,7 +13,6 @@ import project.planora_travelandbooking_system.Repository.AccommodationRepositor
 import project.planora_travelandbooking_system.Repository.BookingRepository;
 import project.planora_travelandbooking_system.Repository.TransportRepository;
 import project.planora_travelandbooking_system.Repository.TripRepository;
-import project.planora_travelandbooking_system.exceptions.DuplicateTripBookingTypeException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -53,12 +52,6 @@ public class BookingService {
 
     @Transactional
     public void saveBooking(BookingDTO bookingDTO, String email, boolean isAdmin) {
-        DateValidation.endNotBeforeStart(
-                bookingDTO.getStartDate(),
-                bookingDTO.getEndDate(),
-                "startDate",
-                "endDate"
-        );
 
         Trip trip = tripRepository.findById(bookingDTO.getTripId())
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + bookingDTO.getTripId()));
@@ -72,15 +65,21 @@ public class BookingService {
         booking.setTrip(trip);
 
         Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
-        enforceOneBookingPerTripType(trip.getId(), bookingType, null);
         Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
         booking.setStatus(status);
-        booking.setStartDate(bookingDTO.getStartDate());
-        booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, bookingDTO, bookingType, null);
+        // IMPORTANT: ignore incoming start/end from UI. We set them automatically.
+        applyTypeAndDatesAndPrice(booking, bookingDTO, bookingType, null);
+
+        // validate AFTER we set dates
+        DateValidation.endNotBeforeStart(
+                booking.getStartDate(),
+                booking.getEndDate(),
+                "startDate",
+                "endDate"
+        );
 
         booking.setCreatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
@@ -88,12 +87,6 @@ public class BookingService {
 
     @Transactional
     public void updateBooking(Long id, BookingDTO bookingDTO, String email, boolean isAdmin) {
-        DateValidation.endNotBeforeStart(
-                bookingDTO.getStartDate(),
-                bookingDTO.getEndDate(),
-                "startDate",
-                "endDate"
-        );
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
@@ -113,15 +106,21 @@ public class BookingService {
         booking.setTrip(trip);
 
         Booking.BookingType bookingType = Booking.BookingType.valueOf(bookingDTO.getBookingType());
-        enforceOneBookingPerTripType(trip.getId(), bookingType, id);
         Booking.BookingStatus status = Booking.BookingStatus.valueOf(bookingDTO.getStatus());
 
         booking.setBookingType(bookingType);
         booking.setStatus(status);
-        booking.setStartDate(bookingDTO.getStartDate());
-        booking.setEndDate(bookingDTO.getEndDate());
 
-        applyTypeAndPrice(booking, bookingDTO, bookingType, booking.getId());
+        // IMPORTANT: ignore incoming start/end from UI. We set them automatically.
+        applyTypeAndDatesAndPrice(booking, bookingDTO, bookingType, booking.getId());
+
+        // validate AFTER we set dates
+        DateValidation.endNotBeforeStart(
+                booking.getStartDate(),
+                booking.getEndDate(),
+                "startDate",
+                "endDate"
+        );
 
         bookingRepository.save(booking);
     }
@@ -156,17 +155,20 @@ public class BookingService {
         bookingRepository.deleteAllByIdInBatch(uniqueIds);
     }
 
-    private void applyTypeAndPrice(Booking booking,
-                                   BookingDTO bookingDTO,
-                                   Booking.BookingType bookingType,
-                                   Long currentBookingIdOrNull) {
+    /**
+     * Sets:
+     * - transport/accommodation link
+     * - start/end dates AUTOMATICALLY (user cannot edit)
+     * - totalPrice
+     * Also checks GLOBAL uniqueness:
+     * - same transport/accommodation cannot be used in another ACTIVE booking (status != CANCELLED)
+     */
+    private void applyTypeAndDatesAndPrice(Booking booking,
+                                           BookingDTO bookingDTO,
+                                           Booking.BookingType bookingType,
+                                           Long currentBookingIdOrNull) {
 
         Booking.BookingStatus cancelled = Booking.BookingStatus.CANCELLED;
-
-        if (booking.getTrip() == null || booking.getTrip().getUser() == null || booking.getTrip().getUser().getEmail() == null) {
-            throw new RuntimeException("Trip owner not found for booking");
-        }
-        String ownerEmail = booking.getTrip().getUser().getEmail();
 
         if (bookingType == Booking.BookingType.TRANSPORT) {
 
@@ -177,11 +179,11 @@ public class BookingService {
             Long transportId = bookingDTO.getTransportId();
 
             boolean alreadyBooked = (currentBookingIdOrNull == null)
-                    ? bookingRepository.existsByTransportIdAndStatusNotAndTripUserEmail(transportId, cancelled, ownerEmail)
-                    : bookingRepository.existsByTransportIdAndStatusNotAndTripUserEmailAndIdNot(transportId, cancelled, ownerEmail, currentBookingIdOrNull);
+                    ? bookingRepository.existsByTransportIdAndStatusNot(transportId, cancelled)
+                    : bookingRepository.existsByTransportIdAndStatusNotAndIdNot(transportId, cancelled, currentBookingIdOrNull);
 
             if (alreadyBooked) {
-                throw new RuntimeException("You already have an active booking with this transport.");
+                throw new RuntimeException("This transport is already booked in another active booking");
             }
 
             Transport transport = transportRepository.findById(transportId)
@@ -189,6 +191,11 @@ public class BookingService {
 
             booking.setTransport(transport);
             booking.setAccommodation(null);
+
+            // AUTO DATES FROM TRANSPORT
+            booking.setStartDate(transport.getDepartureTime());
+            booking.setEndDate(transport.getArrivalTime());
+
             booking.setTotalPrice(transport.getPrice());
 
         } else {
@@ -200,11 +207,11 @@ public class BookingService {
             Long accommodationId = bookingDTO.getAccommodationId();
 
             boolean alreadyBooked = (currentBookingIdOrNull == null)
-                    ? bookingRepository.existsByAccommodationIdAndStatusNotAndTripUserEmail(accommodationId, cancelled, ownerEmail)
-                    : bookingRepository.existsByAccommodationIdAndStatusNotAndTripUserEmailAndIdNot(accommodationId, cancelled, ownerEmail, currentBookingIdOrNull);
+                    ? bookingRepository.existsByAccommodationIdAndStatusNot(accommodationId, cancelled)
+                    : bookingRepository.existsByAccommodationIdAndStatusNotAndIdNot(accommodationId, cancelled, currentBookingIdOrNull);
 
             if (alreadyBooked) {
-                throw new RuntimeException("You already have an active booking with this accommodation.");
+                throw new RuntimeException("This accommodation is already booked in another active booking");
             }
 
             Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -213,7 +220,12 @@ public class BookingService {
             booking.setAccommodation(accommodation);
             booking.setTransport(null);
 
-            long nights = calcNights(bookingDTO.getStartDate(), bookingDTO.getEndDate());
+            // AUTO DATES (Accommodation has no dates in your model → use Trip dates)
+            if (booking.getTrip() == null) throw new RuntimeException("Trip is required for accommodation booking");
+            booking.setStartDate(booking.getTrip().getStartDate());
+            booking.setEndDate(booking.getTrip().getEndDate());
+
+            long nights = calcNights(booking.getStartDate(), booking.getEndDate());
             booking.setTotalPrice(accommodation.getPricePerNight() * nights);
         }
     }
@@ -241,22 +253,5 @@ public class BookingService {
         if (booking.getAccommodation() != null) bookingDTO.setAccommodationId(booking.getAccommodation().getId());
 
         return bookingDTO;
-    }
-
-    private void enforceOneBookingPerTripType(Long tripId,
-                                              Booking.BookingType bookingType,
-                                              Long currentBookingIdOrNull) {
-
-        if (tripId == null || bookingType == null) return;
-
-        boolean exists = (currentBookingIdOrNull == null)
-                ? bookingRepository.existsByTripIdAndBookingType(tripId, bookingType)
-                : bookingRepository.existsByTripIdAndBookingTypeAndIdNot(tripId, bookingType, currentBookingIdOrNull);
-
-        if (exists) {
-            throw new DuplicateTripBookingTypeException(
-                    "This trip already has a booking of type " + bookingType
-            );
-        }
     }
 }
