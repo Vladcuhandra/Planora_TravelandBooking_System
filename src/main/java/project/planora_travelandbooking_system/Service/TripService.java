@@ -81,20 +81,31 @@ public class TripService {
     }
 
     public TripDTO updateTrip(Long tripId, TripDTO tripDTO, User user) {
+
         DateValidation.endNotBeforeStart(
                 tripDTO.getStartDate(),
                 tripDTO.getEndDate(),
                 "startDate",
                 "endDate"
         );
+
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found with ID: " + tripId));
+
+        if (user != null
+                && user.getRole() != User.Role.ADMIN) {
+
+            if (trip.getUser() == null || trip.getUser().getId() == null)
+                throw new RuntimeException("Access denied");
+
+            if (!trip.getUser().getId().equals(user.getId()))
+                throw new RuntimeException("Access denied");
+        }
 
         trip.setTitle(tripDTO.getTitle());
         trip.setDescription(tripDTO.getDescription());
         trip.setStartDate(tripDTO.getStartDate());
         trip.setEndDate(tripDTO.getEndDate());
-        trip.setUser(user);
 
         Trip updatedTrip = tripRepository.save(trip);
         return convertToDTO(updatedTrip);

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import project.planora_travelandbooking_system.exceptions.InvalidPasswordException;
 import project.planora_travelandbooking_system.exceptions.UserAlreadyExistsException;
+import project.planora_travelandbooking_system.exceptions.DuplicateTripBookingTypeException;
 
 import java.util.Map;
 
@@ -27,5 +28,10 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 Map.of("message", ex.getMessage())
         );
+    }
+    @ExceptionHandler(DuplicateTripBookingTypeException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateTripBookingType(DuplicateTripBookingTypeException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", ex.getMessage()));
     }
 }

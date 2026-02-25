@@ -22,9 +22,12 @@ const TripPage = () => {
     useEffect(() => {
         fetchUserProfile();
         fetchTrips();
-        fetchUsers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage]);
+
+    useEffect(() => {
+        if (isAdmin) fetchUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAdmin]);
 
     // API LocalDateTime -> datetime-local input value (YYYY-MM-DDTHH:mm)
     const toLocalInput = (v) => {
