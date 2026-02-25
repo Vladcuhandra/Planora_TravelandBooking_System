@@ -14,7 +14,6 @@ public class UserDTO {
     private String role;
     private boolean superAdmin;
     private LocalDateTime createdAt;
-    private LocalDateTime birthDate;
     private boolean deleted;
     private LocalDateTime deletionDate;
     private String confirmPassword;

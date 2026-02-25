@@ -35,12 +35,6 @@ public class TripService {
         return tripPage.map(this::convertToDTO);
     }
 
-    /*public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
-        Page<Trip> tripPage = tripRepository.findByUserEmail(email, PageRequest.of(page, pageSize));
-        return tripPage.map(this::convertToDTO);
-    }*/
-
-
     public Page<TripDTO> getTripsForUser(String email, int page, int pageSize) {
         User user = userService.getUserByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -111,18 +105,6 @@ public class TripService {
         return convertToDTO(updatedTrip);
     }
 
-    // KEEP: used by old controller mapping if needed
-    public void deleteTrip(Long tripId) {
-        if (!tripRepository.existsById(tripId)) throw new RuntimeException("Trip not found with ID: " + tripId);
-
-        // block if any booking references it
-        if (bookingRepository.existsByTripId(tripId)) {
-            throw new RuntimeException("Cannot delete trip: it has bookings. Delete bookings first.");
-        }
-
-        tripRepository.deleteById(tripId);
-    }
-
     @Transactional
     public void deleteTripAuthorized(Long tripId, String email, boolean isAdmin) {
         Trip trip = tripRepository.findById(tripId)
@@ -174,4 +156,5 @@ public class TripService {
         tripDTO.setCreatedAt(trip.getCreatedAt());
         return tripDTO;
     }
+
 }

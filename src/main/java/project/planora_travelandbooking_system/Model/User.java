@@ -24,7 +24,6 @@ public class User {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    private LocalDateTime birthDate;
 
     @Enumerated(EnumType.STRING)
     private Role role;

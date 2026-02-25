@@ -21,6 +21,8 @@ public class Accommodation {
     private String name;
     private String city;
     private String address;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private double rating;
     private Integer room;
     private double pricePerNight;

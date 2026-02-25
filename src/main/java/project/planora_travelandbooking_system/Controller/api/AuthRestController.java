@@ -11,6 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import project.planora_travelandbooking_system.Model.User;
+import project.planora_travelandbooking_system.Repository.UserEmailHistoryRepository;
 import project.planora_travelandbooking_system.Security.JwtUtil;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.Service.JwtRefreshService;
@@ -35,12 +36,14 @@ public class AuthRestController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserEmailHistoryRepository userEmailHistoryRepository;
 
     public AuthRestController(AuthenticationManager authenticationManager,
                               JwtUtil jwtUtil,
                               JwtRefreshService refreshService,
                               UserService userService,
                               UserRepository userRepository,
+                              UserEmailHistoryRepository userEmailHistoryRepository,
                               PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -48,6 +51,7 @@ public class AuthRestController {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userEmailHistoryRepository = userEmailHistoryRepository;
     }
 
     @PostMapping("/login")
@@ -80,26 +84,31 @@ public class AuthRestController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody UserDTO userDTO) {
+        // Email validation
         if (userDTO.getEmail() == null || userDTO.getEmail().isBlank()) {
             return ResponseEntity.badRequest().body("Email is required");
         }
 
+        if (!userDTO.getEmail().matches("\\S+@\\S+\\.\\S+")) {
+            return ResponseEntity.badRequest().body("Please enter a valid email");
+        }
+
+        // Password validation
         if (userDTO.getPassword() == null || userDTO.getPassword().length() < 6) {
             return ResponseEntity.badRequest().body("Password must be at least 6 characters");
-        }
-
-        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email is already registered");
-        }
-
-        if (userDTO.getEmail() == null || !userDTO.getEmail().matches("\\S+@\\S+\\.\\S+")) {
-            return ResponseEntity.badRequest().body("Please enter a valid email");
         }
 
         if (!userDTO.getPassword().equals(userDTO.getConfirmPassword())) {
             return ResponseEntity.badRequest().body("Passwords do not match");
         }
 
+        // Check if the email already exists in user repository or user email history
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent() ||
+                userEmailHistoryRepository.existsByEmail(userDTO.getEmail())) {
+            return ResponseEntity.badRequest().body("Email is already registered or in history");
+        }
+
+        // Create a new user
         User user = new User();
         user.setEmail(userDTO.getEmail());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -107,6 +116,7 @@ public class AuthRestController {
         user.setSuperAdmin(false);
         user.setDeleted(false);
         user.setCreatedAt(LocalDateTime.now());
+
         userRepository.save(user);
 
         return ResponseEntity.status(HttpStatus.CREATED)

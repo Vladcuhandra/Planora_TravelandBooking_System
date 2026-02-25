@@ -10,8 +10,6 @@ import java.util.List;
 @Repository
 public interface TransportRepository extends JpaRepository<Transport, Long>{
 
-    List<Transport> findByStatus(Transport.Status status);
-
     Page<Transport> findAll(Pageable pageable);
 
 }

@@ -9,9 +9,6 @@ import project.planora_travelandbooking_system.DTO.AccommodationDTO;
 import project.planora_travelandbooking_system.Model.Accommodation;
 import project.planora_travelandbooking_system.Repository.AccommodationRepository;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class AccommodationService {
@@ -24,6 +21,13 @@ public class AccommodationService {
     }
 
     public AccommodationDTO saveAccommodation(AccommodationDTO accommodationDTO) {
+        DateValidation.endNotBeforeStart(
+                accommodationDTO.getStartTime(),
+                accommodationDTO.getEndTime(),
+                "startTime",
+                "endTime"
+        );
+
         Accommodation.AccommodationType accommodationType = Accommodation.AccommodationType.valueOf(accommodationDTO.getAccommodationType());
         Accommodation.Status status = Accommodation.Status.valueOf(accommodationDTO.getStatus());
 
@@ -38,30 +42,12 @@ public class AccommodationService {
         return accommodationPage.map(this::convertToDTO);
     }
 
-    public List<AccommodationDTO> getAllAccommodations() {
-        List<Accommodation> accommodations = accommodationRepository.findAll();
-        return accommodations.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    public AccommodationDTO getAccommodationById(Long accommodationId) {
-        Optional<Accommodation> accommodationOptional = accommodationRepository.findById(accommodationId);
-        if (accommodationOptional.isPresent()) {
-            return convertToDTO(accommodationOptional.get());
-        } else {
-            throw new RuntimeException("Accommodation not found with ID: " + accommodationId);
-        }
-    }
-
     @Transactional
     public void deleteAccommodation(Long accommodationId) {
         if (!accommodationRepository.existsById(accommodationId)) {
             throw new RuntimeException("Accommodation not found with ID: " + accommodationId);
         }
         accommodationRepository.deleteById(accommodationId);
-    }
-
-    public List<Accommodation> getAccommodationsByStatus(Accommodation.Status status) {
-        return accommodationRepository.findByStatus(status);
     }
 
     @Transactional
@@ -78,6 +64,8 @@ public class AccommodationService {
         accommodation.setName(accommodationDTO.getName());
         accommodation.setCity(accommodationDTO.getCity());
         accommodation.setAddress(accommodationDTO.getAddress());
+        accommodation.setStartTime(accommodationDTO.getStartTime());
+        accommodation.setEndTime(accommodationDTO.getEndTime());
         accommodation.setRating(accommodationDTO.getRating());
         accommodation.setRoom(accommodationDTO.getRoom());
         accommodation.setPricePerNight(accommodationDTO.getPricePerNight());
@@ -95,6 +83,8 @@ public class AccommodationService {
         accommodation.setName(accommodationDTO.getName());
         accommodation.setCity(accommodationDTO.getCity());
         accommodation.setAddress(accommodationDTO.getAddress());
+        accommodation.setStartTime(accommodationDTO.getStartTime());
+        accommodation.setEndTime(accommodationDTO.getEndTime());
         accommodation.setRating(accommodationDTO.getRating());
         accommodation.setRoom(accommodationDTO.getRoom());
         accommodation.setPricePerNight(accommodationDTO.getPricePerNight());
@@ -110,6 +100,8 @@ public class AccommodationService {
         accommodationDTO.setName(accommodation.getName());
         accommodationDTO.setCity(accommodation.getCity());
         accommodationDTO.setAddress(accommodation.getAddress());
+        accommodationDTO.setStartTime(accommodation.getStartTime());
+        accommodationDTO.setEndTime(accommodation.getEndTime());
         accommodationDTO.setRating(accommodation.getRating());
         accommodationDTO.setRoom(accommodation.getRoom());
         accommodationDTO.setPricePerNight(accommodation.getPricePerNight());
@@ -117,4 +109,5 @@ public class AccommodationService {
         accommodationDTO.setCreatedAt(accommodation.getCreatedAt());
         return accommodationDTO;
     }
+
 }

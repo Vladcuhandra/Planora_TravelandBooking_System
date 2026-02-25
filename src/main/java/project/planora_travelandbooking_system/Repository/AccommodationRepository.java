@@ -8,8 +8,4 @@ import java.util.List;
 @Repository
 public interface AccommodationRepository extends JpaRepository<Accommodation, Long> {
 
-    List<Accommodation> findByStatus(Accommodation.Status status);
-
-    List<Accommodation> findByCity(String city);
-
 }

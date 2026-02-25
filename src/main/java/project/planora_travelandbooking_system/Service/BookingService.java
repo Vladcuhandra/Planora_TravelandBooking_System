@@ -45,11 +45,6 @@ public class BookingService {
         return bookingPage.map(this::convertToDTO);
     }
 
-    public Booking getBookingEntity(Long id) {
-        return bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
-    }
-
     @Transactional
     public void saveBooking(BookingDTO bookingDTO, String email, boolean isAdmin) {
 
@@ -70,16 +65,8 @@ public class BookingService {
         booking.setBookingType(bookingType);
         booking.setStatus(status);
 
-        // IMPORTANT: ignore incoming start/end from UI. We set them automatically.
         applyTypeAndDatesAndPrice(booking, bookingDTO, bookingType, null);
 
-        // validate AFTER we set dates
-        DateValidation.endNotBeforeStart(
-                booking.getStartDate(),
-                booking.getEndDate(),
-                "startDate",
-                "endDate"
-        );
 
         booking.setCreatedAt(LocalDateTime.now());
         bookingRepository.save(booking);
@@ -111,16 +98,8 @@ public class BookingService {
         booking.setBookingType(bookingType);
         booking.setStatus(status);
 
-        // IMPORTANT: ignore incoming start/end from UI. We set them automatically.
         applyTypeAndDatesAndPrice(booking, bookingDTO, bookingType, booking.getId());
 
-        // validate AFTER we set dates
-        DateValidation.endNotBeforeStart(
-                booking.getStartDate(),
-                booking.getEndDate(),
-                "startDate",
-                "endDate"
-        );
 
         bookingRepository.save(booking);
     }
@@ -155,14 +134,6 @@ public class BookingService {
         bookingRepository.deleteAllByIdInBatch(uniqueIds);
     }
 
-    /**
-     * Sets:
-     * - transport/accommodation link
-     * - start/end dates AUTOMATICALLY (user cannot edit)
-     * - totalPrice
-     * Also checks GLOBAL uniqueness:
-     * - same transport/accommodation cannot be used in another ACTIVE booking (status != CANCELLED)
-     */
     private void applyTypeAndDatesAndPrice(Booking booking,
                                            BookingDTO bookingDTO,
                                            Booking.BookingType bookingType,
@@ -192,10 +163,6 @@ public class BookingService {
             booking.setTransport(transport);
             booking.setAccommodation(null);
 
-            // AUTO DATES FROM TRANSPORT
-            booking.setStartDate(transport.getDepartureTime());
-            booking.setEndDate(transport.getArrivalTime());
-
             booking.setTotalPrice(transport.getPrice());
 
         } else {
@@ -222,11 +189,7 @@ public class BookingService {
 
             // AUTO DATES (Accommodation has no dates in your model → use Trip dates)
             if (booking.getTrip() == null) throw new RuntimeException("Trip is required for accommodation booking");
-            booking.setStartDate(booking.getTrip().getStartDate());
-            booking.setEndDate(booking.getTrip().getEndDate());
 
-            long nights = calcNights(booking.getStartDate(), booking.getEndDate());
-            booking.setTotalPrice(accommodation.getPricePerNight() * nights);
         }
     }
 
@@ -244,8 +207,6 @@ public class BookingService {
         bookingDTO.setTripId(booking.getTrip() != null ? booking.getTrip().getId() : null);
         bookingDTO.setBookingType(booking.getBookingType() != null ? booking.getBookingType().name() : null);
         bookingDTO.setStatus(booking.getStatus() != null ? booking.getStatus().name() : null);
-        bookingDTO.setStartDate(booking.getStartDate());
-        bookingDTO.setEndDate(booking.getEndDate());
         bookingDTO.setCreatedAt(booking.getCreatedAt());
         bookingDTO.setTotalPrice(booking.getTotalPrice());
 

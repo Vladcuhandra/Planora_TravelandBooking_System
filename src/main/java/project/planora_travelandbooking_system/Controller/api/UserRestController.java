@@ -25,7 +25,6 @@ public class UserRestController {
         this.userRepository = userRepository;
     }
 
-
     @GetMapping("/profile")
     public ResponseEntity<?> profile(Principal principal) {
         if (principal == null) {
@@ -36,11 +35,6 @@ public class UserRestController {
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(404).body(Map.of("message", "User not found")));
     }
-
-    /*@GetMapping
-    public ResponseEntity<List<UserDTO>> getUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getTrip(@PathVariable Long id) {
