@@ -2,15 +2,20 @@ import { useMemo, useState } from "react";
 import bg from "../assets/mountain_aurora.png";
 
 export default function Main() {
-    const [step, setStep] = useState(0); // 0=create, 1=details, 2=booking
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [activeTab, setActiveTab] = useState("transport");
+    const [step, setStep] = useState(0); // 0=create, 1=trip, 2=booking
+    const [activeTab, setActiveTab] = useState("transport"); // transport | accommodation
 
-    const [booking, setBooking] = useState({
-        bookingType: "TRANSPORT",
+    // Trip model (matches Trip.java: title, description, startDate, endDate)
+    const [trip, setTrip] = useState({
+        title: "",
+        description: "",
         startDate: "",
         endDate: "",
+    });
+
+    // Booking model (matches Booking.java: bookingType, totalPrice, status, trip, transport, accommodation, createdAt)
+    const [booking, setBooking] = useState({
+        bookingType: "TRANSPORT",
         totalPrice: "",
         status: "CONFIRMED",
         tripId: "",
@@ -19,13 +24,21 @@ export default function Main() {
         createdAt: new Date().toISOString().slice(0, 16),
     });
 
-    const isReadyForNext = useMemo(
-        () => title.trim() !== "" && description.trim() !== "",
-        [title, description]
-    );
-
+    const updateTrip = (key, value) => setTrip((p) => ({ ...p, [key]: value }));
     const updateBooking = (key, value) =>
         setBooking((p) => ({ ...p, [key]: value }));
+
+    const tripReady = useMemo(() => {
+        const ok =
+            trip.title.trim() !== "" &&
+            trip.description.trim() !== "" &&
+            trip.startDate !== "" &&
+            trip.endDate !== "";
+        if (!ok) return false;
+
+        // optional sanity check: start <= end (string compare works for datetime-local ISO format)
+        return trip.startDate <= trip.endDate;
+    }, [trip]);
 
     const switchTab = (tab) => {
         setActiveTab(tab);
@@ -40,31 +53,58 @@ export default function Main() {
     return (
         <div style={styles.page(bg)}>
             <div style={styles.overlay} />
-
             <div style={styles.content}>
+                {/* STEP 0 */}
                 {step === 0 && (
                     <button style={styles.primaryButton} onClick={() => setStep(1)}>
                         create
                     </button>
                 )}
 
+                {/* STEP 1: TRIP FORM (includes start/end datetime) */}
                 {step === 1 && (
                     <div style={styles.card}>
                         <input
                             style={styles.input}
                             placeholder="title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            value={trip.title}
+                            onChange={(e) => updateTrip("title", e.target.value)}
                         />
 
                         <textarea
                             style={styles.textarea}
                             placeholder="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={trip.description}
+                            onChange={(e) => updateTrip("description", e.target.value)}
                         />
 
-                        {isReadyForNext && (
+                        <div style={styles.twoCol}>
+                            <div>
+                                <div style={styles.label}>startDate</div>
+                                <input
+                                    type="datetime-local"
+                                    style={styles.input}
+                                    value={trip.startDate}
+                                    onChange={(e) => updateTrip("startDate", e.target.value)}
+                                />
+                            </div>
+
+                            <div>
+                                <div style={styles.label}>endDate</div>
+                                <input
+                                    type="datetime-local"
+                                    style={styles.input}
+                                    value={trip.endDate}
+                                    onChange={(e) => updateTrip("endDate", e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {trip.startDate && trip.endDate && trip.startDate > trip.endDate && (
+                            <div style={styles.warn}>End date must be after start date.</div>
+                        )}
+
+                        {tripReady && (
                             <button style={styles.nextButton} onClick={() => setStep(2)}>
                                 next
                             </button>
@@ -72,13 +112,18 @@ export default function Main() {
                     </div>
                 )}
 
+                {/* STEP 2: BOOKING FORM */}
                 {step === 2 && (
                     <div style={styles.largePane}>
                         <div style={styles.headerRow}>
                             <div>
-                                <div style={styles.h1}>{title}</div>
-                                <div style={styles.subtitle}>{description}</div>
+                                <div style={styles.h1}>{trip.title}</div>
+                                <div style={styles.subtitle}>{trip.description}</div>
+                                <div style={styles.meta}>
+                                    Trip: {trip.startDate || "—"} → {trip.endDate || "—"}
+                                </div>
                             </div>
+
                             <button style={styles.ghostButton} onClick={() => setStep(1)}>
                                 back
                             </button>
@@ -121,24 +166,6 @@ export default function Main() {
                                 </select>
                             </Field>
 
-                            <Field label="startDate">
-                                <input
-                                    type="datetime-local"
-                                    value={booking.startDate}
-                                    onChange={(e) => updateBooking("startDate", e.target.value)}
-                                    style={styles.input}
-                                />
-                            </Field>
-
-                            <Field label="endDate">
-                                <input
-                                    type="datetime-local"
-                                    value={booking.endDate}
-                                    onChange={(e) => updateBooking("endDate", e.target.value)}
-                                    style={styles.input}
-                                />
-                            </Field>
-
                             <Field label="totalPrice">
                                 <input
                                     type="number"
@@ -149,10 +176,20 @@ export default function Main() {
                                 />
                             </Field>
 
-                            <Field label="tripId">
+                            <Field label="createdAt">
+                                <input
+                                    type="datetime-local"
+                                    value={booking.createdAt}
+                                    onChange={(e) => updateBooking("createdAt", e.target.value)}
+                                    style={styles.input}
+                                />
+                            </Field>
+
+                            <Field label="tripId" span={2}>
                                 <input
                                     value={booking.tripId}
                                     onChange={(e) => updateBooking("tripId", e.target.value)}
+                                    placeholder="Trip ID (if already saved)"
                                     style={styles.input}
                                 />
                             </Field>
@@ -161,9 +198,8 @@ export default function Main() {
                                 <Field label="transportId" span={2}>
                                     <input
                                         value={booking.transportId}
-                                        onChange={(e) =>
-                                            updateBooking("transportId", e.target.value)
-                                        }
+                                        onChange={(e) => updateBooking("transportId", e.target.value)}
+                                        placeholder="Transport ID"
                                         style={styles.input}
                                     />
                                 </Field>
@@ -174,6 +210,7 @@ export default function Main() {
                                         onChange={(e) =>
                                             updateBooking("accommodationId", e.target.value)
                                         }
+                                        placeholder="Accommodation ID"
                                         style={styles.input}
                                     />
                                 </Field>
@@ -181,7 +218,41 @@ export default function Main() {
                         </div>
 
                         <div style={styles.footerRow}>
-                            <button style={styles.primaryButton}>save booking</button>
+                            <button
+                                style={styles.primaryButton}
+                                onClick={() => {
+                                    // Example payloads (match your entities)
+                                    const tripPayload = {
+                                        title: trip.title,
+                                        description: trip.description,
+                                        startDate: trip.startDate,
+                                        endDate: trip.endDate,
+                                    };
+
+                                    const bookingPayload = {
+                                        bookingType: booking.bookingType,
+                                        totalPrice: booking.totalPrice === "" ? 0 : Number(booking.totalPrice),
+                                        status: booking.status,
+                                        trip: booking.tripId ? { id: Number(booking.tripId) } : null,
+                                        transport:
+                                            booking.bookingType === "TRANSPORT" && booking.transportId
+                                                ? { id: Number(booking.transportId) }
+                                                : null,
+                                        accommodation:
+                                            booking.bookingType === "ACCOMMODATION" &&
+                                            booking.accommodationId
+                                                ? { id: Number(booking.accommodationId) }
+                                                : null,
+                                        createdAt: booking.createdAt || null,
+                                    };
+
+                                    console.log("Trip payload:", tripPayload);
+                                    console.log("Booking payload:", bookingPayload);
+                                    alert("Captured. Check console for payloads.");
+                                }}
+                            >
+                                save booking
+                            </button>
                         </div>
                     </div>
                 )}
@@ -200,10 +271,10 @@ function Field({ label, children, span = 1 }) {
 }
 
 const styles = {
-    page: (bg) => ({
+    page: (bgUrl) => ({
         position: "absolute",
         inset: 0,
-        backgroundImage: `url(${bg})`,
+        backgroundImage: `url(${bgUrl})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
     }),
@@ -221,6 +292,7 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        padding: 24,
     },
 
     card: {
@@ -230,14 +302,14 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: 12,
-        width: 500,
+        width: "min(560px, 92vw)",
     },
 
     largePane: {
         background: "rgba(10,14,25,0.82)",
         padding: 20,
         borderRadius: 16,
-        width: 980,
+        width: "min(980px, 92vw)",
         display: "flex",
         flexDirection: "column",
         gap: 14,
@@ -246,10 +318,12 @@ const styles = {
     headerRow: {
         display: "flex",
         justifyContent: "space-between",
+        gap: 12,
     },
 
     h1: { color: "white", fontSize: 20, fontWeight: 700 },
-    subtitle: { color: "rgba(255,255,255,0.7)", fontSize: 13 },
+    subtitle: { color: "rgba(255,255,255,0.7)", fontSize: 13, marginTop: 4 },
+    meta: { color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 6 },
 
     tabs: { display: "flex", gap: 10 },
     tab: {
@@ -258,6 +332,7 @@ const styles = {
         background: "transparent",
         color: "white",
         cursor: "pointer",
+        border: "1px solid rgba(255,255,255,0.12)",
     },
     tabActive: { background: "rgba(255,255,255,0.15)" },
 
@@ -267,29 +342,50 @@ const styles = {
         gap: 12,
     },
 
-    label: { fontSize: 12, color: "rgba(255,255,255,0.6)" },
+    twoCol: {
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 12,
+    },
+
+    label: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 6 },
+
+    warn: {
+        color: "rgba(255,180,180,0.95)",
+        fontSize: 12,
+        paddingTop: 2,
+    },
 
     input: {
+        width: "100%",
         padding: 10,
         borderRadius: 10,
         background: "rgba(0,0,0,0.35)",
         color: "white",
         border: "1px solid rgba(255,255,255,0.15)",
+        outline: "none",
     },
 
     select: {
+        width: "100%",
         padding: 10,
         borderRadius: 10,
         background: "rgba(0,0,0,0.35)",
         color: "white",
+        border: "1px solid rgba(255,255,255,0.15)",
+        outline: "none",
     },
 
     textarea: {
+        width: "100%",
         padding: 10,
         borderRadius: 10,
         background: "rgba(0,0,0,0.35)",
         color: "white",
+        border: "1px solid rgba(255,255,255,0.15)",
+        outline: "none",
         minHeight: 120,
+        resize: "vertical",
     },
 
     primaryButton: {
@@ -298,6 +394,7 @@ const styles = {
         background: "rgba(255,255,255,0.12)",
         color: "white",
         cursor: "pointer",
+        border: "1px solid rgba(255,255,255,0.14)",
     },
 
     nextButton: {
@@ -306,13 +403,19 @@ const styles = {
         borderRadius: 10,
         background: "#6fd1ff",
         color: "#0b1020",
-        fontWeight: 600,
+        fontWeight: 700,
+        cursor: "pointer",
+        border: "none",
     },
 
     ghostButton: {
         background: "transparent",
         color: "white",
         cursor: "pointer",
+        border: "1px solid rgba(255,255,255,0.14)",
+        borderRadius: 10,
+        padding: "10px 12px",
+        height: "fit-content",
     },
 
     footerRow: { display: "flex", justifyContent: "flex-end" },
