@@ -89,7 +89,7 @@ export default function App() {
                     <Route path="/accommodations" element={<RequireAuth><AccommodationPage /></RequireAuth>}/>
                     <Route path="/trips" element={<RequireAuth><TripPage /></RequireAuth>}/>
                     <Route path="/bookings" element={<RequireAuth><BookingPage /></RequireAuth>}/>
-                    <Route path="/main" element={<Main />} />
+                    <Route path="/main" element={<RequireAuth><Main /></RequireAuth>} />
                 </Route>
 
                 {/* Catch-all redirects to login */}
