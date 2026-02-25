@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.DTO.UserProfileUpdateRequest;
 import project.planora_travelandbooking_system.Model.User;
+import project.planora_travelandbooking_system.Model.UserEmailHistory;
+import project.planora_travelandbooking_system.Repository.UserEmailHistoryRepository;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,15 +30,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserEmailHistoryRepository  userEmailHistoryRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       UserEmailHistoryRepository  userEmailHistoryRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    public List<User> findAll() {
-        return userRepository.findAll();
+        this.userEmailHistoryRepository = userEmailHistoryRepository;
     }
 
     public User getCurrentAuthenticatedUser() {
@@ -68,16 +69,29 @@ public class UserService {
             user.setCreatedAt(LocalDateTime.now());
         }
 
-        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank() && !userDTO.getEmail().equals(user.getEmail())) {
+            if (userRepository.findByEmail(userDTO.getEmail()).isPresent() ||
+                    userEmailHistoryRepository.existsByEmail(userDTO.getEmail())) {
+                System.out.println("Signup failed: Email is already in use or in history.");
+                throw new IllegalArgumentException("Email is already in use or in history");
+            }
+
+            if (user.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
+                UserEmailHistory emailHistory = new UserEmailHistory();
+                emailHistory.setUser(user);
+                emailHistory.setEmail(user.getEmail());
+                emailHistory.setCreatedAt(LocalDateTime.now());
+                userEmailHistoryRepository.save(emailHistory);
+            }
+
             user.setEmail(userDTO.getEmail());
         }
 
         if (userDTO.getRole() != null && !userDTO.getRole().isBlank()) {
+            if (user.isSuperAdmin()) {
+                throw new IllegalStateException("Super admin role cannot be changed.");
+            }
             user.setRole(User.Role.valueOf(userDTO.getRole()));
-        }
-
-        if (userDTO.getBirthDate() != null) {
-            user.setBirthDate(userDTO.getBirthDate());
         }
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
@@ -86,11 +100,6 @@ public class UserService {
 
         userRepository.save(user);
         return convertToDTO(user);
-    }
-
-    public Page<UserDTO> getAllUsers(int page, int pageSize) {
-        Page<User> usersPage = userRepository.findAll(PageRequest.of(page, pageSize));
-        return usersPage.map(this::convertToDTO);
     }
 
     public List<UserDTO> getAllUsers() {
@@ -136,15 +145,9 @@ public class UserService {
 
     @Transactional
     public UserDTO updateProfile(Long userId, String principalEmail, UserProfileUpdateRequest req) {
-
         User existingUser = getUserId(userId);
 
         var auth = SecurityContextHolder.getContext().getAuthentication();
-
-        System.out.println("Authorities of authenticated user: " + auth.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .collect(Collectors.joining(", ")));
-
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
@@ -157,7 +160,6 @@ public class UserService {
         boolean changingPassword = req.getNewPassword() != null && !req.getNewPassword().isBlank();
 
         if (changingPassword && editingSelf) {
-
             if (req.getCurrentPassword() == null || req.getCurrentPassword().isBlank()) {
                 throw new IllegalArgumentException("Current password is required.");
             }
@@ -167,21 +169,31 @@ public class UserService {
             }
         }
 
-        if (req.getEmail() != null && !req.getEmail().isBlank()
-                && !req.getEmail().equals(existingUser.getEmail())) {
+        boolean changingEmail = req.getEmail() != null && !req.getEmail().isBlank()
+                && !req.getEmail().equals(existingUser.getEmail());
+
+        if (changingEmail) {
+            boolean emailInUse = userRepository.existsByEmail(req.getEmail()) ||
+                    userEmailHistoryRepository.existsByEmail(req.getEmail());
+
+            if (emailInUse) {
+                throw new IllegalArgumentException("The email is already in use.");
+            }
+
+            UserEmailHistory emailHistory = new UserEmailHistory();
+            emailHistory.setUser(existingUser);
+            emailHistory.setEmail(existingUser.getEmail());
+            emailHistory.setCreatedAt(LocalDateTime.now());
+            userEmailHistoryRepository.save(emailHistory);
+
             existingUser.setEmail(req.getEmail().trim());
         }
 
         boolean actorIsSuperAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
-        System.out.println("Is SuperAdmin: " + actorIsSuperAdmin);
-
         if (actorIsSuperAdmin && req.getRole() != null && !req.getRole().isBlank()) {
-            System.out.println("SuperAdmin is updating role to: " + req.getRole());
             existingUser.setRole(User.Role.valueOf(req.getRole().trim()));
-        } else {
-            System.out.println("Role update skipped. Either user is not SuperAdmin or no role provided.");
         }
 
         if (changingPassword) {
@@ -224,6 +236,8 @@ public class UserService {
     }
 
     private void hardDeleteUser(User user) {
+        List<UserEmailHistory> emailHistories = userEmailHistoryRepository.findByUser(user);
+        userEmailHistoryRepository.deleteAll(emailHistories);
         userRepository.delete(user);
     }
 
@@ -281,26 +295,10 @@ public class UserService {
         return convertToDTO(user);
     }
 
-    private User convertToEntity(UserDTO userDTO, User.Role role, String encodedPassword) {
-        User user = new User();
-        user.setId(userDTO.getId());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(encodedPassword);
-        user.setBirthDate(userDTO.getBirthDate());
-        user.setRole(role);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setSuperAdmin(userDTO.isSuperAdmin());
-        user.setDeleted(userDTO.isDeleted());
-        user.setDeletionDate(userDTO.getDeletionDate());
-        return user;
-    }
-
     public UserDTO convertToDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setEmail(user.getEmail());
-
-        userDTO.setBirthDate(user.getBirthDate());
         userDTO.setRole(user.getRole().name());
         userDTO.setCreatedAt(user.getCreatedAt());
         userDTO.setSuperAdmin(user.isSuperAdmin());

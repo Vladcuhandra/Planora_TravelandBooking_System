@@ -46,30 +46,12 @@ public class TransportService {
         return transportPage.map(this::convertToDTO);
     }
 
-    public List<TransportDTO> getAllTransports() {
-        List<Transport> transports = transportRepository.findAll();
-        return transports.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    public TransportDTO getTransportById(Long transportId) {
-        Optional<Transport> transportOptional = transportRepository.findById(transportId);
-        if (transportOptional.isPresent()) {
-            return convertToDTO(transportOptional.get());
-        } else {
-            throw new RuntimeException("Transport not found with ID: " + transportId);
-        }
-    }
-
     @Transactional
     public void deleteTransport(Long transportId) {
         if (!transportRepository.existsById(transportId)) {
             throw new RuntimeException("Transport not found with ID: " + transportId);
         }
         transportRepository.deleteById(transportId);
-    }
-
-    public List<Transport> getTransportByStatus(Transport.Status status) {
-        return transportRepository.findByStatus(status);
     }
 
     @Transactional

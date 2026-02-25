@@ -12,6 +12,8 @@ public class AccommodationDTO {
     private String name;
     private String city;
     private String address;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private double pricePerNight;
     private double rating;
     private Integer room;

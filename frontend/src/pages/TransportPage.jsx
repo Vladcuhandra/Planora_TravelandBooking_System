@@ -229,7 +229,7 @@ const TransportPage = () => {
                                         <input className="form-control" type="datetime-local" name="arrivalTime" required />
                                     </div>
                                     <div className="col-6 col-md-2">
-                                        <label className="form-label p-hint mb-1">Seats</label>
+                                        <label className="form-label p-hint mb-1">Seat</label>
                                         <input className="form-control" type="number" name="seat" min="1" required />
                                     </div>
                                     <div className="col-6 col-md-2">
@@ -263,7 +263,7 @@ const TransportPage = () => {
                                     <th style={{ minWidth: "120px", maxWidth: "160px" }}>To</th>
                                     <th style={{ minWidth: "170px", maxWidth: "190px" }}>Departure</th>
                                     <th style={{ minWidth: "170px", maxWidth: "190px" }}>Arrival</th>
-                                    <th style={{ width: "110px" }}>Seats</th>
+                                    <th style={{ width: "110px" }}>Seat</th>
                                     <th style={{ width: "130px" }}>Price</th>
                                     <th style={{ width: "170px" }}>Status</th>
                                     {isAdmin && <th style={{ width: "210px" }}>Deletion</th>}

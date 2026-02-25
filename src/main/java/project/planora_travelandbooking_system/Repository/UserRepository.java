@@ -14,12 +14,11 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByEmail(String email);
+
     boolean existsByEmail(String email);
 
     Optional<User> findByEmailAndDeletedFalse(String email);
 
     List<User> findAllByDeletedTrueAndDeletionDateBefore(LocalDateTime cutoff);
-
-    Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
 
 }

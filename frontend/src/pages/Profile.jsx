@@ -182,7 +182,7 @@ export default function Profile() {
                                         required
                                     />
                                 ) : (
-                                    <div onClick={() => !(user.superAdmin || user.role === "ADMIN") && setEditableEmail(true)}>
+                                    <div onClick={() => !(user.superAdmin) && setEditableEmail(true)}>
                                         {user.email}
                                     </div>
                                 )}
@@ -200,29 +200,14 @@ export default function Profile() {
                                         placeholder="Optional"
                                     />
                                 ) : (
-                                    <div onClick={() => !(user.superAdmin || user.role === "ADMIN") && setEditablePassword(true)}>
+                                    <div onClick={() => !(user.superAdmin) && setEditablePassword(true)}>
                                         ••••••••
                                     </div>
                                 )}
                             </div>
 
-                            {/* Current password */}
-                            {showCurrentPasswordPrompt && (
-                                <div className="col-md-6">
-                                    <label className="form-label">Current password *</label>
-                                    <input
-                                        className="form-control"
-                                        type="password"
-                                        value={selfCurrentPassword}
-                                        onChange={(e) => setSelfCurrentPassword(e.target.value)}
-                                        placeholder="Current password"
-                                        required
-                                    />
-                                </div>
-                            )}
-
                             {/* Save Changes Button - Hide for Super Admin and Admin */}
-                            {!(user.superAdmin || user.role === "ADMIN") && (
+                            {!(user.superAdmin) && (
                                 <div className="col-12">
                                     <button className="btn btn-planora" type="submit">
                                         Save Changes
@@ -236,7 +221,7 @@ export default function Profile() {
                         <hr className="my-4" />
 
                         {/* Delete Account Section - Hide for Super Admin and Admin */}
-                        {!(user.superAdmin || user.role === "ADMIN") && (
+                        {!(user.superAdmin) && (
                             <form onSubmit={handleDeleteAccount}>
                                 <button className="btn btn-danger-soft">
                                     Delete My Account

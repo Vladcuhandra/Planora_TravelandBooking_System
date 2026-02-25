@@ -590,8 +590,6 @@ const BookingPage = () => {
                                         <th style={{ minWidth: "190px" }}>Trip</th>
                                         <th style={{ minWidth: "140px" }}>Type</th>
                                         <th style={{ minWidth: "140px" }}>Status</th>
-                                        <th style={{ minWidth: "180px" }}>Start</th>
-                                        <th style={{ minWidth: "180px" }}>End</th>
                                         <th style={{ minWidth: "240px" }}>Transport</th>
                                         <th style={{ minWidth: "240px" }}>Accommodation</th>
                                         <th style={{ minWidth: "120px" }}>Total</th>
@@ -667,26 +665,6 @@ const BookingPage = () => {
                                                             <option value="CONFIRMED">CONFIRMED</option>
                                                             <option value="CANCELLED">CANCELLED</option>
                                                         </select>
-                                                    </td>
-
-                                                    <td>
-                                                        <input
-                                                            className="form-control"
-                                                            type="datetime-local"
-                                                            value={row.startDate ?? ""}
-                                                            onChange={(e) =>
-                                                                updateEditedRow(b.id, "startDate", e.target.value)
-                                                            }
-                                                        />
-                                                    </td>
-
-                                                    <td>
-                                                        <input
-                                                            className="form-control"
-                                                            type="datetime-local"
-                                                            value={row.endDate ?? ""}
-                                                            onChange={(e) => updateEditedRow(b.id, "endDate", e.target.value)}
-                                                        />
                                                     </td>
 
                                                     <td>

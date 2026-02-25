@@ -17,13 +17,10 @@ public class JwtRefreshService {
     private final JwtRefresherRepository repo;
     private static final SecureRandom random = new SecureRandom();
 
-
-
     public JwtRefreshService(UserService userService, JwtRefresherRepository jwtRefresherRepository) {
         this.userService = userService;
         this.repo = jwtRefresherRepository;
     }
-
 
     public String createToken(User user, int daysValid) {
         String refreshToken = generateRandomToken();
