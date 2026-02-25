@@ -8,8 +8,8 @@ import TransportPage from "./pages/TransportPage";
 import AccommodationPage from "./pages/AccommodationPage";
 import TripPage from "./pages/TripPage";
 import BookingPage from "./pages/BookingPage";
-import {apiFetch} from "./api/http.js";
-import {useEffect, useState} from "react";
+import { apiFetch } from "./api/http.js";
+import { useEffect, useState } from "react";
 import Main from "./pages/Main.jsx";
 
 // Protect routes that require authentication
@@ -42,7 +42,7 @@ function RequireAdmin({ children }) {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>; // Optionally, show a loading spinner
+        return <div>Loading...</div>;
     }
 
     return isAdmin ? children : <Navigate to="/login" replace />;
@@ -80,16 +80,77 @@ export default function App() {
                 {/* Authentication routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+
+                {/* App layout wrapper */}
                 <Route element={<Layout />}>
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/admin" element={
-                        <RequireAuth> <RequireAdmin> <AdminDashboard /> </RequireAdmin> </RequireAuth>}
+                    <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+
+                    <Route
+                        path="/admin"
+                        element={
+                            <RequireAuth>
+                                <RequireAdmin>
+                                    <AdminDashboard />
+                                </RequireAdmin>
+                            </RequireAuth>
+                        }
                     />
-                    <Route path="/transports" element={<RequireAuth><TransportPage /></RequireAuth>}/>
-                    <Route path="/accommodations" element={<RequireAuth><AccommodationPage /></RequireAuth>}/>
-                    <Route path="/trips" element={<RequireAuth><TripPage /></RequireAuth>}/>
-                    <Route path="/bookings" element={<RequireAuth><BookingPage /></RequireAuth>}/>
-                    <Route path="/main" element={<RequireAuth><Main /></RequireAuth>} />
+
+                    <Route
+                        path="/transports"
+                        element={
+                            <RequireAuth>
+                                <TransportPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/accommodations"
+                        element={
+                            <RequireAuth>
+                                <AccommodationPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/trips"
+                        element={
+                            <RequireAuth>
+                                <TripPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/bookings"
+                        element={
+                            <RequireAuth>
+                                <BookingPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    {/* Your original workflow page */}
+                    <Route
+                        path="/main"
+                        element={
+                            <RequireAuth>
+                                <Main />
+                            </RequireAuth>
+                        }
+                    />
+
+                    {/* Booking-for-existing-trip route */}
+                    <Route
+                        path="/trips/:tripId/booking"
+                        element={
+                            <RequireAuth>
+                                <Main />
+                            </RequireAuth>
+                        }
+                    />
                 </Route>
 
                 {/* Catch-all redirects to login */}
