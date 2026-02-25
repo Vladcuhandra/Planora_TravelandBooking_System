@@ -27,4 +27,10 @@ public interface JwtRefresherRepository extends JpaRepository<JwtRefresher, Long
 """)
     int revokeAllActiveByUserId(@Param("userId") Long userId);
 
+    @Transactional
+    @Modifying
+    @Query("""
+    delete from JwtRefresher r where r.user.id = :userId
+""")
+    void deleteAllTokensByUserId(@Param("userId") Long userId);
 }

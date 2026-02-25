@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import project.planora_travelandbooking_system.Repository.JwtRefresherRepository;
 import project.planora_travelandbooking_system.exceptions.UserAlreadyExistsException;
 import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.DTO.UserProfileUpdateRequest;
@@ -20,9 +21,12 @@ public class UserRestController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    public UserRestController(UserService userService, UserRepository userRepository) {
+    private final JwtRefresherRepository jwtRefresherRepository;
+
+    public UserRestController(UserService userService, UserRepository userRepository, JwtRefresherRepository jwtRefresherRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.jwtRefresherRepository = jwtRefresherRepository;
     }
 
 
@@ -93,6 +97,7 @@ public class UserRestController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
         String userName = userService.getUserId(id).getEmail();
+        jwtRefresherRepository.deleteAllTokensByUserId(id);
         userService.deleteUser(id);
         return ResponseEntity.ok(Map.of("message", "User deleted successfully: " + userName));
     }
