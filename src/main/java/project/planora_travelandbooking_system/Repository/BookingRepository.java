@@ -25,21 +25,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Page<Booking> findByTripUserEmailAndBookingType(String email, String bookingType, Pageable pageable);
 
-    // --- uniqueness checks (ACTIVE = status != CANCELLED) ---
+    // ACTIVE = status != CANCELLED (global uniqueness across all trips)
     boolean existsByTransportIdAndStatusNot(Long transportId, Booking.BookingStatus status);
     boolean existsByAccommodationIdAndStatusNot(Long accommodationId, Booking.BookingStatus status);
 
     boolean existsByTransportIdAndStatusNotAndIdNot(Long transportId, Booking.BookingStatus status, Long id);
     boolean existsByAccommodationIdAndStatusNotAndIdNot(Long accommodationId, Booking.BookingStatus status, Long id);
     boolean existsByTripId(Long tripId);
-    // --- business rule: one booking per trip per type ---
-    boolean existsByTripIdAndBookingType(Long tripId, Booking.BookingType bookingType);
-    boolean existsByTripIdAndBookingTypeAndIdNot(Long tripId, Booking.BookingType bookingType, Long id);
-
-    // Only block double-booking for the same user (owner of the trip)
-    boolean existsByTransportIdAndStatusNotAndTripUserEmail(Long transportId, Booking.BookingStatus status, String email);
-    boolean existsByTransportIdAndStatusNotAndTripUserEmailAndIdNot(Long transportId, Booking.BookingStatus status, String email, Long id);
-
-    boolean existsByAccommodationIdAndStatusNotAndTripUserEmail(Long accommodationId, Booking.BookingStatus status, String email);
-    boolean existsByAccommodationIdAndStatusNotAndTripUserEmailAndIdNot(Long accommodationId, Booking.BookingStatus status, String email, Long id);
 }

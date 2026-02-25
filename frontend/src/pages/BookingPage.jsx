@@ -198,8 +198,16 @@ const BookingPage = () => {
                 return;
             }
 
-            const data = await res.json().catch(() => ({}));
-            const msg = data.message || "Error creating booking.";
+            const raw = await res.text().catch(() => "");
+            let msg = "Error creating booking.";
+
+            try {
+                const data = raw ? JSON.parse(raw) : {};
+                msg = data.message || msg;
+            } catch {
+                if (raw) msg = raw;
+            }
+
             setError(msg);
             window.alert(msg);
 
@@ -339,6 +347,36 @@ const BookingPage = () => {
         return n.toFixed(2);
     };
 
+    const autoFillDatesForCreate = (nextDto) => {
+        const type = (nextDto.bookingType || "").toUpperCase();
+
+        // TRANSPORT => use transport departure/arrival
+        if (type === "TRANSPORT" && nextDto.transportId) {
+            const tr = transports.find((x) => String(x.id) === String(nextDto.transportId));
+            if (tr) {
+                return {
+                    ...nextDto,
+                    startDate: toLocalInput(tr.departureTime),
+                    endDate: toLocalInput(tr.arrivalTime),
+                };
+            }
+        }
+
+        // ACCOMMODATION => use trip start/end (because accommodation has no dates)
+        if (type === "ACCOMMODATION" && nextDto.tripId) {
+            const t = trips.find((x) => String(x.id) === String(nextDto.tripId));
+            if (t) {
+                return {
+                    ...nextDto,
+                    startDate: toLocalInput(t.startDate),
+                    endDate: toLocalInput(t.endDate),
+                };
+            }
+        }
+
+        return nextDto;
+    };
+
     return (
         <div className="container-fluid">
             <div className="row g-3 g-lg-4 py-3">
@@ -370,7 +408,10 @@ const BookingPage = () => {
                                     <select
                                         className="form-select"
                                         value={createDto.tripId}
-                                        onChange={(e) => setCreateDto({ ...createDto, tripId: e.target.value })}
+                                        onChange={(e) => {
+                                            const next = autoFillDatesForCreate({ ...createDto, tripId: e.target.value });
+                                            setCreateDto(next);
+                                        }}
                                         required
                                     >
                                         <option value="">-- Select --</option>
@@ -387,9 +428,28 @@ const BookingPage = () => {
                                     <select
                                         className="form-select"
                                         value={createDto.bookingType}
-                                        onChange={(e) =>
-                                            setCreateDto((prev) => normalizeByType({ ...prev, bookingType: e.target.value }))
-                                        }
+                                        onChange={(e) => {
+                                            const nextType = e.target.value;
+
+                                            setCreateDto((prev) => {
+                                                const normalized = normalizeByType({
+                                                    ...prev,
+                                                    bookingType: nextType,
+                                                });
+
+                                                // If switching to ACCOMMODATION → remove dates
+                                                if (nextType === "ACCOMMODATION") {
+                                                    return {
+                                                        ...normalized,
+                                                        startDate: "",
+                                                        endDate: "",
+                                                    };
+                                                }
+
+                                                // If switching to TRANSPORT → keep state
+                                                return normalized;
+                                            });
+                                        }}
                                         required
                                     >
                                         <option value="">-- Select --</option>
@@ -407,67 +467,80 @@ const BookingPage = () => {
                                         required
                                     >
                                         <option value="">-- Select --</option>
-                                        <option value="PENDING">PENDING</option>
                                         <option value="CONFIRMED">CONFIRMED</option>
                                         <option value="CANCELLED">CANCELLED</option>
                                     </select>
                                 </div>
 
-                                <div className="col-12 col-md-4">
-                                    <label className="form-label p-hint mb-1">Start</label>
-                                    <input
-                                        className="form-control"
-                                        type="datetime-local"
-                                        value={createDto.startDate}
-                                        onChange={(e) => setCreateDto({ ...createDto, startDate: e.target.value })}
-                                    />
-                                </div>
+                                {createDto.bookingType === "TRANSPORT" && (
+                                    <>
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label p-hint mb-1">Start</label>
+                                            <input
+                                                className="form-control"
+                                                type="datetime-local"
+                                                value={createDto.startDate || ""}
+                                                readOnly
+                                            />
+                                        </div>
 
-                                <div className="col-12 col-md-4">
-                                    <label className="form-label p-hint mb-1">End</label>
-                                    <input
-                                        className="form-control"
-                                        type="datetime-local"
-                                        value={createDto.endDate}
-                                        onChange={(e) => setCreateDto({ ...createDto, endDate: e.target.value })}
-                                    />
-                                </div>
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label p-hint mb-1">End</label>
+                                            <input
+                                                className="form-control"
+                                                type="datetime-local"
+                                                value={createDto.endDate || ""}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </>
+                                )}
 
-                                <div className="col-12 col-md-4">
-                                    <label className="form-label p-hint mb-1">Transport</label>
-                                    <select
-                                        className="form-select"
-                                        value={createDto.transportId}
-                                        onChange={(e) => setCreateDto({ ...createDto, transportId: e.target.value })}
-                                        required={createRules.transportRequired}
-                                        disabled={createRules.transportDisabled}
-                                    >
-                                        <option value="">{createRules.transportDisabled ? "--" : "-- Select --"}</option>
-                                        {transports.map((tr) => (
-                                            <option key={tr.id} value={tr.id}>
-                                                {tr.company} ({tr.originAddress} → {tr.destinationAddress}) price={tr.price}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {createDto.bookingType === "TRANSPORT" && (
+                                    <div className="col-12 col-md-4">
+                                        <label className="form-label p-hint mb-1">Transport</label>
+                                        <select
+                                            className="form-select"
+                                            value={createDto.transportId}
+                                            onChange={(e) => {
+                                                const next = autoFillDatesForCreate({ ...createDto, transportId: e.target.value });
+                                                setCreateDto(next);
+                                            }}
+                                            required
+                                            disabled={createRules.transportDisabled}
+                                        >
+                                            <option value="">{createRules.transportDisabled ? "--" : "-- Select --"}</option>
+                                            {transports.map((tr) => (
+                                                <option key={tr.id} value={tr.id}>
+                                                    {tr.company} ({tr.originAddress} → {tr.destinationAddress}) price={tr.price}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
-                                <div className="col-12 col-md-4">
-                                    <label className="form-label p-hint mb-1">Accommodation</label>
-                                    <select
-                                        className="form-select"
-                                        value={createDto.accommodationId}
-                                        onChange={(e) => setCreateDto({ ...createDto, accommodationId: e.target.value })}
-                                        required={createRules.accommodationRequired}
-                                        disabled={createRules.accommodationDisabled}
-                                    >
-                                        <option value="">{createRules.accommodationDisabled ? "--" : "-- Select --"}</option>
-                                        {accommodations.map((a) => (
-                                            <option key={a.id} value={a.id}>
-                                                {a.name} ({a.address}) price/night={a.pricePerNight}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {createDto.bookingType === "ACCOMMODATION" && (
+                                    <div className="col-12 col-md-4">
+                                        <label className="form-label p-hint mb-1">Accommodation</label>
+                                        <select
+                                            className="form-select"
+                                            value={createDto.accommodationId}
+                                            onChange={(e) => {
+                                                const next = { ...createDto, accommodationId: e.target.value };
+                                                setCreateDto(next);
+                                            }}
+                                            required
+                                            disabled={createRules.accommodationDisabled}
+                                        >
+                                            <option value="">{createRules.accommodationDisabled ? "--" : "-- Select --"}</option>
+                                            {accommodations.map((a) => (
+                                                <option key={a.id} value={a.id}>
+                                                    {a.name} ({a.address}) price/night={a.pricePerNight}
+                                                </option>
+                                            ))}status
+                                        </select>
+                                    </div>
+                                )}
 
                                 {error && <div className="text-danger small">{error}</div>}
 
