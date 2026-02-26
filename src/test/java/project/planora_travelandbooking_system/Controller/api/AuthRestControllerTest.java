@@ -22,6 +22,7 @@ import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Security.JwtUtil;
 import project.planora_travelandbooking_system.Service.JwtRefreshService;
 import project.planora_travelandbooking_system.Service.UserService;
+import project.planora_travelandbooking_system.Repository.UserEmailHistoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -62,6 +63,9 @@ class AuthRestControllerTest {
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    private UserEmailHistoryRepository userEmailHistoryRepository;
 
     @Test
     void signup_positive_createsUser_returns201_andLocationHeader() throws Exception {
@@ -162,10 +166,10 @@ class AuthRestControllerTest {
         mvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {"email":"existing@planora.test","password":"123456"}
+                            {"email":"existing@planora.test","password":"123456","confirmPassword":"123456"}
                             """))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Email is already registered"));
+                .andExpect(content().string("Email is already registered or in history"));
     }
 
     @Test

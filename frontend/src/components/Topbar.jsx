@@ -36,7 +36,7 @@ function Topbar() {
                     </button>
 
                     {/* Logo + Title */}
-                    <Link to="/profile" className="topbar-brand">
+                    <Link to="/main" className="topbar-brand">
                         <img className="topbar-logo" src={logo} alt="Planora logo" />
                         <span className="topbar-title">Planora</span>
                     </Link>

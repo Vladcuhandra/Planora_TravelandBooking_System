@@ -14,6 +14,7 @@ import project.planora_travelandbooking_system.DTO.UserDTO;
 import project.planora_travelandbooking_system.Model.User;
 import project.planora_travelandbooking_system.Repository.UserRepository;
 import project.planora_travelandbooking_system.Service.UserService;
+import project.planora_travelandbooking_system.Repository.JwtRefresherRepository;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -42,6 +43,9 @@ class UserRestControllerTest {
 
         @MockitoBean
         private UserRepository userRepository;
+
+        @MockitoBean
+        private JwtRefresherRepository jwtRefresherRepository;
 
         @Test
         void profile_withoutPrincipal_returns401_andMessage() throws Exception {

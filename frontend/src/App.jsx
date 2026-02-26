@@ -8,14 +8,20 @@ import TransportPage from "./pages/TransportPage";
 import AccommodationPage from "./pages/AccommodationPage";
 import TripPage from "./pages/TripPage";
 import BookingPage from "./pages/BookingPage";
-import {apiFetch} from "./api/http.js";
-import {useEffect, useState} from "react";
+import { apiFetch } from "./api/http.js";
+import { useEffect, useState } from "react";
 import Main from "./pages/Main.jsx";
 
 // Protect routes that require authentication
 function RequireAuth({ children }) {
     const token = localStorage.getItem("accessToken");
     return token ? children : <Navigate to="/login" replace />;
+}
+
+// Root route behaves like "post-auth landing page"
+function HomeRedirect() {
+    const token = localStorage.getItem("accessToken");
+    return <Navigate to={token ? "/main" : "/login"} replace />;
 }
 
 function RequireAdmin({ children }) {
@@ -42,7 +48,7 @@ function RequireAdmin({ children }) {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>; // Optionally, show a loading spinner
+        return <div>Loading...</div>;
     }
 
     return isAdmin ? children : <Navigate to="/login" replace />;
@@ -74,25 +80,92 @@ export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Default route redirects to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                {/* Root = authenticated landing page */}
+                <Route path="/" element={<HomeRedirect />} />
 
-                {/* Authentication routes */}
+                {/* Auth routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+
+                {/* App layout */}
                 <Route element={<Layout />}>
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/admin" element={
-                        <RequireAuth> <RequireAdmin> <AdminDashboard /> </RequireAdmin> </RequireAuth>}
+                    <Route
+                        path="/profile"
+                        element={
+                            <RequireAuth>
+                                <Profile />
+                            </RequireAuth>
+                        }
                     />
-                    <Route path="/transports" element={<RequireAuth><TransportPage /></RequireAuth>}/>
-                    <Route path="/accommodations" element={<RequireAuth><AccommodationPage /></RequireAuth>}/>
-                    <Route path="/trips" element={<RequireAuth><TripPage /></RequireAuth>}/>
-                    <Route path="/bookings" element={<RequireAuth><BookingPage /></RequireAuth>}/>
-                    <Route path="/main" element={<RequireAuth><Main /></RequireAuth>} />
+
+                    <Route
+                        path="/admin"
+                        element={
+                            <RequireAuth>
+                                <RequireAdmin>
+                                    <AdminDashboard />
+                                </RequireAdmin>
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/transports"
+                        element={
+                            <RequireAuth>
+                                <TransportPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/accommodations"
+                        element={
+                            <RequireAuth>
+                                <AccommodationPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/trips"
+                        element={
+                            <RequireAuth>
+                                <TripPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/bookings"
+                        element={
+                            <RequireAuth>
+                                <BookingPage />
+                            </RequireAuth>
+                        }
+                    />
+
+                    {/* Authenticated home */}
+                    <Route
+                        path="/main"
+                        element={
+                            <RequireAuth>
+                                <Main />
+                            </RequireAuth>
+                        }
+                    />
+
+                    <Route
+                        path="/trips/:tripId/booking"
+                        element={
+                            <RequireAuth>
+                                <Main />
+                            </RequireAuth>
+                        }
+                    />
                 </Route>
 
-                {/* Catch-all redirects to login */}
+                {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </BrowserRouter>
