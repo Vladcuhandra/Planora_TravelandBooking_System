@@ -11,19 +11,77 @@ import BookingPage from "./pages/BookingPage";
 import { apiFetch } from "./api/http.js";
 import { useEffect, useState } from "react";
 import Main from "./pages/Main.jsx";
+import {getAccessToken, subscribeAccessToken} from "./api/tokenStore.js";
+import {refresh} from "./api/auth.js";
 
 // Protect routes that require authentication
 function RequireAuth({ children }) {
-    const token = localStorage.getItem("accessToken");
+    const [token, setToken] = useState(getAccessToken());
+    const [checking, setChecking] = useState(!token);
+
+    // re-render when token changes (login/refresh/logout)
+    useEffect(() => subscribeAccessToken(() => setToken(getAccessToken())), []);
+
+    // if no access token in memory, try refresh once (cookie refresh token)
+    useEffect(() => {
+        let alive = true;
+
+        async function ensureToken() {
+            if (getAccessToken()) {
+                if (alive) setChecking(false);
+                return;
+            }
+            try {
+                await refresh(); // sets token in memory
+            } catch {
+                // not logged in / refresh cookie missing/expired
+            } finally {
+                if (alive) {
+                    setToken(getAccessToken());
+                    setChecking(false);
+                }
+            }
+        }
+
+        ensureToken();
+        return () => { alive = false; };
+    }, []);
+
+    if (checking) return <div>Loading...</div>;
     return token ? children : <Navigate to="/login" replace />;
 }
 
 // Root route behaves like "post-auth landing page"
 function HomeRedirect() {
-    const token = localStorage.getItem("accessToken");
+    const [token, setToken] = useState(getAccessToken());
+    const [checking, setChecking] = useState(!token);
+
+    useEffect(() => subscribeAccessToken(() => setToken(getAccessToken())), []);
+
+    useEffect(() => {
+        let alive = true;
+        async function ensureToken() {
+            if (getAccessToken()) {
+                if (alive) setChecking(false);
+                return;
+            }
+            try {
+                await refresh();
+            } catch {}
+            finally {
+                if (alive) {
+                    setToken(getAccessToken());
+                    setChecking(false);
+                }
+            }
+        }
+        ensureToken();
+        return () => { alive = false; };
+    }, []);
+
+    if (checking) return <div>Loading...</div>;
     return <Navigate to={token ? "/main" : "/login"} replace />;
 }
-
 function RequireAdmin({ children }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);

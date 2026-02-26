@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import {clearAccessToken} from "../api/tokenStore.js";
 
 function Topbar() {
     const navigate = useNavigate();
@@ -13,10 +14,8 @@ function Topbar() {
         } catch (err) {
             // ignore network/logout errors
         } finally {
-            // remove JWT token
-            localStorage.removeItem("accessToken");
-
-            navigate("/login", { replace: true });
+                clearAccessToken();
+                navigate("/login", { replace: true });
         }
     };
 

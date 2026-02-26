@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
 import { restoreAccount } from '../api/auth';
+import {setAccessToken} from "../api/tokenStore.js";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Login() {
 
         try {
             const data = await login(email, password);
-            localStorage.setItem("accessToken", data.token);
+            setAccessToken(data.token);
             localStorage.setItem("email", data.email);
             navigate("/main", { replace: true });
         } catch (err) {

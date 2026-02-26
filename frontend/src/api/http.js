@@ -1,4 +1,5 @@
 import { refresh } from "./auth";
+import {clearAccessToken, getAccessToken} from "./tokenStore.js";
 
 const API_BASE = "https://localhost:8443";
 
@@ -26,18 +27,14 @@ export async function apiFetch(path, options = {}) {
             credentials: "include",
         });
 
-    // try current token
-    let res = await doFetch(localStorage.getItem("accessToken"));
+    let res = await doFetch(getAccessToken());
     if (res.status !== 401) return res;
 
-    // wait for a single refresh shared by everyone
     const newToken = await getNewToken();
-
-    // retry once with the new token
     res = await doFetch(newToken);
 
     if (res.status === 401) {
-        localStorage.removeItem("accessToken");
+        clearAccessToken();
         throw new Error("Session expired. Please log in again.");
     }
 
