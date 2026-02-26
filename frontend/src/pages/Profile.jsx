@@ -66,7 +66,7 @@ export default function Profile() {
     const handleDeleteAccount = (e) => {
         e.preventDefault();
 
-        if (!window.confirm("Delete your account?")) return;
+        if (!window.confirm("Delete your account? The account will be deactivated and deleted after 30 days.")) return;
 
         if (user.superAdmin || user.role === "ADMIN") {
             setError("Super Admin and Admin accounts cannot be deleted.");
@@ -119,7 +119,7 @@ export default function Profile() {
                     return;
                 }
 
-                alert("Account deleted successfully.");
+                alert("Account deactivated successfully. Account recovery is possible within 30 days.");
                 navigate("/login");
             } else {
                 const payload = {
