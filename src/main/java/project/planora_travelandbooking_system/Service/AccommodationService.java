@@ -110,4 +110,67 @@ public class AccommodationService {
         return accommodationDTO;
     }
 
+    public AccommodationDTO saveAccommodationAndReturn(AccommodationDTO dto) {
+        // DTO -> Entity
+        Accommodation accommodation = new Accommodation();
+
+
+        if (dto.getId() != null) {
+            accommodation.setId(dto.getId());
+        }
+
+        accommodation.setName(dto.getName());
+        accommodation.setCity(dto.getCity());
+        accommodation.setAddress(dto.getAddress());
+        accommodation.setStartTime(dto.getStartTime());
+        accommodation.setEndTime(dto.getEndTime());
+
+        accommodation.setPricePerNight(dto.getPricePerNight());
+        accommodation.setRating(dto.getRating());
+        accommodation.setRoom(dto.getRoom());
+
+        accommodation.setCreatedAt(dto.getCreatedAt());
+
+        // enums: DTO String -> Entity Enum
+        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
+            accommodation.setStatus(Accommodation.Status.valueOf(dto.getStatus()));
+        } else {
+            accommodation.setStatus(null);
+        }
+
+        if (dto.getAccommodationType() != null && !dto.getAccommodationType().isBlank()) {
+            accommodation.setAccommodationType(
+                    Accommodation.AccommodationType.valueOf(dto.getAccommodationType())
+            );
+        } else {
+            accommodation.setAccommodationType(null);
+        }
+
+        Accommodation saved = accommodationRepository.save(accommodation);
+
+        // Entity -> DTO (WITH ID)
+        AccommodationDTO result = new AccommodationDTO();
+        result.setId(saved.getId());
+
+        result.setName(saved.getName());
+        result.setCity(saved.getCity());
+        result.setAddress(saved.getAddress());
+        result.setStartTime(saved.getStartTime());
+        result.setEndTime(saved.getEndTime());
+
+        result.setPricePerNight(saved.getPricePerNight());
+        result.setRating(saved.getRating());
+        result.setRoom(saved.getRoom());
+
+        result.setCreatedAt(saved.getCreatedAt());
+
+        // enums: Entity Enum -> DTO String
+        result.setStatus(saved.getStatus() == null ? null : saved.getStatus().name());
+        result.setAccommodationType(
+                saved.getAccommodationType() == null ? null : saved.getAccommodationType().name()
+        );
+
+        return result;
+    }
+
 }

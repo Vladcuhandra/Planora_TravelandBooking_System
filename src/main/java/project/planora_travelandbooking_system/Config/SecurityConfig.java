@@ -97,6 +97,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/restore").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/main/**").permitAll()
                         //USERS
                         .requestMatchers(HttpMethod.GET, "/api/admin/**")
                         .hasAnyRole("ADMIN", "SUPER_ADMIN")
