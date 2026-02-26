@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import signout from "../assets/icons/sign-out.png";
 import avatar from "../assets/icons/user.gif";
+import {clearAccessToken} from "../api/tokenStore.js";
 
 function Topbar() {
     const navigate = useNavigate();
@@ -13,10 +14,12 @@ function Topbar() {
                 credentials: "include",
             });
         } catch (err) {
-        } finally {
-            localStorage.removeItem("accessToken");
-            navigate("/login", { replace: true });
         }
+        finally {
+                clearAccessToken();
+                navigate("/login", { replace: true });
+        }
+
     };
 
     return (

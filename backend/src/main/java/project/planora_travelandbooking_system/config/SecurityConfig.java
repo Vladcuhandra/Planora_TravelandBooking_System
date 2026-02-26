@@ -108,7 +108,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/**")
                         .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/users/**")
-                        .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole( "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/**")
                         .hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**")

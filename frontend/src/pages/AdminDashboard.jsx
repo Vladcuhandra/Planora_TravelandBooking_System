@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../api/http";
 import Pagination from "../components/Pagination.jsx";
+import {getAccessToken} from "../api/tokenStore.js";
 
 // If you already have jwt-decode installed, you can use it.
 // If not, this tiny decoder works for reading the email (sub) from JWT.
 function getEmailFromAccessToken() {
-  const token = localStorage.getItem("accessToken");
+  const token = getAccessToken();
   if (!token) return null;
   try {
     const payload = token.split(".")[1];
