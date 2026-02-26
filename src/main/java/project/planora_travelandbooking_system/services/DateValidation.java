@@ -1,0 +1,18 @@
+package project.planora_travelandbooking_system.services;
+
+import java.time.LocalDateTime;
+
+public final class DateValidation {
+    private DateValidation() {
+    }
+
+    public static void endNotBeforeStart(LocalDateTime startTime, LocalDateTime endTime, String startField, String endField) {
+        if (startTime == null || endTime == null) {
+            throw new IllegalArgumentException(startField + " and " + endField + "must not be null");
+        }
+        if (endTime.isBefore(startTime)) {
+            throw new IllegalArgumentException(endField + " cannot be before " + startField);
+        }
+
+    }
+}
