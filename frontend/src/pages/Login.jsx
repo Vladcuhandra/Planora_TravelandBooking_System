@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
 import { restoreAccount } from '../api/auth';
 import logo from "../assets/logo.png";
+import {setAccessToken} from "../api/tokenStore.js";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -25,8 +26,8 @@ export default function Login() {
 
         try {
             const data = await login(email, password);
-            localStorage.setItem("accessToken", data.token);
-            localStorage.setItem("email", data.email);
+            setAccessToken(data.token);
+            localStorage.setItem("email", data.email); // optional: keep or remove
             navigate("/main", { replace: true });
         } catch (err) {
             setError(err.message);

@@ -1,3 +1,5 @@
+import {getAccessToken, setAccessToken} from "./tokenStore.js";
+
 const API_BASE = "https://localhost:8443";
 
 export async function login(email, password) {
@@ -28,7 +30,7 @@ export async function refresh() {
     const newToken = data.token || data.accessToken;
     if (!newToken) throw new Error("Refresh response missing token");
 
-    localStorage.setItem("accessToken", newToken);
+    setAccessToken(newToken);
     return { accessToken: newToken };
 }
 
@@ -41,7 +43,7 @@ export async function logout() {
 }
 
 export function getUserRole() {
-    const token = localStorage.getItem("accessToken");
+    const token = getAccessToken();
     if (token) {
         const decoded = JSON.parse(atob(token.split(".")[1]));
         return decoded.role || null;

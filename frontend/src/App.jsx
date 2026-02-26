@@ -11,16 +11,41 @@ import BookingPage from "./pages/BookingPage";
 import { apiFetch } from "./api/http.js";
 import { useEffect, useState } from "react";
 import Main from "./pages/Main.jsx";
+import {getAccessToken, subscribeAccessToken} from "./api/tokenStore.js";
+import {refresh} from "./api/auth.js";
 
 // Protect routes that require authentication
 function RequireAuth({ children }) {
-    const token = localStorage.getItem("accessToken");
+    const [token, setToken] = useState(getAccessToken());
+    const [checking, setChecking] = useState(!token);
+
+    useEffect(() => subscribeAccessToken(() => setToken(getAccessToken())), []);
+
+    useEffect(() => {
+        let alive = true;
+        async function run() {
+            if (getAccessToken()) {
+                if (alive) setChecking(false);
+                return;
+            }
+            try {
+                await refresh(); // sets in-memory token
+            } catch {
+                // ignore
+            } finally {
+                if (alive) setChecking(false);
+            }
+        }
+        run();
+        return () => { alive = false; };
+    }, []);
+
+    if (checking) return <div>Loading...</div>;
     return token ? children : <Navigate to="/login" replace />;
 }
-
 // Root route behaves like "post-auth landing page"
 function HomeRedirect() {
-    const token = localStorage.getItem("accessToken");
+    const token = getAccessToken();
     return <Navigate to={token ? "/main" : "/login"} replace />;
 }
 
