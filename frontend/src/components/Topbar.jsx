@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import signout from "../assets/icons/sign-out.png";
+import avatar from "../assets/icons/user.gif";
 
 function Topbar() {
     const navigate = useNavigate();
@@ -11,11 +13,8 @@ function Topbar() {
                 credentials: "include",
             });
         } catch (err) {
-            // ignore network/logout errors
         } finally {
-            // remove JWT token
             localStorage.removeItem("accessToken");
-
             navigate("/login", { replace: true });
         }
     };
@@ -42,13 +41,39 @@ function Topbar() {
                     </Link>
                 </div>
 
-                <button
-                    className="btn btn-danger-soft"
-                    type="button"
-                    onClick={handleLogout}
-                >
-                    Sign out
-                </button>
+                {/* User Dropdown */}
+                <div className="dropdown">
+                    <button
+                        className="btn p-0 border-0 bg-transparent dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
+                        <img
+                            src={avatar}
+                            alt="User menu"
+                            className="rounded-circle"
+                            style={{ width: "36px", height: "36px", objectFit: "cover" }}
+                        />
+                    </button>
+
+                    <ul className="dropdown-menu dropdown-menu-end shadow p-2">
+                        <li>
+                            <button
+                                className="dropdown-item btn btn-danger-soft d-flex align-items-center gap-2"
+                                type="button"
+                                onClick={handleLogout}
+                            >
+                                <img
+                                    src={signout}
+                                    alt="Sign out"
+                                    style={{ width: "18px", height: "18px" }}
+                                />
+                                <span>Sign out</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
     );

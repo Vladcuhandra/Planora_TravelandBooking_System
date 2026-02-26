@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import Pagination from "../components/Pagination.jsx";
 
 const TripPage = () => {
     const navigate = useNavigate();
@@ -488,31 +489,12 @@ const TripPage = () => {
                                 </tbody>
                             </table>
                         </div>
-
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="d-flex align-items-center justify-content-between mt-3">
-                                <button
-                                    className="btn btn-soft"
-                                    onClick={() => setCurrentPage(Math.max(currentPage - 1, 0))}
-                                    disabled={currentPage === 0}
-                                >
-                                    ← Previous
-                                </button>
-
-                                <div className="p-hint text-center flex-grow-1">
-                                    Page {currentPage + 1} of {totalPages}
-                                </div>
-
-                                <button
-                                    className="btn btn-soft"
-                                    onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages - 1))}
-                                    disabled={currentPage === totalPages - 1}
-                                >
-                                    Next →
-                                </button>
-                            </div>
-                        )}
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     </section>
                 </main>
             </div>

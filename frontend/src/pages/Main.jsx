@@ -242,7 +242,7 @@ export default function Main() {
             <div style={styles.content}>
                 {step === 0 && (
                     <button style={styles.primaryButton} onClick={() => setStep(1)}>
-                        create
+                        Create your trip
                     </button>
                 )}
 
