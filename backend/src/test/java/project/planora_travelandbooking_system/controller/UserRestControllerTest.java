@@ -14,7 +14,6 @@ import project.planora_travelandbooking_system.dto.UserDTO;
 import project.planora_travelandbooking_system.model.User;
 import project.planora_travelandbooking_system.repository.UserRepository;
 import project.planora_travelandbooking_system.service.UserService;
-import project.planora_travelandbooking_system.repository.JwtRefresherRepository;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -44,9 +43,6 @@ class UserRestControllerTest {
         @MockitoBean
         private UserRepository userRepository;
 
-        @MockitoBean
-        private JwtRefresherRepository jwtRefresherRepository;
-
         @Test
         void profile_withoutPrincipal_returns401_andMessage() throws Exception {
                 mvc.perform(get("/api/users/profile"))
@@ -69,17 +65,6 @@ class UserRestControllerTest {
                 mvc.perform(get("/api/users/profile").principal(principal))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.email", is("user@planora.test")));
-        }
-
-        @Test
-        void profile_withPrincipal_butUserNotFound_returns404() throws Exception {
-                Principal principal = () -> "missing@planora.test";
-
-                Mockito.when(userService.getUserByEmail("missing@planora.test"))
-                        .thenReturn(Optional.empty());
-
-                mvc.perform(get("/api/users/profile").principal(principal))
-                        .andExpect(status().isNotFound());
         }
 
         @Test

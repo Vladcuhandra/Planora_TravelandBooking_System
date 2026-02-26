@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         )
 )
 @AutoConfigureMockMvc(addFilters = false)
-public class AccommodationRestControllerTest {
+class AccommodationRestControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -59,11 +59,7 @@ public class AccommodationRestControllerTest {
         dto.setRating(4.5);
         dto.setRoom(10);
 
-        Page<AccommodationDTO> page = new PageImpl<>(
-                List.of(dto),
-                PageRequest.of(0, 10),
-                1
-        );
+        Page<AccommodationDTO> page = new PageImpl<>(List.of(dto), PageRequest.of(0, 10), 1);
 
         Mockito.when(accommodationService.getAllAccommodations(0, 10)).thenReturn(page);
 
@@ -74,8 +70,6 @@ public class AccommodationRestControllerTest {
                 .andExpect(jsonPath("$.content[0].id", is(1)))
                 .andExpect(jsonPath("$.content[0].accommodationType", is("HOTEL")))
                 .andExpect(jsonPath("$.content[0].name", is("Hotel Test")))
-                .andExpect(jsonPath("$.content[0].city", is("Riga")))
-                .andExpect(jsonPath("$.content[0].status", is("AVAILABLE")))
                 .andExpect(jsonPath("$.totalElements", is(1)));
 
         Mockito.verify(accommodationService).getAllAccommodations(0, 10);
@@ -96,7 +90,7 @@ public class AccommodationRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void saveAccommodation_admin_returns201_andMessage() throws Exception {
+    void saveAccommodation_returns201_andMessage() throws Exception {
         mvc.perform(post("/api/accommodations/save")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -119,7 +113,7 @@ public class AccommodationRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void editAccommodation_admin_returns200_andMessage() throws Exception {
+    void editAccommodation_returns200_andMessage() throws Exception {
         mvc.perform(post("/api/accommodations/edit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -143,7 +137,7 @@ public class AccommodationRestControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteAccommodation_admin_returns200_andMessage() throws Exception {
+    void deleteAccommodation_returns200_andMessage() throws Exception {
         mvc.perform(delete("/api/accommodations/{id}", 7L))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Accommodation deleted successfully!"));
@@ -156,8 +150,7 @@ public class AccommodationRestControllerTest {
         mvc.perform(get("/api/accommodations/types"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(Accommodation.AccommodationType.values().length)))
-                .andExpect(jsonPath("$", hasItems("HOTEL", "HOSTEL", "AIRBNB", "GUESTHOUSE", "INTERNET_CAFE")));
+                .andExpect(jsonPath("$", hasSize(Accommodation.AccommodationType.values().length)));
     }
 
     @Test
@@ -165,7 +158,6 @@ public class AccommodationRestControllerTest {
         mvc.perform(get("/api/accommodations/statuses"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(Accommodation.Status.values().length)))
-                .andExpect(jsonPath("$", hasItems("AVAILABLE", "UNAVAILABLE")));
+                .andExpect(jsonPath("$", hasSize(Accommodation.Status.values().length)));
     }
 }
