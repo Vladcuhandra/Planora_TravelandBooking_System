@@ -26,7 +26,7 @@ export default function Login() {
             const data = await login(email, password);
             localStorage.setItem("accessToken", data.token);
             localStorage.setItem("email", data.email);
-            navigate("/profile");
+            navigate("/main", { replace: true });
         } catch (err) {
             setError(err.message);
         }
@@ -46,7 +46,7 @@ export default function Login() {
             localStorage.setItem("accessToken", data.token);
             localStorage.setItem("email", data.email);
 
-            navigate("/profile");
+            navigate("/main", { replace: true });
         } catch (err) {
             setError(err.message || "An error occurred while restoring the account.");
         }
@@ -66,7 +66,6 @@ export default function Login() {
 
                 {error && <div className="p-alert error mb-3">{error}</div>}
 
-                {/* Render restore account form if isRestoring is true */}
                 {isRestoring ? (
                     <form onSubmit={handleRestoreSubmit} className="d-grid gap-3">
                         <div>
@@ -102,7 +101,6 @@ export default function Login() {
                         </div>
                     </form>
                 ) : (
-                    // Login form
                     <form onSubmit={handleSubmit} className="d-grid gap-3">
                         <div>
                             <label className="form-label p-hint mb-1">Email</label>

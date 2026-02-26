@@ -18,6 +18,12 @@ function RequireAuth({ children }) {
     return token ? children : <Navigate to="/login" replace />;
 }
 
+// Root route behaves like "post-auth landing page"
+function HomeRedirect() {
+    const token = localStorage.getItem("accessToken");
+    return <Navigate to={token ? "/main" : "/login"} replace />;
+}
+
 function RequireAdmin({ children }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -74,16 +80,23 @@ export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Default route redirects to login */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                {/* Root = authenticated landing page */}
+                <Route path="/" element={<HomeRedirect />} />
 
-                {/* Authentication routes */}
+                {/* Auth routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* App layout wrapper */}
+                {/* App layout */}
                 <Route element={<Layout />}>
-                    <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                    <Route
+                        path="/profile"
+                        element={
+                            <RequireAuth>
+                                <Profile />
+                            </RequireAuth>
+                        }
+                    />
 
                     <Route
                         path="/admin"
@@ -132,7 +145,7 @@ export default function App() {
                         }
                     />
 
-                    {/* Your original workflow page */}
+                    {/* Authenticated home */}
                     <Route
                         path="/main"
                         element={
@@ -142,7 +155,6 @@ export default function App() {
                         }
                     />
 
-                    {/* Booking-for-existing-trip route */}
                     <Route
                         path="/trips/:tripId/booking"
                         element={
@@ -153,7 +165,7 @@ export default function App() {
                     />
                 </Route>
 
-                {/* Catch-all redirects to login */}
+                {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </BrowserRouter>
