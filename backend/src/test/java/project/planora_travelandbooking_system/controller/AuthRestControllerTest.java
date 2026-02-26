@@ -78,7 +78,7 @@ class AuthRestControllerTest {
         mvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"email":"new@planora.test","password":"123456"}
+                                {"email":"new@planora.test","password":"123456","confirmPassword":"123456"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/login"));

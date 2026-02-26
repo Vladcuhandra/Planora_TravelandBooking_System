@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import project.planora_travelandbooking_system.dto.UserDTO;
 import project.planora_travelandbooking_system.model.User;
+import project.planora_travelandbooking_system.repository.JwtRefresherRepository;
 import project.planora_travelandbooking_system.repository.UserRepository;
 import project.planora_travelandbooking_system.service.UserService;
 
@@ -42,6 +43,9 @@ class UserRestControllerTest {
 
         @MockitoBean
         private UserRepository userRepository;
+
+        @MockitoBean
+        private JwtRefresherRepository jwtRefresherRepository;
 
         @Test
         void profile_withoutPrincipal_returns401_andMessage() throws Exception {
