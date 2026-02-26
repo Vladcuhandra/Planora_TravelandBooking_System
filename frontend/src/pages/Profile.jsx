@@ -143,11 +143,19 @@ export default function Profile() {
                     return;
                 }
 
+                const updatedUser = {
+                    ...user,
+                    email: newEmail,
+                };
+
+                setUser(updatedUser);
+
                 alert("Profile updated successfully");
                 setShowCurrentPasswordPrompt(false);
                 setEditableEmail(false);
                 setEditablePassword(false);
                 setNewPassword("");
+                setSelfCurrentPassword("");
             }
         } catch (e) {
             setError(e.message || "Operation failed");

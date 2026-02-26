@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../api/http";
+import Pagination from "../components/Pagination.jsx";
 
 // If you already have jwt-decode installed, you can use it.
 // If not, this tiny decoder works for reading the email (sub) from JWT.
@@ -520,6 +521,12 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
+              {/* Pagination */}
+              <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+              />
             </section>
           </main>
         </div>

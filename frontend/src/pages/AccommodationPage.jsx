@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import Pagination from "../components/Pagination.jsx";
 
 const AccommodationPage = () => {
     const navigate = useNavigate();
@@ -322,6 +323,12 @@ const AccommodationPage = () => {
                                 </tbody>
                             </table>
                         </div>
+                        {/* Pagination */}
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     </section>
                 </main>
             </div>

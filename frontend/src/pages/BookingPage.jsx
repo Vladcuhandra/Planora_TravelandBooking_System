@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../api/http";
+import Pagination from "../components/Pagination.jsx";
 
 const BookingPage = () => {
     const [bookings, setBookings] = useState([]);
@@ -732,32 +733,12 @@ const BookingPage = () => {
                                 </tbody>
                             </table>
                         </div>
-
                         {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="d-flex align-items-center justify-content-between mt-3">
-                                <button
-                                    className="btn btn-soft"
-                                    disabled={currentPage === 0}
-                                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
-                                >
-                                    ← Previous
-                                </button>
-
-                                <div className="p-hint text-center flex-grow-1">
-                                    Page {currentPage + 1} of {totalPages}
-                                </div>
-
-                                <button
-                                    className="btn btn-soft"
-                                    disabled={currentPage === totalPages - 1}
-                                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages - 1))}
-                                >
-                                    Next →
-                                </button>
-                            </div>
-                        )}
-
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                         {error && <div className="text-danger small mt-2">{error}</div>}
                     </section>
                 </main>
