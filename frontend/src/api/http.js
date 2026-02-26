@@ -1,5 +1,5 @@
 import { refresh } from "./auth";
-import {getAccessToken} from "./tokenStore.js";
+import {clearAccessToken, getAccessToken} from "./tokenStore.js";
 
 const API_BASE = "https://localhost:8443";
 
