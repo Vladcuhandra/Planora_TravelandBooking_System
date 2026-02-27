@@ -111,9 +111,7 @@ public class AccommodationService {
     }
 
     public AccommodationDTO saveAccommodationAndReturn(AccommodationDTO dto) {
-        // DTO -> Entity
         Accommodation accommodation = new Accommodation();
-
 
         if (dto.getId() != null) {
             accommodation.setId(dto.getId());
