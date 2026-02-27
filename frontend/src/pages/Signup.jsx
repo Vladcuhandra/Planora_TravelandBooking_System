@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api/http";
+import logo from "../assets/logo.png";
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ export default function Signup() {
             <div className="p-card p-auth-card">
                 <div className="auth-header d-flex align-items-center mb-3">
                     <div className="auth-logo-wrap">
-                        <img className="p-logo" src="/img/logo.png" alt="Planora logo" />
+                        <img className="p-logo" src={logo} alt="Planora logo"  />
                     </div>
                     <div className="auth-text-wrap">
                         <div className="p-title h5 mb-0">Create account</div>

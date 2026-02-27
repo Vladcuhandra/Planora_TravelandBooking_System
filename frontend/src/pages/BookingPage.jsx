@@ -14,7 +14,6 @@ const BookingPage = () => {
     const [error, setError] = useState(null);
     const [openCreate, setOpenCreate] = useState(false);
 
-    // Create form state
     const [createDto, setCreateDto] = useState({
         tripId: "",
         bookingType: "",
@@ -25,19 +24,15 @@ const BookingPage = () => {
         accommodationId: "",
     });
 
-    // Inline edit buffer (id -> editable row)
     const [editedRows, setEditedRows] = useState({});
 
-    // Bulk delete selection
     const [selectedIds, setSelectedIds] = useState(new Set());
 
     useEffect(() => {
         fetchBookings();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage]);
 
     useEffect(() => {
-        // scoped endpoints like Thymeleaf (admin: all, user: only their trips)
         fetchTrips();
         fetchTransports();
         fetchAccommodations();
@@ -77,7 +72,6 @@ const BookingPage = () => {
             setBookings(list);
             setTotalPages(data.totalPages || 0);
 
-            // init edit buffer
             const nextEdited = {};
             list.forEach((b) => {
                 nextEdited[b.id] = {
@@ -93,7 +87,6 @@ const BookingPage = () => {
             });
             setEditedRows(nextEdited);
 
-            // reset selection on reload
             setSelectedIds(new Set());
         } catch (e) {
             setError(e.message || "Failed to load bookings.");
@@ -127,7 +120,6 @@ const BookingPage = () => {
         } catch {}
     };
 
-    // apply Thymeleaf rules: transport vs accommodation
     const normalizeByType = (dto) => {
         const type = (dto.bookingType || "").toUpperCase();
         const next = { ...dto };
@@ -224,7 +216,6 @@ const BookingPage = () => {
             const row = { ...(prev[id] || {}) };
             row[field] = value;
 
-            // enforce Thymeleaf row rules when type changes
             if (field === "bookingType") {
                 const type = (value || "").toUpperCase();
                 if (type === "TRANSPORT") row.accommodationId = "";
@@ -322,7 +313,6 @@ const BookingPage = () => {
             setError(null);
             const ids = Array.from(selectedIds);
 
-            // backend expects List<Long>, not { ids: [...] }
             const res = await apiFetch("/api/bookings/bulk-delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -351,7 +341,6 @@ const BookingPage = () => {
     const autoFillDatesForCreate = (nextDto) => {
         const type = (nextDto.bookingType || "").toUpperCase();
 
-        // TRANSPORT => use transport departure/arrival
         if (type === "TRANSPORT" && nextDto.transportId) {
             const tr = transports.find((x) => String(x.id) === String(nextDto.transportId));
             if (tr) {
@@ -363,14 +352,13 @@ const BookingPage = () => {
             }
         }
 
-        // ACCOMMODATION => use trip start/end (because accommodation has no dates)
-        if (type === "ACCOMMODATION" && nextDto.tripId) {
-            const t = trips.find((x) => String(x.id) === String(nextDto.tripId));
-            if (t) {
+        if (type === "ACCOMMODATION" && nextDto.accommodationId) {
+            const a = accommodations.find((x) => String(x.id) === String(nextDto.accommodationId));
+            if (a) {
                 return {
                     ...nextDto,
-                    startDate: toLocalInput(t.startDate),
-                    endDate: toLocalInput(t.endDate),
+                    startDate: toLocalInput(a.startTime),
+                    endDate: toLocalInput(a.endTime),
                 };
             }
         }
@@ -438,16 +426,6 @@ const BookingPage = () => {
                                                     bookingType: nextType,
                                                 });
 
-                                                // If switching to ACCOMMODATION → remove dates
-                                                if (nextType === "ACCOMMODATION") {
-                                                    return {
-                                                        ...normalized,
-                                                        startDate: "",
-                                                        endDate: "",
-                                                    };
-                                                }
-
-                                                // If switching to TRANSPORT → keep state
                                                 return normalized;
                                             });
                                         }}
@@ -521,13 +499,37 @@ const BookingPage = () => {
                                 )}
 
                                 {createDto.bookingType === "ACCOMMODATION" && (
+                                    <>
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label p-hint mb-1">Start</label>
+                                            <input
+                                                className="form-control"
+                                                type="datetime-local"
+                                                value={createDto.startDate || ""}
+                                                readOnly
+                                            />
+                                        </div>
+
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label p-hint mb-1">End</label>
+                                            <input
+                                                className="form-control"
+                                                type="datetime-local"
+                                                value={createDto.endDate || ""}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {createDto.bookingType === "ACCOMMODATION" && (
                                     <div className="col-12 col-md-4">
                                         <label className="form-label p-hint mb-1">Accommodation</label>
                                         <select
                                             className="form-select"
                                             value={createDto.accommodationId}
                                             onChange={(e) => {
-                                                const next = { ...createDto, accommodationId: e.target.value };
+                                                const next = autoFillDatesForCreate({ ...createDto, accommodationId: e.target.value });
                                                 setCreateDto(next);
                                             }}
                                             required
@@ -662,7 +664,6 @@ const BookingPage = () => {
                                                             required
                                                         >
                                                             <option value="">-- Select --</option>
-                                                            <option value="PENDING">PENDING</option>
                                                             <option value="CONFIRMED">CONFIRMED</option>
                                                             <option value="CANCELLED">CANCELLED</option>
                                                         </select>

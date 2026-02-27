@@ -226,7 +226,7 @@ export default function Main() {
             // reset
             setStep(0);
             setTrip({ title: "", description: "", startDate: "", endDate: "" });
-            setBooking({ status: "CONFIRMED", totalPrice: "" });
+            setBooking({ status: "CONFIRMED"});
             setSelectedTransportId("");
             setSelectedAccommodationId("");
         } catch (e) {
