@@ -5,6 +5,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+    @Value("${planora.admin.password}")
+    private String adminPassword;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -86,7 +90,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         //.requestMatchers(request -> isPreFlightRequest(request)).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+                        //.requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
@@ -219,7 +223,7 @@ public class SecurityConfig {
             if (userRepository.findByEmail("admin").isEmpty()) {
                 User admin = new User();
                 admin.setEmail("admin");
-                admin.setPassword(passwordEncoder.encode("admin"));
+                admin.setPassword(passwordEncoder.encode(adminPassword));
                 admin.setRole(User.Role.ADMIN);
                 admin.setSuperAdmin(true);
                 userRepository.save(admin);
